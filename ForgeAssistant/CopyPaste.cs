@@ -30,9 +30,10 @@ namespace ForgeAssistant
             byte[] valueBytesZ = new byte[] { };
             for (var i = 0; i < CopiedLists.Count; i++)
             {
-                if (Main.listView1.SelectedItems.Count > i)
+                ListView.SelectedListViewItemCollection selectedItems = Main.itemList.SelectedItems;
+                if (selectedItems.Count > i)
                 {
-                    string tmpAddrs = Main.listView1.SelectedItems[i].SubItems[0].Text;
+                    string tmpAddrs = Form1.Addresses[selectedItems[i].Index];
                     float r11 = CopiedLists[i][0];
                     float r12 = CopiedLists[i][1];
                     float r13 = CopiedLists[i][2];
@@ -51,15 +52,15 @@ namespace ForgeAssistant
                     valueBytesX = BitConverter.GetBytes(x);
                     valueBytesY = BitConverter.GetBytes(y);
                     valueBytesZ = BitConverter.GetBytes(z);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+C", valueBytesX);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+10", valueBytesY);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+14", valueBytesZ);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+18", valueBytesR11);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+1C", valueBytesR12);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+20", valueBytesR13);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+24", valueBytesR31);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+28", valueBytesR32);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+2C", valueBytesR33);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+C", valueBytesX);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+10", valueBytesY);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+14", valueBytesZ);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+18", valueBytesR11);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+1C", valueBytesR12);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+20", valueBytesR13);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+24", valueBytesR31);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+28", valueBytesR32);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+2C", valueBytesR33);
                 }
             }
         }
@@ -70,18 +71,19 @@ namespace ForgeAssistant
             byte[] valueBytesZ = new byte[] { };
             for (var i = 0; i < CopiedLists.Count; i++)
             {
-                if (Main.listView1.SelectedItems.Count > i)
+                ListView.SelectedListViewItemCollection selectedItems = Main.itemList.SelectedItems;
+                if (selectedItems.Count > i)
                 {
-                    string tmpAddrs = Main.listView1.SelectedItems[i].SubItems[0].Text;
+                    string tmpAddrs = Form1.Addresses[selectedItems[i].Index];
                     float x = CopiedLists.ElementAt(i)[6];
                     float y = CopiedLists[i][7];
                     float z = CopiedLists[i][8];
                     valueBytesX = BitConverter.GetBytes(x);
                     valueBytesY = BitConverter.GetBytes(y);
                     valueBytesZ = BitConverter.GetBytes(z);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+C", valueBytesX);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+10", valueBytesY);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+14", valueBytesZ);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+C", valueBytesX);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+10", valueBytesY);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+14", valueBytesZ);
                 }
             }
         }
@@ -95,9 +97,10 @@ namespace ForgeAssistant
             byte[] valueBytesR33 = new byte[] { };
             for (var i = 0; i < CopiedLists.Count; i++)
             {
-                if (Main.listView1.SelectedItems.Count > i)
+                ListView.SelectedListViewItemCollection selectedItems = Main.itemList.SelectedItems;
+                if (selectedItems.Count > i)
                 {
-                    string tmpAddrs = Main.listView1.SelectedItems[i].SubItems[0].Text;
+                    string tmpAddrs = Form1.Addresses[selectedItems[i].Index];
                     float r11 = CopiedLists[i][0];
                     float r12 = CopiedLists[i][1];
                     float r13 = CopiedLists[i][2];
@@ -110,12 +113,12 @@ namespace ForgeAssistant
                     valueBytesR31 = BitConverter.GetBytes(r31);
                     valueBytesR32 = BitConverter.GetBytes(r32);
                     valueBytesR33 = BitConverter.GetBytes(r33);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+18", valueBytesR11);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+1C", valueBytesR12);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+20", valueBytesR13);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+24", valueBytesR31);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+28", valueBytesR32);
-                    Main.MCCMemory.WriteBytes(tmpAddrs + "+2C", valueBytesR33);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+18", valueBytesR11);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+1C", valueBytesR12);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+20", valueBytesR13);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+24", valueBytesR31);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+28", valueBytesR32);
+                    Form1.MCCMemory.WriteBytes(tmpAddrs + "+2C", valueBytesR33);
                 }
             }
         }
@@ -224,7 +227,7 @@ namespace ForgeAssistant
         public void Copy()
         {
             CopiedRotationLocation.Clear();
-            int tmpIndex = Main.listView1.SelectedItems[0].Index;
+            int tmpIndex = Main.itemList.SelectedItems[0].Index;
 
             CopiedRotationLocation.Add(Main.WorldItems[tmpIndex].r11);
             CopiedRotationLocation.Add(Main.WorldItems[tmpIndex].r12);
@@ -240,10 +243,10 @@ namespace ForgeAssistant
         {
             CopiedLists.Clear();
 
-            for (var i = 0; i < Main.listView1.SelectedItems.Count; i++)
+            for (var i = 0; i < Main.itemList.SelectedItems.Count; i++)
             {
                 CopiedRotationLocation = new List<float>();
-                int tmpIndex = Main.listView1.SelectedItems[i].Index;
+                int tmpIndex = Main.itemList.SelectedItems[i].Index;
                 CopiedRotationLocation.Add(Main.WorldItems[tmpIndex].r11);
                 CopiedRotationLocation.Add(Main.WorldItems[tmpIndex].r12);
                 CopiedRotationLocation.Add(Main.WorldItems[tmpIndex].r13);

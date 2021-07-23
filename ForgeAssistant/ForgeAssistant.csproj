@@ -221,6 +221,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Offsets.cs" />
+    <Compile Include="ForgeObject.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RotationInput.cs">

@@ -31,7 +31,16 @@
             this.components = new System.ComponentModel.Container();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button3 = new System.Windows.Forms.Button();
-            this.menuStrip2 = new System.Windows.Forms.MenuStrip();
+            this.lSelected = new System.Windows.Forms.Label();
+            this.lIndex = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
+            this.progressBar2 = new System.Windows.Forms.ProgressBar();
+            this.nSpawnTime = new System.Windows.Forms.NumericUpDown();
+            this.lSpawnTime = new System.Windows.Forms.Label();
+            this.lMap = new System.Windows.Forms.Label();
+            this.lTotal = new System.Windows.Forms.Label();
+            this.lMovement = new System.Windows.Forms.Label();
+            this.contextMenu = new System.Windows.Forms.MenuStrip();
             this.copyRotationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteRotationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,62 +54,53 @@
             this.rotateAroundYawZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rotateAroundYpitchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rotateAroundXrollToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.label20 = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
-            this.progressBar2 = new System.Windows.Forms.ProgressBar();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.listView1 = new ListViewNF();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.label7 = new System.Windows.Forms.Label();
-            this.panel7 = new System.Windows.Forms.Panel();
+            this.itemList = new ListViewNF();
+            this.colId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colLocation = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.pRotation = new System.Windows.Forms.Panel();
+            this.nRotInc = new System.Windows.Forms.NumericUpDown();
+            this.lIncrement = new System.Windows.Forms.Label();
+            this.pEuler = new System.Windows.Forms.Panel();
             this.Roll = new System.Windows.Forms.NumericUpDown();
-            this.label17 = new System.Windows.Forms.Label();
+            this.lPitch = new System.Windows.Forms.Label();
             this.Pitch = new System.Windows.Forms.NumericUpDown();
-            this.label16 = new System.Windows.Forms.Label();
+            this.lYaw = new System.Windows.Forms.Label();
             this.Yaw = new System.Windows.Forms.NumericUpDown();
-            this.label18 = new System.Windows.Forms.Label();
-            this.panel4 = new System.Windows.Forms.Panel();
-            this.numericUpDown19 = new System.Windows.Forms.NumericUpDown();
-            this.label15 = new System.Windows.Forms.Label();
-            this.numericUpDown18 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown17 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown16 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown15 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown14 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown13 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown12 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown11 = new System.Windows.Forms.NumericUpDown();
-            this.label14 = new System.Windows.Forms.Label();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel6 = new System.Windows.Forms.Panel();
-            this.label11 = new System.Windows.Forms.Label();
-            this.nudgeX = new System.Windows.Forms.NumericUpDown();
-            this.label13 = new System.Windows.Forms.Label();
-            this.nudgeY = new System.Windows.Forms.NumericUpDown();
-            this.label12 = new System.Windows.Forms.Label();
-            this.nudgeZ = new System.Windows.Forms.NumericUpDown();
+            this.lRoll = new System.Windows.Forms.Label();
+            this.pRotationMatrix = new System.Windows.Forms.Panel();
+            this.n33 = new System.Windows.Forms.NumericUpDown();
+            this.lRotationMatrix = new System.Windows.Forms.Label();
+            this.n23 = new System.Windows.Forms.NumericUpDown();
+            this.n13 = new System.Windows.Forms.NumericUpDown();
+            this.n32 = new System.Windows.Forms.NumericUpDown();
+            this.n22 = new System.Windows.Forms.NumericUpDown();
+            this.n12 = new System.Windows.Forms.NumericUpDown();
+            this.n31 = new System.Windows.Forms.NumericUpDown();
+            this.n21 = new System.Windows.Forms.NumericUpDown();
+            this.n11 = new System.Windows.Forms.NumericUpDown();
+            this.lRotation = new System.Windows.Forms.Label();
+            this.pMovement = new System.Windows.Forms.Panel();
+            this.pMoveXYZ = new System.Windows.Forms.Panel();
+            this.lMoveX = new System.Windows.Forms.Label();
+            this.nMoveX = new System.Windows.Forms.NumericUpDown();
+            this.lMoveY = new System.Windows.Forms.Label();
+            this.nMoveY = new System.Windows.Forms.NumericUpDown();
+            this.lMoveZ = new System.Windows.Forms.Label();
+            this.nMoveZ = new System.Windows.Forms.NumericUpDown();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
-            this.numericUpDown1SX = new System.Windows.Forms.NumericUpDown();
-            this.label3 = new System.Windows.Forms.Label();
-            this.numericUpDown2SY = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown3SZ = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.numericUpDown4 = new System.Windows.Forms.NumericUpDown();
+            this.lX = new System.Windows.Forms.Label();
+            this.nX = new System.Windows.Forms.NumericUpDown();
+            this.lY = new System.Windows.Forms.Label();
+            this.nY = new System.Windows.Forms.NumericUpDown();
+            this.nZ = new System.Windows.Forms.NumericUpDown();
+            this.lZ = new System.Windows.Forms.Label();
+            this.lSpawnPoint = new System.Windows.Forms.Label();
+            this.cbManualEdit = new System.Windows.Forms.CheckBox();
+            this.nMoveInc = new System.Windows.Forms.NumericUpDown();
             this.label5 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.bTeleport = new System.Windows.Forms.Button();
+            this.editProgress = new System.Windows.Forms.ProgressBar();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -116,34 +116,34 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.panel1.SuspendLayout();
-            this.menuStrip2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
-            this.panel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
-            this.panel7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nSpawnTime)).BeginInit();
+            this.contextMenu.SuspendLayout();
+            this.pRotation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nRotInc)).BeginInit();
+            this.pEuler.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Roll)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Pitch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Yaw)).BeginInit();
-            this.panel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown19)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown18)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown17)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown16)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown15)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown14)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown13)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown12)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown11)).BeginInit();
-            this.panel2.SuspendLayout();
-            this.panel6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudgeX)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudgeY)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudgeZ)).BeginInit();
+            this.pRotationMatrix.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.n33)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n23)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n13)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n32)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n22)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n12)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n31)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n21)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n11)).BeginInit();
+            this.pMovement.SuspendLayout();
+            this.pMoveXYZ.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveZ)).BeginInit();
             this.panel5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1SX)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2SY)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3SZ)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nZ)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveInc)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -154,22 +154,22 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.button3);
-            this.panel1.Controls.Add(this.menuStrip2);
-            this.panel1.Controls.Add(this.label20);
-            this.panel1.Controls.Add(this.label19);
+            this.panel1.Controls.Add(this.lSelected);
+            this.panel1.Controls.Add(this.lIndex);
             this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.progressBar2);
-            this.panel1.Controls.Add(this.numericUpDown2);
-            this.panel1.Controls.Add(this.label10);
-            this.panel1.Controls.Add(this.label9);
-            this.panel1.Controls.Add(this.label8);
-            this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.listView1);
-            this.panel1.Controls.Add(this.panel3);
-            this.panel1.Controls.Add(this.label14);
-            this.panel1.Controls.Add(this.panel2);
-            this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.progressBar1);
+            this.panel1.Controls.Add(this.nSpawnTime);
+            this.panel1.Controls.Add(this.lSpawnTime);
+            this.panel1.Controls.Add(this.lMap);
+            this.panel1.Controls.Add(this.lTotal);
+            this.panel1.Controls.Add(this.lMovement);
+            this.panel1.Controls.Add(this.itemList);
+            this.panel1.Controls.Add(this.contextMenu);
+            this.panel1.Controls.Add(this.pRotation);
+            this.panel1.Controls.Add(this.lRotation);
+            this.panel1.Controls.Add(this.pMovement);
+            this.panel1.Controls.Add(this.bTeleport);
+            this.panel1.Controls.Add(this.editProgress);
             this.panel1.Location = new System.Drawing.Point(12, 27);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(347, 564);
@@ -186,11 +186,103 @@
             this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
-            // menuStrip2
+            // lSelected
             // 
-            this.menuStrip2.AutoSize = false;
-            this.menuStrip2.Dock = System.Windows.Forms.DockStyle.None;
-            this.menuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lSelected.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lSelected.AutoSize = true;
+            this.lSelected.Location = new System.Drawing.Point(298, 215);
+            this.lSelected.Name = "lSelected";
+            this.lSelected.Size = new System.Drawing.Size(64, 13);
+            this.lSelected.TabIndex = 46;
+            this.lSelected.Text = "Selected : 0";
+            // 
+            // lIndex
+            // 
+            this.lIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lIndex.AutoSize = true;
+            this.lIndex.Location = new System.Drawing.Point(298, 201);
+            this.lIndex.Name = "lIndex";
+            this.lIndex.Size = new System.Drawing.Size(48, 13);
+            this.lIndex.TabIndex = 45;
+            this.lIndex.Text = "Index : 0";
+            // 
+            // button2
+            // 
+            this.button2.Enabled = false;
+            this.button2.Location = new System.Drawing.Point(3, 212);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 18);
+            this.button2.TabIndex = 44;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Visible = false;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // progressBar2
+            // 
+            this.progressBar2.Location = new System.Drawing.Point(157, 538);
+            this.progressBar2.Name = "progressBar2";
+            this.progressBar2.Size = new System.Drawing.Size(182, 18);
+            this.progressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progressBar2.TabIndex = 43;
+            this.progressBar2.Visible = false;
+            // 
+            // nSpawnTime
+            // 
+            this.nSpawnTime.Location = new System.Drawing.Point(85, 191);
+            this.nSpawnTime.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.nSpawnTime.Name = "nSpawnTime";
+            this.nSpawnTime.Size = new System.Drawing.Size(51, 20);
+            this.nSpawnTime.TabIndex = 41;
+            this.nSpawnTime.ValueChanged += new System.EventHandler(this.nSpawnTime_ValueChanged);
+            // 
+            // lSpawnTime
+            // 
+            this.lSpawnTime.AutoSize = true;
+            this.lSpawnTime.Location = new System.Drawing.Point(4, 193);
+            this.lSpawnTime.Name = "lSpawnTime";
+            this.lSpawnTime.Size = new System.Drawing.Size(75, 13);
+            this.lSpawnTime.TabIndex = 40;
+            this.lSpawnTime.Text = "Spawn Time : ";
+            // 
+            // lMap
+            // 
+            this.lMap.AutoSize = true;
+            this.lMap.Location = new System.Drawing.Point(114, 538);
+            this.lMap.Name = "lMap";
+            this.lMap.Size = new System.Drawing.Size(37, 13);
+            this.lMap.TabIndex = 38;
+            this.lMap.Text = "Map : ";
+            // 
+            // lTotal
+            // 
+            this.lTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lTotal.AutoSize = true;
+            this.lTotal.Location = new System.Drawing.Point(314, 188);
+            this.lTotal.Name = "lTotal";
+            this.lTotal.Size = new System.Drawing.Size(46, 13);
+            this.lTotal.TabIndex = 36;
+            this.lTotal.Text = "Total : 0";
+            this.lTotal.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // lMovement
+            // 
+            this.lMovement.AutoSize = true;
+            this.lMovement.Location = new System.Drawing.Point(145, 217);
+            this.lMovement.Name = "lMovement";
+            this.lMovement.Size = new System.Drawing.Size(57, 13);
+            this.lMovement.TabIndex = 31;
+            this.lMovement.Text = "Movement";
+            // 
+            // contextMenu
+            // 
+            this.contextMenu.AutoSize = false;
+            this.contextMenu.Dock = System.Windows.Forms.DockStyle.None;
+            this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyRotationToolStripMenuItem,
             this.pasteLocationToolStripMenuItem,
             this.pasteRotationToolStripMenuItem,
@@ -198,14 +290,14 @@
             this.copymulti,
             this.pastemulti,
             this.rotateStructureToolStripMenuItem});
-            this.menuStrip2.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Table;
-            this.menuStrip2.Location = new System.Drawing.Point(117, 33);
-            this.menuStrip2.Name = "menuStrip2";
-            this.menuStrip2.Size = new System.Drawing.Size(179, 142);
-            this.menuStrip2.Stretch = false;
-            this.menuStrip2.TabIndex = 37;
-            this.menuStrip2.Text = "menuStrip2";
-            this.menuStrip2.Visible = false;
+            this.contextMenu.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Table;
+            this.contextMenu.Location = new System.Drawing.Point(117, 33);
+            this.contextMenu.Name = "contextMenu";
+            this.contextMenu.Size = new System.Drawing.Size(179, 142);
+            this.contextMenu.Stretch = false;
+            this.contextMenu.TabIndex = 37;
+            this.contextMenu.Text = "menuStrip2";
+            this.contextMenu.Visible = false;
             // 
             // copyRotationToolStripMenuItem
             // 
@@ -316,185 +408,93 @@
             this.rotateAroundXrollToolStripMenuItem.Text = "Rotate around X (roll)";
             this.rotateAroundXrollToolStripMenuItem.Click += new System.EventHandler(this.rotateAroundXrollToolStripMenuItem_Click);
             // 
-            // label20
+            // itemList
             // 
-            this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(298, 215);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(64, 13);
-            this.label20.TabIndex = 46;
-            this.label20.Text = "Selected : 0";
-            // 
-            // label19
-            // 
-            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(298, 201);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(48, 13);
-            this.label19.TabIndex = 45;
-            this.label19.Text = "Index : 0";
-            // 
-            // button2
-            // 
-            this.button2.Enabled = false;
-            this.button2.Location = new System.Drawing.Point(3, 212);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 18);
-            this.button2.TabIndex = 44;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Visible = false;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // progressBar2
-            // 
-            this.progressBar2.Location = new System.Drawing.Point(157, 538);
-            this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(182, 18);
-            this.progressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progressBar2.TabIndex = 43;
-            this.progressBar2.Visible = false;
-            // 
-            // numericUpDown2
-            // 
-            this.numericUpDown2.Location = new System.Drawing.Point(85, 191);
-            this.numericUpDown2.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.numericUpDown2.Name = "numericUpDown2";
-            this.numericUpDown2.Size = new System.Drawing.Size(51, 20);
-            this.numericUpDown2.TabIndex = 41;
-            this.numericUpDown2.ValueChanged += new System.EventHandler(this.numericUpDown2_ValueChanged);
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(4, 193);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(75, 13);
-            this.label10.TabIndex = 40;
-            this.label10.Text = "Spawn Time : ";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(114, 538);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(37, 13);
-            this.label9.TabIndex = 38;
-            this.label9.Text = "Map : ";
-            // 
-            // label8
-            // 
-            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(314, 188);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(46, 13);
-            this.label8.TabIndex = 36;
-            this.label8.Text = "Total : 0";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(145, 217);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(57, 13);
-            this.label1.TabIndex = 31;
-            this.label1.Text = "Movement";
-            // 
-            // listView1
-            // 
-            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.itemList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3});
-            this.listView1.FullRowSelect = true;
-            this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(3, 3);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(336, 182);
-            this.listView1.TabIndex = 34;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            this.listView1.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
-            this.listView1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseUp);
+            this.itemList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colId,
+            this.colType,
+            this.colLocation});
+            this.itemList.FullRowSelect = true;
+            this.itemList.HideSelection = false;
+            this.itemList.Location = new System.Drawing.Point(3, 3);
+            this.itemList.Name = "itemList";
+            this.itemList.Size = new System.Drawing.Size(336, 182);
+            this.itemList.TabIndex = 34;
+            this.itemList.UseCompatibleStateImageBehavior = false;
+            this.itemList.View = System.Windows.Forms.View.Details;
+            this.itemList.SelectedIndexChanged += new System.EventHandler(this.itemList_SelectedIndexChanged);
+            this.itemList.MouseUp += new System.Windows.Forms.MouseEventHandler(this.itemList_MouseUp);
             // 
-            // columnHeader1
+            // colId
             // 
-            this.columnHeader1.Text = "Address";
-            this.columnHeader1.Width = 86;
+            this.colId.Text = "Id";
+            this.colId.Width = 41;
             // 
-            // columnHeader2
+            // colType
             // 
-            this.columnHeader2.Text = "Type";
-            this.columnHeader2.Width = 70;
+            this.colType.Text = "Type";
+            this.colType.Width = 142;
             // 
-            // columnHeader3
+            // colLocation
             // 
-            this.columnHeader3.Text = "Spawn Location";
-            this.columnHeader3.Width = 152;
+            this.colLocation.Text = "Spawn Location";
+            this.colLocation.Width = 148;
             // 
-            // panel3
+            // pRotation
             // 
-            this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.pRotation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel3.Controls.Add(this.numericUpDown1);
-            this.panel3.Controls.Add(this.label7);
-            this.panel3.Controls.Add(this.panel7);
-            this.panel3.Controls.Add(this.panel4);
-            this.panel3.Location = new System.Drawing.Point(3, 389);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(336, 138);
-            this.panel3.TabIndex = 33;
+            this.pRotation.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pRotation.Controls.Add(this.nRotInc);
+            this.pRotation.Controls.Add(this.lIncrement);
+            this.pRotation.Controls.Add(this.pEuler);
+            this.pRotation.Controls.Add(this.pRotationMatrix);
+            this.pRotation.Location = new System.Drawing.Point(3, 389);
+            this.pRotation.Name = "pRotation";
+            this.pRotation.Size = new System.Drawing.Size(336, 138);
+            this.pRotation.TabIndex = 33;
             // 
-            // numericUpDown1
+            // nRotInc
             // 
-            this.numericUpDown1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown1.DecimalPlaces = 2;
-            this.numericUpDown1.Location = new System.Drawing.Point(264, 8);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
+            this.nRotInc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nRotInc.DecimalPlaces = 2;
+            this.nRotInc.Location = new System.Drawing.Point(264, 8);
+            this.nRotInc.Maximum = new decimal(new int[] {
             180,
             0,
             0,
             0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown1.TabIndex = 33;
-            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            this.nRotInc.Name = "nRotInc";
+            this.nRotInc.Size = new System.Drawing.Size(60, 20);
+            this.nRotInc.TabIndex = 33;
+            this.nRotInc.ValueChanged += new System.EventHandler(this.nRotInc_ValueChanged);
             // 
-            // label7
+            // lIncrement
             // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(204, 10);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(54, 13);
-            this.label7.TabIndex = 32;
-            this.label7.Text = "Increment";
+            this.lIncrement.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lIncrement.AutoSize = true;
+            this.lIncrement.Location = new System.Drawing.Point(204, 10);
+            this.lIncrement.Name = "lIncrement";
+            this.lIncrement.Size = new System.Drawing.Size(54, 13);
+            this.lIncrement.TabIndex = 32;
+            this.lIncrement.Text = "Increment";
             // 
-            // panel7
+            // pEuler
             // 
-            this.panel7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel7.Controls.Add(this.Roll);
-            this.panel7.Controls.Add(this.label17);
-            this.panel7.Controls.Add(this.Pitch);
-            this.panel7.Controls.Add(this.label16);
-            this.panel7.Controls.Add(this.Yaw);
-            this.panel7.Controls.Add(this.label18);
-            this.panel7.Location = new System.Drawing.Point(223, 34);
-            this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(108, 98);
-            this.panel7.TabIndex = 32;
+            this.pEuler.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pEuler.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pEuler.Controls.Add(this.Roll);
+            this.pEuler.Controls.Add(this.lPitch);
+            this.pEuler.Controls.Add(this.Pitch);
+            this.pEuler.Controls.Add(this.lYaw);
+            this.pEuler.Controls.Add(this.Yaw);
+            this.pEuler.Controls.Add(this.lRoll);
+            this.pEuler.Location = new System.Drawing.Point(223, 34);
+            this.pEuler.Name = "pEuler";
+            this.pEuler.Size = new System.Drawing.Size(108, 98);
+            this.pEuler.TabIndex = 32;
             // 
             // Roll
             // 
@@ -518,16 +518,16 @@
             this.Roll.Name = "Roll";
             this.Roll.Size = new System.Drawing.Size(60, 20);
             this.Roll.TabIndex = 7;
-            this.Roll.ValueChanged += new System.EventHandler(this.numericUpDown20_ValueChanged);
+            this.Roll.ValueChanged += new System.EventHandler(this.nRot_ValueChanged);
             // 
-            // label17
+            // lPitch
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(3, 18);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(31, 13);
-            this.label17.TabIndex = 3;
-            this.label17.Text = "Pitch";
+            this.lPitch.AutoSize = true;
+            this.lPitch.Location = new System.Drawing.Point(3, 18);
+            this.lPitch.Name = "lPitch";
+            this.lPitch.Size = new System.Drawing.Size(31, 13);
+            this.lPitch.TabIndex = 3;
+            this.lPitch.Text = "Pitch";
             // 
             // Pitch
             // 
@@ -551,16 +551,16 @@
             this.Pitch.Name = "Pitch";
             this.Pitch.Size = new System.Drawing.Size(60, 20);
             this.Pitch.TabIndex = 6;
-            this.Pitch.ValueChanged += new System.EventHandler(this.numericUpDown20_ValueChanged);
+            this.Pitch.ValueChanged += new System.EventHandler(this.nRot_ValueChanged);
             // 
-            // label16
+            // lYaw
             // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(6, 44);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(28, 13);
-            this.label16.TabIndex = 2;
-            this.label16.Text = "Yaw";
+            this.lYaw.AutoSize = true;
+            this.lYaw.Location = new System.Drawing.Point(6, 44);
+            this.lYaw.Name = "lYaw";
+            this.lYaw.Size = new System.Drawing.Size(28, 13);
+            this.lYaw.TabIndex = 2;
+            this.lYaw.Text = "Yaw";
             // 
             // Yaw
             // 
@@ -584,554 +584,554 @@
             this.Yaw.Name = "Yaw";
             this.Yaw.Size = new System.Drawing.Size(60, 20);
             this.Yaw.TabIndex = 5;
-            this.Yaw.ValueChanged += new System.EventHandler(this.numericUpDown20_ValueChanged);
+            this.Yaw.ValueChanged += new System.EventHandler(this.nRot_ValueChanged);
             // 
-            // label18
+            // lRoll
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(9, 70);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(25, 13);
-            this.label18.TabIndex = 4;
-            this.label18.Text = "Roll";
+            this.lRoll.AutoSize = true;
+            this.lRoll.Location = new System.Drawing.Point(9, 70);
+            this.lRoll.Name = "lRoll";
+            this.lRoll.Size = new System.Drawing.Size(25, 13);
+            this.lRoll.TabIndex = 4;
+            this.lRoll.Text = "Roll";
             // 
-            // panel4
+            // pRotationMatrix
             // 
-            this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel4.Controls.Add(this.numericUpDown19);
-            this.panel4.Controls.Add(this.label15);
-            this.panel4.Controls.Add(this.numericUpDown18);
-            this.panel4.Controls.Add(this.numericUpDown17);
-            this.panel4.Controls.Add(this.numericUpDown16);
-            this.panel4.Controls.Add(this.numericUpDown15);
-            this.panel4.Controls.Add(this.numericUpDown14);
-            this.panel4.Controls.Add(this.numericUpDown13);
-            this.panel4.Controls.Add(this.numericUpDown12);
-            this.panel4.Controls.Add(this.numericUpDown11);
-            this.panel4.Location = new System.Drawing.Point(3, 34);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(200, 98);
-            this.panel4.TabIndex = 0;
+            this.pRotationMatrix.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pRotationMatrix.Controls.Add(this.n33);
+            this.pRotationMatrix.Controls.Add(this.lRotationMatrix);
+            this.pRotationMatrix.Controls.Add(this.n23);
+            this.pRotationMatrix.Controls.Add(this.n13);
+            this.pRotationMatrix.Controls.Add(this.n32);
+            this.pRotationMatrix.Controls.Add(this.n22);
+            this.pRotationMatrix.Controls.Add(this.n12);
+            this.pRotationMatrix.Controls.Add(this.n31);
+            this.pRotationMatrix.Controls.Add(this.n21);
+            this.pRotationMatrix.Controls.Add(this.n11);
+            this.pRotationMatrix.Location = new System.Drawing.Point(3, 34);
+            this.pRotationMatrix.Name = "pRotationMatrix";
+            this.pRotationMatrix.Size = new System.Drawing.Size(200, 98);
+            this.pRotationMatrix.TabIndex = 0;
             // 
-            // numericUpDown19
+            // n33
             // 
-            this.numericUpDown19.DecimalPlaces = 15;
-            this.numericUpDown19.Enabled = false;
-            this.numericUpDown19.Increment = new decimal(new int[] {
+            this.n33.DecimalPlaces = 15;
+            this.n33.Enabled = false;
+            this.n33.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown19.Location = new System.Drawing.Point(134, 68);
-            this.numericUpDown19.Maximum = new decimal(new int[] {
+            this.n33.Location = new System.Drawing.Point(134, 68);
+            this.n33.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown19.Minimum = new decimal(new int[] {
+            this.n33.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown19.Name = "numericUpDown19";
-            this.numericUpDown19.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown19.TabIndex = 38;
+            this.n33.Name = "n33";
+            this.n33.Size = new System.Drawing.Size(60, 20);
+            this.n33.TabIndex = 38;
             // 
-            // label15
+            // lRotationMatrix
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(63, -1);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(78, 13);
-            this.label15.TabIndex = 1;
-            this.label15.Text = "Rotation Matrix";
+            this.lRotationMatrix.AutoSize = true;
+            this.lRotationMatrix.Location = new System.Drawing.Point(63, -1);
+            this.lRotationMatrix.Name = "lRotationMatrix";
+            this.lRotationMatrix.Size = new System.Drawing.Size(78, 13);
+            this.lRotationMatrix.TabIndex = 1;
+            this.lRotationMatrix.Text = "Rotation Matrix";
             // 
-            // numericUpDown18
+            // n23
             // 
-            this.numericUpDown18.DecimalPlaces = 15;
-            this.numericUpDown18.Enabled = false;
-            this.numericUpDown18.Increment = new decimal(new int[] {
+            this.n23.DecimalPlaces = 15;
+            this.n23.Enabled = false;
+            this.n23.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown18.Location = new System.Drawing.Point(134, 42);
-            this.numericUpDown18.Maximum = new decimal(new int[] {
+            this.n23.Location = new System.Drawing.Point(134, 42);
+            this.n23.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown18.Minimum = new decimal(new int[] {
+            this.n23.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown18.Name = "numericUpDown18";
-            this.numericUpDown18.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown18.TabIndex = 37;
+            this.n23.Name = "n23";
+            this.n23.Size = new System.Drawing.Size(60, 20);
+            this.n23.TabIndex = 37;
             // 
-            // numericUpDown17
+            // n13
             // 
-            this.numericUpDown17.DecimalPlaces = 15;
-            this.numericUpDown17.Enabled = false;
-            this.numericUpDown17.Increment = new decimal(new int[] {
+            this.n13.DecimalPlaces = 15;
+            this.n13.Enabled = false;
+            this.n13.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown17.Location = new System.Drawing.Point(134, 16);
-            this.numericUpDown17.Maximum = new decimal(new int[] {
+            this.n13.Location = new System.Drawing.Point(134, 16);
+            this.n13.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown17.Minimum = new decimal(new int[] {
+            this.n13.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown17.Name = "numericUpDown17";
-            this.numericUpDown17.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown17.TabIndex = 36;
+            this.n13.Name = "n13";
+            this.n13.Size = new System.Drawing.Size(60, 20);
+            this.n13.TabIndex = 36;
             // 
-            // numericUpDown16
+            // n32
             // 
-            this.numericUpDown16.DecimalPlaces = 15;
-            this.numericUpDown16.Enabled = false;
-            this.numericUpDown16.Increment = new decimal(new int[] {
+            this.n32.DecimalPlaces = 15;
+            this.n32.Enabled = false;
+            this.n32.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown16.Location = new System.Drawing.Point(68, 68);
-            this.numericUpDown16.Maximum = new decimal(new int[] {
+            this.n32.Location = new System.Drawing.Point(68, 68);
+            this.n32.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown16.Minimum = new decimal(new int[] {
+            this.n32.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown16.Name = "numericUpDown16";
-            this.numericUpDown16.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown16.TabIndex = 35;
+            this.n32.Name = "n32";
+            this.n32.Size = new System.Drawing.Size(60, 20);
+            this.n32.TabIndex = 35;
             // 
-            // numericUpDown15
+            // n22
             // 
-            this.numericUpDown15.DecimalPlaces = 15;
-            this.numericUpDown15.Enabled = false;
-            this.numericUpDown15.Increment = new decimal(new int[] {
+            this.n22.DecimalPlaces = 15;
+            this.n22.Enabled = false;
+            this.n22.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown15.Location = new System.Drawing.Point(68, 42);
-            this.numericUpDown15.Maximum = new decimal(new int[] {
+            this.n22.Location = new System.Drawing.Point(68, 42);
+            this.n22.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown15.Minimum = new decimal(new int[] {
+            this.n22.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown15.Name = "numericUpDown15";
-            this.numericUpDown15.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown15.TabIndex = 34;
+            this.n22.Name = "n22";
+            this.n22.Size = new System.Drawing.Size(60, 20);
+            this.n22.TabIndex = 34;
             // 
-            // numericUpDown14
+            // n12
             // 
-            this.numericUpDown14.DecimalPlaces = 15;
-            this.numericUpDown14.Enabled = false;
-            this.numericUpDown14.Increment = new decimal(new int[] {
+            this.n12.DecimalPlaces = 15;
+            this.n12.Enabled = false;
+            this.n12.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown14.Location = new System.Drawing.Point(68, 16);
-            this.numericUpDown14.Maximum = new decimal(new int[] {
+            this.n12.Location = new System.Drawing.Point(68, 16);
+            this.n12.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown14.Minimum = new decimal(new int[] {
+            this.n12.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown14.Name = "numericUpDown14";
-            this.numericUpDown14.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown14.TabIndex = 33;
+            this.n12.Name = "n12";
+            this.n12.Size = new System.Drawing.Size(60, 20);
+            this.n12.TabIndex = 33;
             // 
-            // numericUpDown13
+            // n31
             // 
-            this.numericUpDown13.DecimalPlaces = 15;
-            this.numericUpDown13.Enabled = false;
-            this.numericUpDown13.Increment = new decimal(new int[] {
+            this.n31.DecimalPlaces = 15;
+            this.n31.Enabled = false;
+            this.n31.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown13.Location = new System.Drawing.Point(3, 68);
-            this.numericUpDown13.Maximum = new decimal(new int[] {
+            this.n31.Location = new System.Drawing.Point(3, 68);
+            this.n31.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown13.Minimum = new decimal(new int[] {
+            this.n31.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown13.Name = "numericUpDown13";
-            this.numericUpDown13.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown13.TabIndex = 32;
+            this.n31.Name = "n31";
+            this.n31.Size = new System.Drawing.Size(60, 20);
+            this.n31.TabIndex = 32;
             // 
-            // numericUpDown12
+            // n21
             // 
-            this.numericUpDown12.DecimalPlaces = 15;
-            this.numericUpDown12.Enabled = false;
-            this.numericUpDown12.Increment = new decimal(new int[] {
+            this.n21.DecimalPlaces = 15;
+            this.n21.Enabled = false;
+            this.n21.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown12.Location = new System.Drawing.Point(2, 42);
-            this.numericUpDown12.Maximum = new decimal(new int[] {
+            this.n21.Location = new System.Drawing.Point(2, 42);
+            this.n21.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown12.Minimum = new decimal(new int[] {
+            this.n21.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown12.Name = "numericUpDown12";
-            this.numericUpDown12.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown12.TabIndex = 31;
+            this.n21.Name = "n21";
+            this.n21.Size = new System.Drawing.Size(60, 20);
+            this.n21.TabIndex = 31;
             // 
-            // numericUpDown11
+            // n11
             // 
-            this.numericUpDown11.DecimalPlaces = 15;
-            this.numericUpDown11.Enabled = false;
-            this.numericUpDown11.Increment = new decimal(new int[] {
+            this.n11.DecimalPlaces = 15;
+            this.n11.Enabled = false;
+            this.n11.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown11.Location = new System.Drawing.Point(2, 16);
-            this.numericUpDown11.Maximum = new decimal(new int[] {
+            this.n11.Location = new System.Drawing.Point(2, 16);
+            this.n11.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown11.Minimum = new decimal(new int[] {
+            this.n11.Minimum = new decimal(new int[] {
             1000,
             0,
             0,
             -2147483648});
-            this.numericUpDown11.Name = "numericUpDown11";
-            this.numericUpDown11.Size = new System.Drawing.Size(60, 20);
-            this.numericUpDown11.TabIndex = 30;
+            this.n11.Name = "n11";
+            this.n11.Size = new System.Drawing.Size(60, 20);
+            this.n11.TabIndex = 30;
             // 
-            // label14
+            // lRotation
             // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(155, 373);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(47, 13);
-            this.label14.TabIndex = 32;
-            this.label14.Text = "Rotation";
+            this.lRotation.AutoSize = true;
+            this.lRotation.Location = new System.Drawing.Point(155, 373);
+            this.lRotation.Name = "lRotation";
+            this.lRotation.Size = new System.Drawing.Size(47, 13);
+            this.lRotation.TabIndex = 32;
+            this.lRotation.Text = "Rotation";
             // 
-            // panel2
+            // pMovement
             // 
-            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.pMovement.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel2.Controls.Add(this.panel6);
-            this.panel2.Controls.Add(this.panel5);
-            this.panel2.Controls.Add(this.checkBox1);
-            this.panel2.Controls.Add(this.numericUpDown4);
-            this.panel2.Controls.Add(this.label5);
-            this.panel2.Location = new System.Drawing.Point(3, 233);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(336, 137);
-            this.panel2.TabIndex = 30;
+            this.pMovement.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pMovement.Controls.Add(this.pMoveXYZ);
+            this.pMovement.Controls.Add(this.panel5);
+            this.pMovement.Controls.Add(this.cbManualEdit);
+            this.pMovement.Controls.Add(this.nMoveInc);
+            this.pMovement.Controls.Add(this.label5);
+            this.pMovement.Location = new System.Drawing.Point(3, 233);
+            this.pMovement.Name = "pMovement";
+            this.pMovement.Size = new System.Drawing.Size(336, 137);
+            this.pMovement.TabIndex = 30;
             // 
-            // panel6
+            // pMoveXYZ
             // 
-            this.panel6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel6.Controls.Add(this.label11);
-            this.panel6.Controls.Add(this.nudgeX);
-            this.panel6.Controls.Add(this.label13);
-            this.panel6.Controls.Add(this.nudgeY);
-            this.panel6.Controls.Add(this.label12);
-            this.panel6.Controls.Add(this.nudgeZ);
-            this.panel6.Location = new System.Drawing.Point(157, 34);
-            this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(172, 98);
-            this.panel6.TabIndex = 31;
+            this.pMoveXYZ.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pMoveXYZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pMoveXYZ.Controls.Add(this.lMoveX);
+            this.pMoveXYZ.Controls.Add(this.nMoveX);
+            this.pMoveXYZ.Controls.Add(this.lMoveY);
+            this.pMoveXYZ.Controls.Add(this.nMoveY);
+            this.pMoveXYZ.Controls.Add(this.lMoveZ);
+            this.pMoveXYZ.Controls.Add(this.nMoveZ);
+            this.pMoveXYZ.Location = new System.Drawing.Point(157, 34);
+            this.pMoveXYZ.Name = "pMoveXYZ";
+            this.pMoveXYZ.Size = new System.Drawing.Size(172, 98);
+            this.pMoveXYZ.TabIndex = 31;
             // 
-            // label11
+            // lMoveX
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(3, 18);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(44, 13);
-            this.label11.TabIndex = 21;
-            this.label11.Text = "Move X";
+            this.lMoveX.AutoSize = true;
+            this.lMoveX.Location = new System.Drawing.Point(3, 18);
+            this.lMoveX.Name = "lMoveX";
+            this.lMoveX.Size = new System.Drawing.Size(44, 13);
+            this.lMoveX.TabIndex = 21;
+            this.lMoveX.Text = "Move X";
             // 
-            // nudgeX
+            // nMoveX
             // 
-            this.nudgeX.DecimalPlaces = 9;
-            this.nudgeX.Increment = new decimal(new int[] {
+            this.nMoveX.DecimalPlaces = 9;
+            this.nMoveX.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.nudgeX.Location = new System.Drawing.Point(53, 16);
-            this.nudgeX.Maximum = new decimal(new int[] {
+            this.nMoveX.Location = new System.Drawing.Point(53, 16);
+            this.nMoveX.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
-            this.nudgeX.Minimum = new decimal(new int[] {
+            this.nMoveX.Minimum = new decimal(new int[] {
             5000,
             0,
             0,
             -2147483648});
-            this.nudgeX.Name = "nudgeX";
-            this.nudgeX.Size = new System.Drawing.Size(112, 20);
-            this.nudgeX.TabIndex = 20;
-            this.nudgeX.ValueChanged += new System.EventHandler(this.NudgeEvent);
+            this.nMoveX.Name = "nMoveX";
+            this.nMoveX.Size = new System.Drawing.Size(112, 20);
+            this.nMoveX.TabIndex = 20;
+            this.nMoveX.ValueChanged += new System.EventHandler(this.MoveEvent);
             // 
-            // label13
+            // lMoveY
             // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(3, 70);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(44, 13);
-            this.label13.TabIndex = 25;
-            this.label13.Text = "Move Z";
+            this.lMoveY.AutoSize = true;
+            this.lMoveY.Location = new System.Drawing.Point(3, 70);
+            this.lMoveY.Name = "lMoveY";
+            this.lMoveY.Size = new System.Drawing.Size(44, 13);
+            this.lMoveY.TabIndex = 25;
+            this.lMoveY.Text = "Move Z";
             // 
-            // nudgeY
+            // nMoveY
             // 
-            this.nudgeY.DecimalPlaces = 9;
-            this.nudgeY.Increment = new decimal(new int[] {
+            this.nMoveY.DecimalPlaces = 9;
+            this.nMoveY.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.nudgeY.Location = new System.Drawing.Point(53, 42);
-            this.nudgeY.Maximum = new decimal(new int[] {
+            this.nMoveY.Location = new System.Drawing.Point(53, 42);
+            this.nMoveY.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
-            this.nudgeY.Minimum = new decimal(new int[] {
+            this.nMoveY.Minimum = new decimal(new int[] {
             5000,
             0,
             0,
             -2147483648});
-            this.nudgeY.Name = "nudgeY";
-            this.nudgeY.Size = new System.Drawing.Size(112, 20);
-            this.nudgeY.TabIndex = 22;
-            this.nudgeY.ValueChanged += new System.EventHandler(this.NudgeEvent);
+            this.nMoveY.Name = "nMoveY";
+            this.nMoveY.Size = new System.Drawing.Size(112, 20);
+            this.nMoveY.TabIndex = 22;
+            this.nMoveY.ValueChanged += new System.EventHandler(this.MoveEvent);
             // 
-            // label12
+            // lMoveZ
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(3, 44);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(44, 13);
-            this.label12.TabIndex = 23;
-            this.label12.Text = "Move Y";
+            this.lMoveZ.AutoSize = true;
+            this.lMoveZ.Location = new System.Drawing.Point(3, 44);
+            this.lMoveZ.Name = "lMoveZ";
+            this.lMoveZ.Size = new System.Drawing.Size(44, 13);
+            this.lMoveZ.TabIndex = 23;
+            this.lMoveZ.Text = "Move Y";
             // 
-            // nudgeZ
+            // nMoveZ
             // 
-            this.nudgeZ.DecimalPlaces = 9;
-            this.nudgeZ.Increment = new decimal(new int[] {
+            this.nMoveZ.DecimalPlaces = 9;
+            this.nMoveZ.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.nudgeZ.Location = new System.Drawing.Point(53, 68);
-            this.nudgeZ.Maximum = new decimal(new int[] {
+            this.nMoveZ.Location = new System.Drawing.Point(53, 68);
+            this.nMoveZ.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
-            this.nudgeZ.Minimum = new decimal(new int[] {
+            this.nMoveZ.Minimum = new decimal(new int[] {
             5000,
             0,
             0,
             -2147483648});
-            this.nudgeZ.Name = "nudgeZ";
-            this.nudgeZ.Size = new System.Drawing.Size(112, 20);
-            this.nudgeZ.TabIndex = 24;
-            this.nudgeZ.ValueChanged += new System.EventHandler(this.NudgeEvent);
+            this.nMoveZ.Name = "nMoveZ";
+            this.nMoveZ.Size = new System.Drawing.Size(112, 20);
+            this.nMoveZ.TabIndex = 24;
+            this.nMoveZ.ValueChanged += new System.EventHandler(this.MoveEvent);
             // 
             // panel5
             // 
             this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel5.Controls.Add(this.label2);
-            this.panel5.Controls.Add(this.numericUpDown1SX);
-            this.panel5.Controls.Add(this.label3);
-            this.panel5.Controls.Add(this.numericUpDown2SY);
-            this.panel5.Controls.Add(this.numericUpDown3SZ);
-            this.panel5.Controls.Add(this.label4);
-            this.panel5.Controls.Add(this.label6);
+            this.panel5.Controls.Add(this.lX);
+            this.panel5.Controls.Add(this.nX);
+            this.panel5.Controls.Add(this.lY);
+            this.panel5.Controls.Add(this.nY);
+            this.panel5.Controls.Add(this.nZ);
+            this.panel5.Controls.Add(this.lZ);
+            this.panel5.Controls.Add(this.lSpawnPoint);
             this.panel5.Location = new System.Drawing.Point(3, 34);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(148, 98);
             this.panel5.TabIndex = 30;
             // 
-            // label2
+            // lX
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 18);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(20, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "X :";
+            this.lX.AutoSize = true;
+            this.lX.Location = new System.Drawing.Point(3, 18);
+            this.lX.Name = "lX";
+            this.lX.Size = new System.Drawing.Size(20, 13);
+            this.lX.TabIndex = 4;
+            this.lX.Text = "X :";
             // 
-            // numericUpDown1SX
+            // nX
             // 
-            this.numericUpDown1SX.DecimalPlaces = 9;
-            this.numericUpDown1SX.Enabled = false;
-            this.numericUpDown1SX.Increment = new decimal(new int[] {
+            this.nX.DecimalPlaces = 9;
+            this.nX.Enabled = false;
+            this.nX.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown1SX.Location = new System.Drawing.Point(29, 16);
-            this.numericUpDown1SX.Maximum = new decimal(new int[] {
+            this.nX.Location = new System.Drawing.Point(29, 16);
+            this.nX.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
-            this.numericUpDown1SX.Minimum = new decimal(new int[] {
+            this.nX.Minimum = new decimal(new int[] {
             5000,
             0,
             0,
             -2147483648});
-            this.numericUpDown1SX.Name = "numericUpDown1SX";
-            this.numericUpDown1SX.Size = new System.Drawing.Size(112, 20);
-            this.numericUpDown1SX.TabIndex = 5;
-            this.numericUpDown1SX.ValueChanged += new System.EventHandler(this.UpdateNumerics);
+            this.nX.Name = "nX";
+            this.nX.Size = new System.Drawing.Size(112, 20);
+            this.nX.TabIndex = 5;
+            this.nX.ValueChanged += new System.EventHandler(this.UpdateNumerics);
             // 
-            // label3
+            // lY
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 44);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(20, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Y :";
+            this.lY.AutoSize = true;
+            this.lY.Location = new System.Drawing.Point(3, 44);
+            this.lY.Name = "lY";
+            this.lY.Size = new System.Drawing.Size(20, 13);
+            this.lY.TabIndex = 6;
+            this.lY.Text = "Y :";
             // 
-            // numericUpDown2SY
+            // nY
             // 
-            this.numericUpDown2SY.DecimalPlaces = 9;
-            this.numericUpDown2SY.Enabled = false;
-            this.numericUpDown2SY.Increment = new decimal(new int[] {
+            this.nY.DecimalPlaces = 9;
+            this.nY.Enabled = false;
+            this.nY.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown2SY.Location = new System.Drawing.Point(29, 42);
-            this.numericUpDown2SY.Maximum = new decimal(new int[] {
+            this.nY.Location = new System.Drawing.Point(29, 42);
+            this.nY.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
-            this.numericUpDown2SY.Minimum = new decimal(new int[] {
+            this.nY.Minimum = new decimal(new int[] {
             5000,
             0,
             0,
             -2147483648});
-            this.numericUpDown2SY.Name = "numericUpDown2SY";
-            this.numericUpDown2SY.Size = new System.Drawing.Size(112, 20);
-            this.numericUpDown2SY.TabIndex = 7;
-            this.numericUpDown2SY.ValueChanged += new System.EventHandler(this.UpdateNumerics);
+            this.nY.Name = "nY";
+            this.nY.Size = new System.Drawing.Size(112, 20);
+            this.nY.TabIndex = 7;
+            this.nY.ValueChanged += new System.EventHandler(this.UpdateNumerics);
             // 
-            // numericUpDown3SZ
+            // nZ
             // 
-            this.numericUpDown3SZ.DecimalPlaces = 9;
-            this.numericUpDown3SZ.Enabled = false;
-            this.numericUpDown3SZ.Increment = new decimal(new int[] {
+            this.nZ.DecimalPlaces = 9;
+            this.nZ.Enabled = false;
+            this.nZ.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown3SZ.Location = new System.Drawing.Point(29, 68);
-            this.numericUpDown3SZ.Maximum = new decimal(new int[] {
+            this.nZ.Location = new System.Drawing.Point(29, 68);
+            this.nZ.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
-            this.numericUpDown3SZ.Minimum = new decimal(new int[] {
+            this.nZ.Minimum = new decimal(new int[] {
             5000,
             0,
             0,
             -2147483648});
-            this.numericUpDown3SZ.Name = "numericUpDown3SZ";
-            this.numericUpDown3SZ.Size = new System.Drawing.Size(112, 20);
-            this.numericUpDown3SZ.TabIndex = 8;
-            this.numericUpDown3SZ.ValueChanged += new System.EventHandler(this.UpdateNumerics);
+            this.nZ.Name = "nZ";
+            this.nZ.Size = new System.Drawing.Size(112, 20);
+            this.nZ.TabIndex = 8;
+            this.nZ.ValueChanged += new System.EventHandler(this.UpdateNumerics);
             // 
-            // label4
+            // lZ
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 70);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(20, 13);
-            this.label4.TabIndex = 9;
-            this.label4.Text = "Z :";
+            this.lZ.AutoSize = true;
+            this.lZ.Location = new System.Drawing.Point(3, 70);
+            this.lZ.Name = "lZ";
+            this.lZ.Size = new System.Drawing.Size(20, 13);
+            this.lZ.TabIndex = 9;
+            this.lZ.Text = "Z :";
             // 
-            // label6
+            // lSpawnPoint
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(48, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(67, 13);
-            this.label6.TabIndex = 12;
-            this.label6.Text = "Spawn Point";
+            this.lSpawnPoint.AutoSize = true;
+            this.lSpawnPoint.Location = new System.Drawing.Point(48, 0);
+            this.lSpawnPoint.Name = "lSpawnPoint";
+            this.lSpawnPoint.Size = new System.Drawing.Size(67, 13);
+            this.lSpawnPoint.TabIndex = 12;
+            this.lSpawnPoint.Text = "Spawn Point";
             // 
-            // checkBox1
+            // cbManualEdit
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(3, 9);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(82, 17);
-            this.checkBox1.TabIndex = 29;
-            this.checkBox1.Text = "Manual Edit";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.cbManualEdit.AutoSize = true;
+            this.cbManualEdit.Location = new System.Drawing.Point(3, 9);
+            this.cbManualEdit.Name = "cbManualEdit";
+            this.cbManualEdit.Size = new System.Drawing.Size(82, 17);
+            this.cbManualEdit.TabIndex = 29;
+            this.cbManualEdit.Text = "Manual Edit";
+            this.cbManualEdit.UseVisualStyleBackColor = true;
+            this.cbManualEdit.CheckedChanged += new System.EventHandler(this.cbManualEdit_CheckedChanged);
             // 
-            // numericUpDown4
+            // nMoveInc
             // 
-            this.numericUpDown4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown4.DecimalPlaces = 9;
-            this.numericUpDown4.Increment = new decimal(new int[] {
+            this.nMoveInc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nMoveInc.DecimalPlaces = 9;
+            this.nMoveInc.Increment = new decimal(new int[] {
             1,
             0,
             0,
             589824});
-            this.numericUpDown4.Location = new System.Drawing.Point(211, 8);
-            this.numericUpDown4.Maximum = new decimal(new int[] {
+            this.nMoveInc.Location = new System.Drawing.Point(211, 8);
+            this.nMoveInc.Maximum = new decimal(new int[] {
             10,
             0,
             0,
             0});
-            this.numericUpDown4.Name = "numericUpDown4";
-            this.numericUpDown4.Size = new System.Drawing.Size(112, 20);
-            this.numericUpDown4.TabIndex = 10;
-            this.numericUpDown4.ValueChanged += new System.EventHandler(this.numericUpDown4_ValueChanged);
+            this.nMoveInc.Name = "nMoveInc";
+            this.nMoveInc.Size = new System.Drawing.Size(112, 20);
+            this.nMoveInc.TabIndex = 10;
+            this.nMoveInc.ValueChanged += new System.EventHandler(this.nMoveInc_ValueChanged);
             // 
             // label5
             // 
@@ -1143,24 +1143,24 @@
             this.label5.TabIndex = 11;
             this.label5.Text = "Increment";
             // 
-            // button1
+            // bTeleport
             // 
-            this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(3, 533);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(104, 23);
-            this.button1.TabIndex = 27;
-            this.button1.Text = "Teleport To Object";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.bTeleport.Enabled = false;
+            this.bTeleport.Location = new System.Drawing.Point(3, 533);
+            this.bTeleport.Name = "bTeleport";
+            this.bTeleport.Size = new System.Drawing.Size(104, 23);
+            this.bTeleport.TabIndex = 27;
+            this.bTeleport.Text = "Teleport To Object";
+            this.bTeleport.UseVisualStyleBackColor = true;
+            this.bTeleport.Click += new System.EventHandler(this.bTeleport_Click);
             // 
-            // progressBar1
+            // editProgress
             // 
-            this.progressBar1.Location = new System.Drawing.Point(3, 188);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(336, 13);
-            this.progressBar1.TabIndex = 35;
-            this.progressBar1.Visible = false;
+            this.editProgress.Location = new System.Drawing.Point(3, 188);
+            this.editProgress.Name = "editProgress";
+            this.editProgress.Size = new System.Drawing.Size(336, 13);
+            this.editProgress.TabIndex = 35;
+            this.editProgress.Visible = false;
             // 
             // timer1
             // 
@@ -1292,41 +1292,41 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.menuStrip2.ResumeLayout(false);
-            this.menuStrip2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
-            this.panel3.ResumeLayout(false);
-            this.panel3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            this.panel7.ResumeLayout(false);
-            this.panel7.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nSpawnTime)).EndInit();
+            this.contextMenu.ResumeLayout(false);
+            this.contextMenu.PerformLayout();
+            this.pRotation.ResumeLayout(false);
+            this.pRotation.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nRotInc)).EndInit();
+            this.pEuler.ResumeLayout(false);
+            this.pEuler.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Roll)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Pitch)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Yaw)).EndInit();
-            this.panel4.ResumeLayout(false);
-            this.panel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown19)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown18)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown17)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown16)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown15)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown14)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown13)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown12)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown11)).EndInit();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
-            this.panel6.ResumeLayout(false);
-            this.panel6.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudgeX)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudgeY)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.nudgeZ)).EndInit();
+            this.pRotationMatrix.ResumeLayout(false);
+            this.pRotationMatrix.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.n33)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n23)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n13)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n32)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n22)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n12)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n31)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n21)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n11)).EndInit();
+            this.pMovement.ResumeLayout(false);
+            this.pMovement.PerformLayout();
+            this.pMoveXYZ.ResumeLayout(false);
+            this.pMoveXYZ.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveZ)).EndInit();
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1SX)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2SY)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3SZ)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nZ)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nMoveInc)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -1337,18 +1337,18 @@
         #endregion
 
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lX;
+        private System.Windows.Forms.Label lZ;
+        private System.Windows.Forms.Label lY;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.NumericUpDown numericUpDown4;
-        private System.Windows.Forms.NumericUpDown nudgeX;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.NumericUpDown nudgeZ;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.NumericUpDown nudgeY;
-        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.NumericUpDown nMoveInc;
+        private System.Windows.Forms.NumericUpDown nMoveX;
+        private System.Windows.Forms.Label lSpawnPoint;
+        private System.Windows.Forms.Label lMoveY;
+        private System.Windows.Forms.NumericUpDown nMoveZ;
+        private System.Windows.Forms.Label lMoveZ;
+        private System.Windows.Forms.NumericUpDown nMoveY;
+        private System.Windows.Forms.Label lMoveX;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem attachToProcessToolStripMenuItem;
@@ -1360,63 +1360,63 @@
         private System.Windows.Forms.ToolStripMenuItem msToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem msToolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem msToolStripMenuItem3;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button bTeleport;
         private System.Windows.Forms.ToolStripMenuItem keepInForegroundToolStripMenuItem;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.NumericUpDown numericUpDown16;
-        private System.Windows.Forms.NumericUpDown numericUpDown15;
-        private System.Windows.Forms.NumericUpDown numericUpDown14;
+        private System.Windows.Forms.CheckBox cbManualEdit;
+        private System.Windows.Forms.Panel pRotation;
+        private System.Windows.Forms.Label lRotation;
+        private System.Windows.Forms.Label lMovement;
+        private System.Windows.Forms.Panel pMovement;
+        private System.Windows.Forms.Label lRotationMatrix;
+        private System.Windows.Forms.Panel pRotationMatrix;
+        private System.Windows.Forms.NumericUpDown n32;
+        private System.Windows.Forms.NumericUpDown n22;
+        private System.Windows.Forms.NumericUpDown n12;
         private System.Windows.Forms.NumericUpDown Roll;
         private System.Windows.Forms.NumericUpDown Pitch;
         private System.Windows.Forms.NumericUpDown Yaw;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.Label lRoll;
+        private System.Windows.Forms.Label lPitch;
+        private System.Windows.Forms.Label lYaw;
+        private System.Windows.Forms.ColumnHeader colId;
+        private System.Windows.Forms.ColumnHeader colType;
+        private System.Windows.Forms.ColumnHeader colLocation;
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.Panel panel6;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Panel panel7;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.MenuStrip menuStrip2;
+        private System.Windows.Forms.Panel pMoveXYZ;
+        private System.Windows.Forms.NumericUpDown nRotInc;
+        private System.Windows.Forms.Label lIncrement;
+        private System.Windows.Forms.Panel pEuler;
+        private System.Windows.Forms.Label lTotal;
+        private System.Windows.Forms.MenuStrip contextMenu;
         private System.Windows.Forms.ToolStripMenuItem copyRotationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteLocationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteRotationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteLocationAndRotationToolStripMenuItem;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.NumericUpDown numericUpDown2;
-        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label lMap;
+        private System.Windows.Forms.NumericUpDown nSpawnTime;
+        private System.Windows.Forms.Label lSpawnTime;
         public System.Windows.Forms.ProgressBar progressBar2;
         private System.Windows.Forms.Button button2;
-        public ListViewNF listView1;
-        public System.Windows.Forms.NumericUpDown numericUpDown1SX;
-        public System.Windows.Forms.NumericUpDown numericUpDown3SZ;
-        public System.Windows.Forms.NumericUpDown numericUpDown2SY;
-        public System.Windows.Forms.NumericUpDown numericUpDown19;
-        public System.Windows.Forms.NumericUpDown numericUpDown18;
-        public System.Windows.Forms.NumericUpDown numericUpDown17;
-        public System.Windows.Forms.NumericUpDown numericUpDown13;
-        public System.Windows.Forms.NumericUpDown numericUpDown12;
-        public System.Windows.Forms.NumericUpDown numericUpDown11;
+        public ListViewNF itemList;
+        public System.Windows.Forms.NumericUpDown nX;
+        public System.Windows.Forms.NumericUpDown nZ;
+        public System.Windows.Forms.NumericUpDown nY;
+        public System.Windows.Forms.NumericUpDown n33;
+        public System.Windows.Forms.NumericUpDown n23;
+        public System.Windows.Forms.NumericUpDown n13;
+        public System.Windows.Forms.NumericUpDown n31;
+        public System.Windows.Forms.NumericUpDown n21;
+        public System.Windows.Forms.NumericUpDown n11;
         private System.Windows.Forms.ToolStripMenuItem copymulti;
         private System.Windows.Forms.ToolStripMenuItem pastemulti;
         private System.Windows.Forms.ToolStripMenuItem pasteLocationMultiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteRotationMultiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteLocationAndRotationMultiToolStripMenuItem;
         public System.Windows.Forms.Timer timer1;
-        public System.Windows.Forms.ProgressBar progressBar1;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Label label19;
+        public System.Windows.Forms.ProgressBar editProgress;
+        private System.Windows.Forms.Label lSelected;
+        private System.Windows.Forms.Label lIndex;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.ToolStripMenuItem rotateStructureToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rotateAroundYawZToolStripMenuItem;
