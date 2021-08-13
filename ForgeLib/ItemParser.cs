@@ -389,8 +389,8 @@ namespace ForgeLib {
             forgeWorldTypes[0x8708] = "Walkway Cover, Short";
             forgeWorldTypes[0x8709] = "Cover, Large, Human";
             forgeWorldTypes[0x870A] = "I-Beam";
-            forgeWorldTypes[0x8800] = "Wall";
-            forgeWorldTypes[0x8801] = "Door";
+            forgeWorldTypes[0x8800] = "Wall (MCC)";
+            forgeWorldTypes[0x8801] = "Door (MCC)";
             forgeWorldTypes[0x8802] = "Door, Human";
             forgeWorldTypes[0x8803] = "Door A, Forerunner";
             forgeWorldTypes[0x8804] = "Door B, Forerunner";

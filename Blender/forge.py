@@ -173,7 +173,9 @@ class ImportForgeObjects(bpy.types.Operator):
     def execute(self, context):
         if importForgeObjects(context, self): return {'FINISHED'}
         else:
-            self.report({'ERROR'}, forge.GetLastError())
+            msg = forge.GetLastError()
+            print(msg)
+            self.report({'ERROR'}, msg)
             return {'CANCELLED'}
 class ExportForgeObjects(bpy.types.Operator):
     """Export current forge objects into MCC's forge"""
@@ -212,7 +214,9 @@ class ExportForgeObjects(bpy.types.Operator):
         persist_vars['forge_show_warning'] = not self.neverAsk
         if exportForgeObjects(context, self): return {'FINISHED'}
         else:
-            self.report({'ERROR'}, forge.GetLastError())
+            msg = forge.GetLastError()
+            print(msg)
+            self.report({'ERROR'}, msg)
             return {'CANCELLED'}
 
 def importForgeMenu(self, context): self.layout.operator(ImportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')

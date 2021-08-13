@@ -64,7 +64,7 @@ namespace ForgeLib {
 
             FoundProcess:
                 if (!memory.OpenProcess(processes[0].Id)) {
-                    lastError = "Failed to connect to process.";
+                    lastError += "Failed to connect to process.\n";
                     return false;
                 }
 

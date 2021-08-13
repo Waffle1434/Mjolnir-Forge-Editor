@@ -479,6 +479,11 @@ namespace MemoryLocal
 			}, cts.Token);
 		}
 
+		static void DebugMsg(string message) {
+			Debug.WriteLine(message);
+			ForgeLib.ForgeBridge.lastError += message + "\n";
+		}
+
 		/// <summary>
 		/// Unfreeze a frozen value at an address
 		/// </summary>
@@ -506,11 +511,11 @@ namespace MemoryLocal
 		{
 			if (!IsAdmin())
 			{
-				Debug.WriteLine("WARNING: This program may not be running with raised privileges! Visit https://github.com/erfg12/memory.dll/wiki/Administrative-Privileges");
+				DebugMsg("WARNING: This program may not be running with raised privileges! Visit https://github.com/erfg12/memory.dll/wiki/Administrative-Privileges");
 			}
 			if (pid <= 0)
 			{
-				Debug.WriteLine("ERROR: OpenProcess given proc ID 0.");
+				DebugMsg("ERROR: OpenProcess given proc ID 0.");
 				return false;
 			}
 			if (theProc != null && theProc.Id == pid)
@@ -522,7 +527,7 @@ namespace MemoryLocal
 				theProc = Process.GetProcessById(pid);
 				if (theProc != null && !theProc.Responding)
 				{
-					Debug.WriteLine("ERROR: OpenProcess: Process is not responding or null.");
+					DebugMsg("ERROR: OpenProcess: Process is not responding or null.");
 					return false;
 				}
 				pHandle = OpenProcess(2035711u, true, pid);
@@ -535,7 +540,7 @@ namespace MemoryLocal
 				}
 				if (pHandle == IntPtr.Zero)
 				{
-					Debug.WriteLine("ERROR: OpenProcess has failed opening a handle to the target process (GetLastWin32ErrorCode: " + Marshal.GetLastWin32Error() + ")");
+					DebugMsg("ERROR: OpenProcess has failed opening a handle to the target process (GetLastWin32ErrorCode: " + Marshal.GetLastWin32Error() + ")");
 					Process.LeaveDebugMode();
 					theProc = null;
 					return false;
@@ -543,12 +548,12 @@ namespace MemoryLocal
 				Is64Bit = Environment.Is64BitOperatingSystem && IsWow64Process(pHandle, out var lpSystemInfo) && !lpSystemInfo;
 				mainModule = theProc.MainModule;
 				GetModules();
-				Debug.WriteLine("Process #" + theProc?.ToString() + " is now open.");
+				DebugMsg("Process #" + theProc?.ToString() + " is now open.");
 				return true;
 			}
 			catch (Exception ex2)
 			{
-				Debug.WriteLine("ERROR: OpenProcess has crashed. " + ex2);
+				DebugMsg("ERROR: OpenProcess has crashed. " + ex2);
 				return false;
 			}
 		}
@@ -586,7 +591,7 @@ namespace MemoryLocal
 			}
 			catch
 			{
-				Debug.WriteLine("ERROR: Could not determin if program is running as admin. Is the NuGet package \"System.Security.Principal.Windows\" missing?");
+				DebugMsg("ERROR: Could not determin if program is running as admin. Is the NuGet package \"System.Security.Principal.Windows\" missing?");
 				return false;
 			}
 		}
@@ -602,18 +607,19 @@ namespace MemoryLocal
 			}
 			if (_is64Bit && IntPtr.Size != 8)
 			{
-				Debug.WriteLine("WARNING: Game is x64, but your Trainer is x86! You will be missing some modules, change your Trainer's Solution Platform.");
+				DebugMsg("WARNING: Game is x64, but your Trainer is x86! You will be missing some modules, change your Trainer's Solution Platform.");
 			}
 			else if (!_is64Bit && IntPtr.Size == 8)
 			{
-				Debug.WriteLine("WARNING: Game is x86, but your Trainer is x64! You will be missing some modules, change your Trainer's Solution Platform.");
+				DebugMsg("WARNING: Game is x86, but your Trainer is x64! You will be missing some modules, change your Trainer's Solution Platform.");
 			}
 			modules.Clear();
 			foreach (ProcessModule module in theProc.Modules)
 			{
-				modules.Add(module.ModuleName, module.BaseAddress);
-			}
-			Debug.WriteLine("Found " + modules.Count() + " process modules.");
+                string moduleName = module.ModuleName;
+				if (!modules.ContainsKey(moduleName)) modules.Add(moduleName, module.BaseAddress);
+            }
+			DebugMsg("Found " + modules.Count() + " process modules.");
 		}
 
 		public void SetFocus()
