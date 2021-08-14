@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Linq;
 
 namespace ForgeLib {
     public enum Map {
@@ -33,7 +32,6 @@ namespace ForgeLib {
     }
 
     public static class ForgeBridge {
-        const int forgeObjectsOffset = 0x19FC;//0x19F8
         public const int maxObjects = 650;
 
         public static Mem memory = new Mem();
@@ -70,7 +68,7 @@ namespace ForgeLib {
 
                 reachBase = memory.ModuleBaseAddress("haloreach.dll");
 
-                forgeObjectArrayPointer = memory.ReadPointer(reachBase + 0x232A4E8) + forgeObjectsOffset;
+                forgeObjectArrayPointer = memory.ReadPointer(reachBase + 0x232A4E8) + 0x19FC;
 
                 mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
                 mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
@@ -215,8 +213,7 @@ namespace ForgeLib {
             UIntPtr objPtr = forgeObjectArrayPointer + i * ForgeObject.size;
             MccForgeObject mccFobj = new MccForgeObject(objPtr, i);
             mccFobj.data->idExt = 0xFFFFFFFF;
-            //mccFobj.data->spawnRelativeToMapIndex = 0xFFFF;
-            //mccFobj.data->scriptLabelIndex = 0xFFFF;
+            mccFobj.data->spawnRelativeToMapIndex = 0xFFFF;
             forgeObjects[i] = mccFobj;
         }
     }

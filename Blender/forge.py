@@ -277,11 +277,11 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     
     objectType: IntProperty()
     cachedType: IntProperty()
-    scriptLabelIndex: IntProperty(name="Game Type Label", description="Index number determining how the gametype interprets this object")
+    scriptLabelIndex: IntProperty(name="Game Type Label", description="Index number determining how the gametype interprets this object", default=65535)
     otherInfoA: IntProperty()
     otherInfoB: IntProperty()
 
-    physics: EnumProperty(name="Physics", description="Physics mode",
+    physics: EnumProperty(name="Physics", description="Physics mode", default='PHASED',
         items=[
             ('NORMAL', "Normal", "Affected by gravity and movable"),
             ('FIXED', "Fixed", "Unaffected by gravity"),
