@@ -1,6 +1,4 @@
 ﻿using RGiesecke.DllExport;
-//using Memory;
-using MemoryLocal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,8 +32,7 @@ namespace ForgeLib {
     public static class ForgeBridge {
         public const int maxObjects = 650;
 
-        public static Mem memory = new Mem();
-        static bool Connected => memory.theProc != null && !memory.theProc.HasExited;
+        public static ProcessMemory memory = new ProcessMemory();
         static UIntPtr reachBase;
 
         public static Map currentMap;
@@ -49,7 +46,7 @@ namespace ForgeLib {
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static bool TrySetConnect(bool connect) {
             if (connect) {
-                if (Connected) return true;
+                if (memory.Connected) return true;
 
                 Process[] processes = null;
                 foreach (string procName in new string[] { "MCC-Win64-Shipping", "MCCWinStore-Win64-Shipping" }) {
@@ -115,7 +112,7 @@ namespace ForgeLib {
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static void ReadMemory() {
-            if (!Connected) return;
+            if (!memory.Connected) return;
 
             currentMap = GetCurrentMap();
             mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
@@ -161,7 +158,7 @@ namespace ForgeLib {
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static void WriteMemory() {
-            if (!Connected) return;
+            if (!memory.Connected) return;
 
             unsafe {
                 for (int i = 0; i < maxObjects; i++) {

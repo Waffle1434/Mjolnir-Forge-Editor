@@ -81,9 +81,7 @@
     <Compile Include="ForgeObject.cs" />
     <Compile Include="ItemParser.cs" />
     <Compile Include="Map.cs" />
-    <Compile Include="Mem.cs" />
-    <Compile Include="MemExtensions.cs" />
-    <Compile Include="MemoryRegionResult.cs" />
+    <Compile Include="ProcessMemory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

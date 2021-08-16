@@ -1,103 +1,178 @@
 ﻿//#define KERNEL32
 #define NTDLL
 
-using MemoryLocal;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ForgeLib {
-    public static class MemExtensions {
+    public class ProcessMemory {
+        IntPtr pHandle;
+        Process process;
+        Dictionary<string, IntPtr> modules = new Dictionary<string, IntPtr>();
+
+        public bool Connected => process != null && !process.HasExited;
+
+        static bool isAdmin;
+        static bool is64bit;
+
+        static ProcessMemory() {
+            isAdmin = IsUserAnAdmin();
+        }
+
+        static void DebugMsg(string message) {
+            Debug.WriteLine(message);
+            ForgeBridge.lastError += message + "\n";
+        }
+
+        public bool OpenProcess(int pid) {
+            if (isAdmin) DebugMsg("WARNING: This program may not be running with raised privileges.");
+            if (pid <= 0) { DebugMsg("ERROR: Invalid process ID."); return false; }
+            if (process != null && process.Id == pid) return true;
+            try {
+                process = Process.GetProcessById(pid);
+                if (process != null && !process.Responding) { DebugMsg("ERROR: OpenProcess: Process is not responding or null."); return false; }
+                pHandle = OpenProcess(2035711u, true, pid);
+                try { Process.EnterDebugMode(); }
+                catch (Win32Exception) { }
+                if (pHandle == IntPtr.Zero || process == null) {
+                    DebugMsg("ERROR: OpenProcess has failed opening a handle to the target process (GetLastWin32ErrorCode: " + Marshal.GetLastWin32Error() + ")");
+                    Process.LeaveDebugMode();
+                    process = null;
+                    return false;
+                }
+                is64bit = Environment.Is64BitOperatingSystem && IsWow64Process(pHandle, out var lpSystemInfo) && !lpSystemInfo;
+
+
+                if (is64bit && IntPtr.Size != 8)
+                    DebugMsg("WARNING: Game is x64, but dll is x86! You will be missing some modules, change the Solution Platform.");
+                else if (!is64bit && IntPtr.Size == 8)
+                    DebugMsg("WARNING: Game is x86, but dll is x64! You will be missing some modules, change the Solution Platform.");
+                modules.Clear();
+                foreach (ProcessModule module in process.Modules) {
+                    string moduleName = module.ModuleName;
+                    if (!modules.ContainsKey(moduleName)) modules.Add(moduleName, module.BaseAddress);
+                }
+
+                return true;
+            }
+            catch (Exception ex2) {
+                DebugMsg("ERROR: OpenProcess has crashed:\n" + ex2);
+                return false;
+            }
+        }
+
+        public void CloseProcess() {
+            _ = pHandle;
+            if (0 == 0) {
+                CloseHandle(pHandle);
+                process = null;
+            }
+        }
+
+
         [ThreadStatic] static byte[] by = new byte[1];
         [ThreadStatic] static byte[] by4 = new byte[4];
         [ThreadStatic] static byte[] by16 = new byte[16];
 
-        public static UIntPtr CodeToPointer(this Mem memory, string code, string file = "") => memory.GetCode(code, file);
-
-        public static UIntPtr ModuleBaseAddress(this Mem memory, string moduleName) {
+        public UIntPtr ModuleBaseAddress(string moduleName) {
             unsafe {
-                return (UIntPtr)memory.modules[moduleName].ToPointer();
+                return (UIntPtr)modules[moduleName].ToPointer();
             }
         }
 
-        public static bool TryReadBytes(this Mem memory, UIntPtr ptr, byte[] bytes, int count) {
+        public bool TryReadBytes(UIntPtr ptr, byte[] bytes, int count) {
 #if KERNEL32
-            if (ReadProcessMemory(memory.pHandle, ptr, bytes, (UIntPtr)checked((ulong)count), IntPtr.Zero))
+            if (ReadProcessMemory(pHandle, ptr, bytes, (UIntPtr)checked((ulong)count), IntPtr.Zero))
                 return true;
 #elif NTDLL
-            if (NtReadVirtualMemory(memory.pHandle, ptr, bytes, (uint)count, UIntPtr.Zero) < NtStatus.Error) return true;
+            if (NtReadVirtualMemory(pHandle, ptr, bytes, (uint)count, UIntPtr.Zero) < NtStatus.Error) return true;
 #endif
             return false;
         }
-        public static unsafe bool TryReadBytes(this Mem memory, UIntPtr ptr, void* bytes, int count) {
+        public unsafe bool TryReadBytes(UIntPtr ptr, void* bytes, int count) {
 #if KERNEL32
-            if (ReadProcessMemory(memory.pHandle, ptr, bytes, (UIntPtr)checked((ulong)count), IntPtr.Zero))
+            if (ReadProcessMemory(pHandle, ptr, bytes, (UIntPtr)checked((ulong)count), IntPtr.Zero))
                 return true;
 #elif NTDLL
-            if (NtReadVirtualMemory(memory.pHandle, ptr, bytes, (uint)count, UIntPtr.Zero) < NtStatus.Error) return true;
+            if (NtReadVirtualMemory(pHandle, ptr, bytes, (uint)count, UIntPtr.Zero) < NtStatus.Error) return true;
 #endif
             return false;
         }
 
-        public static byte ReadByte(this Mem memory, UIntPtr ptr) {
-            if (TryReadBytes(memory, ptr, by, 1)) return by[0];
+        public byte ReadByte(UIntPtr ptr) {
+            if (TryReadBytes(ptr, by, 1)) return by[0];
             return 0;
         }
 
-        public static int ReadInt(this Mem memory, UIntPtr ptr) {
-            if (TryReadBytes(memory, ptr, by4, 4)) return BitConverter.ToInt32(by4, 0);
+        public int ReadInt(UIntPtr ptr) {
+            if (TryReadBytes(ptr, by4, 4)) return BitConverter.ToInt32(by4, 0);
             return 0;
         }
 
-        public static float ReadFloat(this Mem memory, UIntPtr ptr) {
+        public float ReadFloat(UIntPtr ptr) {
             try {
-                if (TryReadBytes(memory, ptr, by4, 4)) return BitConverter.ToSingle(by4, 0);
+                if (TryReadBytes(ptr, by4, 4)) return BitConverter.ToSingle(by4, 0);
             }
             catch { }
             return 0f;
         }
 
-        public static long ReadLong(this Mem memory, UIntPtr ptr) {
-            if (TryReadBytes(memory, ptr, by16, 16)) return BitConverter.ToInt64(by16, 0);// TODO: 8 byte length?
+        public long ReadLong(UIntPtr ptr) {
+            if (TryReadBytes(ptr, by16, 16)) return BitConverter.ToInt64(by16, 0);// TODO: 8 byte length?
             return 0L;
         }
 
-        public static UIntPtr ReadPointer(this Mem memory, UIntPtr ptr) => (UIntPtr)ReadLong(memory, ptr);
+        public UIntPtr ReadPointer(UIntPtr ptr) => (UIntPtr)ReadLong(ptr);
 
-        public static string ReadString(this Mem memory, UIntPtr ptr, int length = 32, bool zeroTerminated = true) {
+        public string ReadString(UIntPtr ptr, int length = 32, bool zeroTerminated = true) {
             byte[] array = new byte[length];
-            if (TryReadBytes(memory, ptr, array, length)) {
-                return zeroTerminated ? Encoding.UTF8.GetString(array).Split(new char[1])[0] : Encoding.UTF8.GetString(array);
-            }
+            if (TryReadBytes(ptr, array, length))
+                return zeroTerminated ? Encoding.UTF8.GetString(array).Split('\0')[0] : Encoding.UTF8.GetString(array);
             return "";
         }
 
 
-        public static bool TryWriteBytes(this Mem memory, UIntPtr ptr, byte[] data) {
+        public bool TryWriteBytes(UIntPtr ptr, byte[] data) {
 #if KERNEL32
-            return WriteProcessMemory(memory.pHandle, ptr, data, (UIntPtr)checked((ulong)data.Length), IntPtr.Zero);
+            return WriteProcessMemory(pHandle, ptr, data, (UIntPtr)checked((ulong)data.Length), IntPtr.Zero);
 #elif NTDLL
-            return IsNtStatusSucess(NtWriteVirtualMemory(memory.pHandle, ptr, data, (uint)data.Length, UIntPtr.Zero));
+            return IsNtStatusSucess(NtWriteVirtualMemory(pHandle, ptr, data, (uint)data.Length, UIntPtr.Zero));
 #endif
         }
 
-        public static unsafe bool TryWriteBytes(this Mem memory, UIntPtr ptr, void* data, int count) {
+        public unsafe bool TryWriteBytes(UIntPtr ptr, void* data, int count) {
 #if KERNEL32
-            return WriteProcessMemory(memory.pHandle, ptr, data, (UIntPtr)checked((ulong)count), IntPtr.Zero);
+            return WriteProcessMemory(pHandle, ptr, data, (UIntPtr)checked((ulong)count), IntPtr.Zero);
 #elif NTDLL
-            return IsNtStatusSucess(NtWriteVirtualMemory(memory.pHandle, ptr, data, (uint)count, UIntPtr.Zero));
+            return IsNtStatusSucess(NtWriteVirtualMemory(pHandle, ptr, data, (uint)count, UIntPtr.Zero));
 #endif
         }
 
 
-        public static unsafe bool TryReadStruct<T>(this Mem memory, UIntPtr source, T* destination) where T : unmanaged {
-            return memory.TryReadBytes(source, destination, Marshal.SizeOf(typeof(T)));
+        public unsafe bool TryReadStruct<T>(UIntPtr source, T* destination) where T : unmanaged {
+            return TryReadBytes(source, destination, Marshal.SizeOf(typeof(T)));
         }
 
-        public static unsafe bool TryWriteStruct<T>(this Mem memory, UIntPtr destination, T* source) where T : unmanaged {
-            return memory.TryWriteBytes(destination, source, Marshal.SizeOf(typeof(T)));
+        public unsafe bool TryWriteStruct<T>(UIntPtr destination, T* source) where T : unmanaged {
+            return TryWriteBytes(destination, source, Marshal.SizeOf(typeof(T)));
         }
 
+
+        [DllImport("shell32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool IsUserAnAdmin();
+        [DllImport("kernel32.dll")]
+        static extern bool IsWow64Process(IntPtr hProcess, out bool lpSystemInfo);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+        [DllImport("kernel32.dll")]
+        public static extern int CloseHandle(IntPtr hObject);
 
         [DllImport("kernel32.dll")]
         static extern bool ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, [Out] byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
@@ -120,6 +195,7 @@ namespace ForgeLib {
         [DllImport("ntdll.dll", SetLastError = true)]
         static extern unsafe NtStatus NtReadVirtualMemory(IntPtr hProcess, UIntPtr lpBaseAddress, void* lpBuffer, uint nSize, UIntPtr lpNumberOfBytesWritten);
 
+        #region Datatypes
         public enum NtStatus : uint {
             // Success
             Success = 0x00000000,
@@ -460,7 +536,8 @@ namespace ForgeLib {
 
             MaximumNtStatus = 0xffffffff
         }
+        #endregion
 
-        static bool IsNtStatusSucess(this NtStatus status) => status < NtStatus.Error;
+        static bool IsNtStatusSucess(NtStatus status) => status < NtStatus.Error;
     }
 }
