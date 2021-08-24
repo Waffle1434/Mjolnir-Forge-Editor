@@ -8,7 +8,7 @@ namespace ForgeLib {
             objects = (ForgeObject*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ForgeObject)) * ForgeBridge.maxObjects).ToPointer();
         }
 
-        public static unsafe ForgeObject* GetPointer(int i) => objects + i;
+        public static unsafe ForgeObject* GetPointer(int i) => objects + (i % ForgeBridge.maxObjects);
 
 
         public UIntPtr mccPointer;

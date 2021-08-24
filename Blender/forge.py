@@ -63,7 +63,8 @@ forge.TryTeleportMonitor.restype = c_bool
 
 def inverseDict(dict):# TODO: two way dictionary class
     invDict = {}
-    for key, val in dict.items(): invDict[val] = key
+    for key, val in dict.items():
+        if val not in invDict: invDict[val] = key
     return invDict
 
 flagToPhysEnum = {
@@ -94,14 +95,16 @@ def lockObject(obj, scale=True, loc=False, rot=False):
 
 def createForgeObject(context, itemName, i=None, data=None):
     blobj = bpy.data.objects.new(itemName if i is None else "%d - %s"%(i,itemName), data)
-    context.scene.collection.objects.link(blobj)
-    blobj.show_instancer_for_viewport = blobj.show_instancer_for_render = False
+    context.collection.objects.link(blobj)
+    #blobj.show_instancer_for_viewport = blobj.show_instancer_for_render = False
     blobj['isForgeObject'] = True
+    blobj.forge.object = blobj.name
     lockObject(blobj)
     
     if (itemName in bpy.data.collections):
         blobj.instance_collection = bpy.data.collections[itemName]
         blobj.instance_type = 'COLLECTION'
+        blobj.empty_display_size = 0.0001
     else:
         blobj.empty_display_type = 'ARROWS'
         blobj.empty_display_size = 0.5
@@ -114,6 +117,8 @@ def importForgeObjects(context, self=None, createCollections=False):
     t0 = time.time()
 
     forge.ReadMemory()
+    if forge.GetMapName() == "None":
+        print(forge.GetLastError())
     c = forge.GetObjectCount()
     print("Map: %s, %d Objects"%(forge.GetMapName(), c))
 
@@ -137,7 +142,7 @@ def importForgeObjects(context, self=None, createCollections=False):
 
         if itemName == "Initial Loadout Camera":
             cam = bpy.data.objects.new("Initial Loadout Camera", bpy.data.cameras.new("Initial Loadout Camera"))
-            context.scene.collection.objects.link(cam)
+            context.collection.objects.link(cam)
             cam.parent = blobj
             cam.rotation_euler = Euler((radians(90),0,0))
             lockObject(cam, True, True, True)
@@ -145,20 +150,23 @@ def importForgeObjects(context, self=None, createCollections=False):
     msg = "Imported %d objects in %.3fs"%(c,time.time() - t0)
     if self is None: print(msg)
     else: self.report({'INFO'}, msg)
-    bpy.ops.ed.undo_push()
+    #bpy.ops.ed.undo_push()
     return True
 def exportForgeObjects(context, self=None):
     if not forge.TrySetConnect(True): return False
 
     t0 = time.time()
+    forge.CacheCurrentMap()
     forge.ClearObjectList()
     i = 0
-    for blobj in context.scene.objects:
-        if not blobj.get('isForgeObject', False): continue
-        fobj = forge.GetObjectPtr(i).contents
-        blobj.forge.ToForgeObject(fobj, blobj)
-        forge.AddObject(i)
-        i += 1
+    for inst in bpy.context.evaluated_depsgraph_get().object_instances:
+        blobj = tryGetForgeObjectFromInstance(inst)
+        if blobj is not None:
+            fobj = forge.GetObjectPtr(i).contents
+            blobj.forge.ToForgeObject(fobj, blobj, inst)
+            forge.AddObject(i)
+            i += 1
+    
     forge.WriteMemory()
     msg = "Exported %d objects in %.3fs"%(i,time.time() - t0)
     if self is None: print(msg)
@@ -168,9 +176,16 @@ def exportForgeObjects(context, self=None):
 class ImportForgeObjects(bpy.types.Operator):
     """Attempt to connect to MCC and import current forge objects"""
     bl_idname = 'forge.import'
-    bl_label = "Import Forge Objects From MCC"
+    bl_label = "Import Forge Objects"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    additive: BoolProperty(name="Additive", description="Add the forge objects to the existing scene loaded in blender", default=True)
 
     def execute(self, context):
+        if not self.additive:
+            for o in context.scene.objects:
+                if o.get('isForgeObject', False): bpy.data.objects.remove(o, do_unlink=True)
+
         if importForgeObjects(context, self): return {'FINISHED'}
         else:
             msg = forge.GetLastError()
@@ -180,15 +195,12 @@ class ImportForgeObjects(bpy.types.Operator):
 class ExportForgeObjects(bpy.types.Operator):
     """Export current forge objects into MCC's forge"""
     bl_idname = 'forge.export'
-    bl_label = "Export Forge Objects To MCC"
+    bl_label = "Export Forge Objects"
 
     confirm: BoolProperty(name="I understand, I saved a backup", default=False)
     neverAsk: BoolProperty(name="Don't ask again", default=False, description="Don't talk to me or my son ever again")
 
     def invoke(self, context, event):
-        '''ret = context.window_manager.invoke_props_dialog(self)
-        print(ret)
-        return ret'''
         if persist_vars.get('forge_show_warning',True): return context.window_manager.invoke_props_dialog(self)
         else:
             self.confirm=True
@@ -310,15 +322,14 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
             return
         
         if shObj is None:
-            shObj = bpy.data.objects.new("Shape", None)
-            context.scene.collection.objects.link(shObj)# TODO: limit to main scene?
+            shObj = bpy.data.objects.new("%s Shape" % self.object, None)
+            self.shapeObject = shObj.name
+            context.collection.objects.link(shObj)# TODO: limit to main scene?
             shObj.rotation_euler = Euler((0,0,radians(90)))
             shObj.show_instancer_for_viewport = shObj.show_instancer_for_render = False
             shObj.instance_type = 'COLLECTION'
             shObj.parent = bpy.data.objects[self.object]
             lockObject(shObj, True, True, True)
-            
-            self.shapeObject = shObj.name
         
         if self.shape == 'BOX':
             shObj.instance_collection = bpy.data.collections['Shape Box']
@@ -340,8 +351,6 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
 
     def FromForgeObject(self, fobj, blobj):
         flags = ForgeObjectFlags(fobj.flags)
-
-        self.object = blobj.name
         
         self.physics = flagToPhysEnum[flags & ForgeObjectFlags.PhysicsMask]
         self.team = colorNumberToEnum[fobj.team]
@@ -370,14 +379,14 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
 
         #self.UpdateShape(bpy.context)
-    def ToForgeObject(self, fobj, blobj):
-        m = blobj.matrix_world
+    def ToForgeObject(self, fobj, blobj, inst=None):
+        m = blobj.matrix_world if inst is None else inst.matrix_world
         fobj.forward = float3.fromVector(m.col[1])
         fobj.up = float3.fromVector(m.col[2])
         fobj.position = float3.fromVector(m.col[3])
 
         coll = blobj.instance_collection
-        ty = forge.ItemNameToType(coll.name_full) if coll is not None else self.objectType
+        ty = forge.ItemNameToType(coll.name_full) if coll != None else self.objectType
         fobj.itemCategory = ty >> 8
         fobj.itemVariant = ty & 0x00FF
         #fobj.idExt = 0xFFFFFFFF
@@ -500,7 +509,7 @@ class ForgeObjectPanel_Sidebar(bpy.types.Panel):
 
 class PasteOverload(bpy.types.Operator):
     """Duplicates selected objects (for forge compatibility)"""
-    bl_idname = "view3d.pastebuffer"
+    bl_idname = 'view3d.pastebuffer'
     bl_label = "Paste Forge Objects"
     
     autoselect: BoolProperty(default=True)
@@ -508,10 +517,7 @@ class PasteOverload(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context): return context.active_object is not None and context.active_object.get('isForgeObject',False)
-    
-    def execute(self, context):
-        bpy.ops.object.duplicate_move('INVOKE_DEFAULT')
-        return {'FINISHED'}
+    def execute(self, context): return bpy.ops.object.duplicate_move('INVOKE_DEFAULT')
 
 class ConvertForge(bpy.types.Operator):
     """Set if object is exported to MCC"""
@@ -529,6 +535,133 @@ def convertForgeMenuItem(self, context):
     else: op = self.layout.operator(ConvertForge.bl_idname, icon='ADD', text="Convert To Forge Object")
     op.isForgeObject = not isForge
 
+def arrayModifier(context, type, count=3, offset=(1,0,0), rotation=(0,0,0), curveLen=5):
+    srcObj = context.active_object
+    loc = srcObj.location
+    size = 1
+
+    coll = srcObj.instance_collection
+    if coll is not None:
+        name = coll.name
+
+        for inst_o in coll.objects:
+            s = inst_o.dimensions.y
+            if s > size: size = s
+    else: name = srcObj.name
+
+    bpy.ops.mesh.primitive_plane_add(enter_editmode=False, align='WORLD', location=loc, size=1)
+    arrObj = masterParent = context.object
+    arrObj.name = "%s Array" % name
+    arrObj.instance_type = 'FACES'
+    arrObj.show_instancer_for_viewport = arrObj.show_instancer_for_render = False
+    arrObj.select_set(True)
+    
+    bpy.ops.object.modifier_add(type='ARRAY')
+    mod = arrObj.modifiers["Array"]
+    mod.show_on_cage = True
+    mod.use_relative_offset = False
+
+    if type != 'CONST':
+        parentObj = masterParent = bpy.data.objects.new("%s Array Holder" % name, None)
+        context.collection.objects.link(parentObj)
+        parentObj.location = loc
+        parentObj.empty_display_size = 2
+        arrObj.parent = parentObj
+        arrObj.location = (0,0,0)
+    if type == 'OBJECT':
+        offsetObj = bpy.data.objects.new("%s Array Offset" % name, None)
+        context.collection.objects.link(offsetObj)
+        #offsetObj.empty_display_type = 'CUBE'
+        offsetObj.empty_display_size = size# 0.5 * size + 0.05
+        offsetObj.location = offset
+        offsetObj.rotation_euler = rotation
+        lockObject(offsetObj)
+        offsetObj.parent = parentObj
+        offsetObj.select_set(True)
+
+        mod.use_constant_offset = False
+        mod.use_object_offset = True
+        mod.offset_object = offsetObj
+    else:
+        mod.use_constant_offset = True
+        mod.constant_offset_displace = offset
+    if type == 'CURVE':
+        bpy.ops.object.modifier_add(type='CURVE')
+        cMod = arrObj.modifiers["Curve"]
+        cMod.show_on_cage = cMod.show_in_editmode = True
+        
+        bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=False, align='WORLD', location=(0,0,0), radius=curveLen)
+        curve = bpy.context.object
+        curve.name = "%s Curve" % name
+        curve.parent = parentObj
+        curve.select_set(True)
+        lockObject(curve)
+        curveData = curve.data
+        curveData.twist_mode = 'Z_UP'
+        curveData.use_deform_bounds = curve.show_in_front = True
+
+        mod.fit_type = 'FIT_CURVE'
+        mod.curve = curve
+        cMod.object = curve
+
+        arrObj.select_set(True)
+    else:
+        mod.count = count
+
+    masterParent.rotation_euler = srcObj.rotation_euler
+
+    srcObj.parent = arrObj
+    srcObj.location = (0,0,0)
+    srcObj.rotation_euler = (0,0,0)
+    srcObj.display_type = 'BOUNDS'
+    srcObj.select_set(True)
+    if type != 'CONST': parentObj.select_set(True)
+
+class SetupArray(bpy.types.Operator):
+    """Setup array (repeated object duplication) for forge object"""
+    bl_idname = 'object.setup_array'
+    bl_label = "Setup Array"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    type: EnumProperty(name="Type", description="Array modifier mode", default='CONST',
+        items=[
+            ('CONST', "Linear", "Simple XYZ offset from the modifier panel", 'MOD_ARRAY', 0),
+            ('OBJECT', "Object", "Advanced XYZ offset and rotation from an object", 'MOD_TINT', 1),
+            ('CURVE', "Curve", "Place objects along curve", 'MOD_CURVE', 2),
+        ]
+    )
+    count: IntProperty(name="Count", description="Number of duplicated objects", default=3, min=1, max=650)
+    offset: FloatVectorProperty(name="Offset", default=(1,0,0))
+    rotation: FloatVectorProperty(name="Rotation", default=(0,0,0))
+    size: FloatProperty(name="Size", description="Size of curve", default=5, min=0)
+
+    @classmethod
+    def poll(cls, context): 
+        o = context.active_object
+        return o is not None# and o.instance_type == 'COLLECTION' and o.parent is None
+    def execute(self, context):
+        rot = self.rotation
+        arrayModifier(context, self.type, self.count, self.offset, (radians(rot[0]),radians(rot[1]),radians(rot[2])), self.size)
+        return {'FINISHED'}
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.prop(self, 'type')
+        if self.type != 'CURVE': layout.prop(self, 'count')
+        layout.prop(self, 'offset')
+        if self.type == 'OBJECT': layout.prop(self, 'rotation')
+        if self.type == 'CURVE': layout.prop(self, 'size')
+def setupArrayMenuItem(self, context): self.layout.operator(SetupArray.bl_idname, icon='MOD_ARRAY')
+
+def tryGetForgeObjectFromInstance(inst):
+    o = inst.object
+    if inst.is_instance:
+        if o.is_instancer: return o
+    elif o.get('isForgeObject',False):
+        p = o.parent
+        if p is None or p.instance_type == 'COLLECTION': return o
+    else: return None
+
 def draw_forgeObjectOverlay():
     for area in bpy.context.screen.areas:
         if area.type != 'VIEW_3D': continue
@@ -538,8 +671,8 @@ def draw_forgeObjectOverlay():
                 break
     
     objCount = 0
-    for obj in bpy.context.scene.objects:
-        if obj.get('isForgeObject',False): objCount += 1
+    for inst in bpy.context.evaluated_depsgraph_get().object_instances:
+        if tryGetForgeObjectFromInstance(inst) != None: objCount += 1
     
     font_id = 0
     blf.position(font_id, 15, 15, 0)
@@ -549,12 +682,22 @@ def draw_forgeObjectOverlay():
     else: blf.color(font_id, 1,1,1,1)
     blf.draw(font_id, "%d / %d" % (objCount,maxObjectCount))
 
-def exploreChildren(collection, list):
+iconDict = {}
+def fillIconDict(collection):
+    global iconDict
     for coll in collection.children:
-        if (len(coll.objects) > 0): list.append((coll.name, coll.name, ""))
+        if len(coll.objects) > 0:
+            if iconDict.get(coll, None) is None: iconDict[coll] = coll.forge.icon
+        else: fillIconDict(coll)
+
+def exploreChildren(collection, list):
+    global iconDict
+    for coll in collection.children:
+        if len(coll.objects) > 0:
+            list.append((coll.name, coll.name, "", iconDict.get(coll, 'NONE'), len(list)))
         else: exploreChildren(coll, list)
     return list
-def genObjectTypesEnum(self, context): return exploreChildren(bpy.data.scenes['Props'].collection, [])
+def genObjectTypesEnum(self, context): return exploreChildren(bpy.data.collections['Forge World Palette'], [])
 class AddForgeObject(bpy.types.Operator):
     """Add forge object"""
     bl_idname = 'forge.add_object'
@@ -563,26 +706,25 @@ class AddForgeObject(bpy.types.Operator):
 
     objectType: EnumProperty(name="Object Type", items=genObjectTypesEnum)
     
+    def invoke(self, context, event):
+        fillIconDict(bpy.data.collections['Forge World Palette'])
+        context.window_manager.invoke_search_popup(self)
+        return {'FINISHED'}
     def execute(self, context):
         blobj = createForgeObject(context, self.objectType)
-        bpy.ops.ed.undo_push()
-        
         blobj.location = context.scene.cursor.location
         for obj in bpy.context.selected_objects: obj.select_set(False)
         blobj.select_set(True)
         context.view_layer.objects.active = blobj
         
-        return {'FINISHED'}
-    
-    def invoke(self, context, event):
-        context.window_manager.invoke_search_popup(self)
+        bpy.ops.ed.undo_push()
         return {'FINISHED'}
 def addForgeObjectMenuItem(self, context):
     layout = self.layout
     layout.operator_context = 'INVOKE_DEFAULT'
     layout.operator(AddForgeObject.bl_idname, icon='ADD')
     
-    layout.context_pointer_set('forgeColl',bpy.data.scenes['Props'].collection)
+    layout.context_pointer_set('forgeColl',bpy.data.collections['Forge World Palette'])
     layout.menu(AddForgeObjectMenu.bl_idname)
 
 class ForgeCollectionProps(bpy.types.PropertyGroup):
@@ -592,9 +734,9 @@ class ForgeCollectionProps(bpy.types.PropertyGroup):
         for i in range(0,len(icons)):
             ico = icons[i]
             icoEnum.append((ico,"",ico,ico,i))
-            #if (ico == 'MESH_CUBE'): print(i)
+            #if (ico == 'NONE'): print(i)
         return icoEnum
-    icon: EnumProperty(name="Icon",description="Icon used in menus", items=iconsEnum, default=265)
+    icon: EnumProperty(name="Icon",description="Icon used in menus", items=iconsEnum, default=0)
 class ForgeCollectionPanel(bpy.types.Panel):
     bl_label = "Forge Collection"
     bl_idname = 'SCENE_PT_forge_collection'
@@ -619,21 +761,21 @@ class AddForgeObjectMenu(bpy.types.Menu):
         layout = self.layout
         for coll in children:
             name = coll.name
-            if (len(coll.objects) > 0):
+            if len(coll.objects) > 0:
                 layout.operator_context = 'EXEC_DEFAULT'
                 op = layout.operator(AddForgeObject.bl_idname, text=name, icon=coll.forge.icon)
                 op.objectType = name
-            elif (len(coll.children) > 0):
+            elif len(coll.children) > 0:
                 self.layout.context_pointer_set('forgeColl',coll)
                 layout.menu(self.__class__.bl_idname, text=name, icon=coll.forge.icon)
 
 reg_classes = [
     ForgeObjectProps, ForgeCollectionProps, 
-    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge,
+    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray,
     ForgeObjectPanel, ForgeObjectPanel_Sidebar, ForgeCollectionPanel, AddForgeObjectMenu
 ]
 # TeleportPlayer, TeleportPlayerToCursor
-reg_objMenus = [convertForgeMenuItem]
+reg_objMenus = [convertForgeMenuItem, setupArrayMenuItem]
 reg_addMenus = [addForgeObjectMenuItem]
 persist_vars = bpy.app.driver_namespace
 

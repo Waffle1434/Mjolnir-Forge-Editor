@@ -62,15 +62,6 @@ namespace ForgeLib {
                     lastError += "Failed to connect to process.\n";
                     return false;
                 }
-
-                reachBase = memory.ModuleBaseAddress("haloreach.dll");
-
-                forgeObjectArrayPointer = memory.ReadPointer(reachBase + 0x232A4E8) + 0x19FC;
-
-                mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
-                mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
-                mapPlayerPositions[Map.Spire] = reachBase + 0x310EAD0;
-                mapPlayerPositions[Map.None] = default;
             }
             else {
                 try {
@@ -110,17 +101,43 @@ namespace ForgeLib {
             return 0;
         }
 
+        static void GetPointers() {
+            reachBase = memory.ModuleBaseAddress("haloreach.dll");
+
+            forgeObjectArrayPointer = memory.ReadPointer(reachBase + 0x232A4E8) + 0x19FC;
+
+            mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
+            mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
+            mapPlayerPositions[Map.Spire] = reachBase + 0x310EAD0;
+            mapPlayerPositions[Map.None] = default;
+        }
+
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static void ReadMemory() {
             if (!memory.Connected) return;
 
-            currentMap = GetCurrentMap();
+            GetPointers();
+
+            _CacheCurrentMap();
+
             mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
 
             GetForgeObjects();
         }
 
-        public static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + 0x257C3D4));
+        static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + 0x257C3D4));
+
+        static void _CacheCurrentMap() {
+            currentMap = GetCurrentMap();
+
+            if (currentMap == Map.None) {
+                lastError = $"Map: >{memory.ReadString(reachBase + 0x257C3D4)}< ({reachBase:X} {reachBase + 0x257C3D4:X})";
+                currentMap = Map.Forge_World;
+            }
+        }
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        public static void CacheCurrentMap() => _CacheCurrentMap();
 
         static void GetForgeObjects() {
             // TODO: read as one byte array (maxObjects * ForgeObject.size bytes)
@@ -159,6 +176,8 @@ namespace ForgeLib {
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static void WriteMemory() {
             if (!memory.Connected) return;
+
+            GetPointers();
 
             unsafe {
                 for (int i = 0; i < maxObjects; i++) {
@@ -207,6 +226,8 @@ namespace ForgeLib {
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static unsafe void AddObject(int i) {
+            if (i >= maxObjects) return;
+
             UIntPtr objPtr = forgeObjectArrayPointer + i * ForgeObject.size;
             MccForgeObject mccFobj = new MccForgeObject(objPtr, i);
             mccFobj.data->idExt = 0xFFFFFFFF;
