@@ -5,6 +5,9 @@ from mathutils import *
 from bpy.props import *
 
 maxObjectCount = 650
+propSceneName = 'Props'
+shapesCollName = 'Shapes'
+mapPalette = 'Forge World Palette'
 dllPath = bpy.path.abspath("//") + "ForgeBridge.dll"
 forge = cdll.LoadLibrary(dllPath)
 
@@ -79,6 +82,8 @@ flagToSymmetry = {
 }
 colorNumberToEnum = { 0:'RED', 1:'BLUE', 2:'GREEN', 3:'ORANGE', 4:'PURPLE', 5:'YELLOW', 6:'BROWN', 7:'PINK', 8:'NEUTRAL', 255:'TEAM_COLOR' }
 shapeNumberToEnum = { 0:'NONE', 1:'NONE', 2:'CYLINDER', 3:'BOX' }
+objectNameToShapeColor = { 'Kill Boundary':1, 'Soft Kill Boundary':1, 'Safe Boundary':2, 'Soft Safe Boundary':2 }
+objectTypeToShapeColor = { 0x3D00:1, 0x3D01:1, 0x3C00:2, 0x3C01:2 }
 physEnumToFlag = inverseDict(flagToPhysEnum)
 symmetryToFlag = inverseDict(flagToSymmetry)
 colorEnumToNumber = inverseDict(colorNumberToEnum)
@@ -101,7 +106,7 @@ def createForgeObject(context, itemName, i=None, data=None):
     blobj.forge.object = blobj.name
     lockObject(blobj)
     
-    if (itemName in bpy.data.collections):
+    if itemName in bpy.data.collections:
         blobj.instance_collection = bpy.data.collections[itemName]
         blobj.instance_type = 'COLLECTION'
         blobj.empty_display_size = 0.0001
@@ -112,6 +117,7 @@ def createForgeObject(context, itemName, i=None, data=None):
     return blobj
 
 def importForgeObjects(context, self=None, createCollections=False):
+    if context.scene.name == propSceneName: return False
     if not forge.TrySetConnect(True): return False
 
     t0 = time.time()
@@ -128,9 +134,8 @@ def importForgeObjects(context, self=None, createCollections=False):
         itemName = forge.ForgeObject_GetItemName(i)
 
         if createCollections and itemName not in bpy.data.collections:
-            scene = bpy.data.scenes["Props"]
             collection = bpy.data.collections.new(itemName)
-            scene.collection.children.link(collection)
+            bpy.data.scenes[propSceneName].collection.children.link(collection)
 
             blobj = bpy.data.objects.new(itemName, None)
             collection.objects.link(blobj)
@@ -150,18 +155,21 @@ def importForgeObjects(context, self=None, createCollections=False):
     msg = "Imported %d objects in %.3fs"%(c,time.time() - t0)
     if self is None: print(msg)
     else: self.report({'INFO'}, msg)
-    #bpy.ops.ed.undo_push()
     return True
 def exportForgeObjects(context, self=None):
     if not forge.TrySetConnect(True): return False
 
+    hitLimit = False
     t0 = time.time()
     forge.CacheCurrentMap()
     forge.ClearObjectList()
     i = 0
     for inst in bpy.context.evaluated_depsgraph_get().object_instances:
         blobj = tryGetForgeObjectFromInstance(inst)
-        if blobj is not None:
+        if blobj != None:
+            if i >= maxObjectCount: 
+                hitLimit = True
+                continue
             fobj = forge.GetObjectPtr(i).contents
             blobj.forge.ToForgeObject(fobj, blobj, inst)
             forge.AddObject(i)
@@ -170,7 +178,7 @@ def exportForgeObjects(context, self=None):
     forge.WriteMemory()
     msg = "Exported %d objects in %.3fs"%(i,time.time() - t0)
     if self is None: print(msg)
-    else: self.report({'INFO'}, msg)
+    else: self.report({'WARNING' if hitLimit else 'INFO'}, msg)
     return True
 
 class ImportForgeObjects(bpy.types.Operator):
@@ -179,7 +187,7 @@ class ImportForgeObjects(bpy.types.Operator):
     bl_label = "Import Forge Objects"
     bl_options = {'REGISTER', 'UNDO'}
 
-    additive: BoolProperty(name="Additive", description="Add the forge objects to the existing scene loaded in blender", default=True)
+    additive: BoolProperty(name="Additive", description="Add the forge objects to the existing scene loaded in Blender", default=True)
 
     def execute(self, context):
         if not self.additive:
@@ -280,7 +288,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         ('YELLOW', "Yellow", ""),
         ('BROWN', "Brown", ""),
         ('PINK', "Pink", ""),
-        ('NEUTRAL', "Neutral", ""),
+        ('NEUTRAL', "Neutral", "")
     ]
     colorEnum = teamEnum + [ ('TEAM_COLOR', "Team", "") ]
 
@@ -293,6 +301,11 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     otherInfoA: IntProperty()
     otherInfoB: IntProperty()
 
+    def UpdateColor(self, context):
+        col = self.color
+        if col == 'TEAM_COLOR': col = self.team
+        self.colorIndex = colorEnumToNumber[col]
+
     physics: EnumProperty(name="Physics", description="Physics mode", default='PHASED',
         items=[
             ('NORMAL', "Normal", "Affected by gravity and movable"),
@@ -300,8 +313,9 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
             ('PHASED', "Phased", "Unaffected by gravity and collisionless"),
         ]
     )
-    team: EnumProperty(name="Team", description="Object team", items=teamEnum, default='NEUTRAL')
-    color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR')
+    team: EnumProperty(name="Team", description="Object team", items=teamEnum, default='NEUTRAL', update=UpdateColor)
+    color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR', update=UpdateColor)
+    colorIndex: IntProperty(default=8)
     spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100)
     spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, max=180)# 0 is never
     gameSpecific: BoolProperty(name="Game Specific", description="Should object exclusively spawn for current gamemode")
@@ -318,26 +332,37 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     def UpdateShape(self, context):
         shObj = bpy.data.objects.get(self.shapeObject, None)
         if self.shape == 'NONE':
-            if shObj is not None: bpy.data.objects.remove(shObj, do_unlink=True)
+            if shObj != None: bpy.data.objects.remove(shObj, do_unlink=True)
             return
         
         if shObj is None:
             shObj = bpy.data.objects.new("%s Shape" % self.object, None)
             self.shapeObject = shObj.name
-            context.collection.objects.link(shObj)# TODO: limit to main scene?
+            collChildren = context.scene.collection.children
+            shapesCollection = collChildren.get(shapesCollName, None)
+            if shapesCollection is None:
+                shapesCollection = bpy.data.collections.new(shapesCollName)
+                collChildren.link(shapesCollection)
+            coll = shapesCollection if shapesCollection != None else context.collection
+            coll.objects.link(shObj)
             shObj.rotation_euler = Euler((0,0,radians(90)))
             shObj.show_instancer_for_viewport = shObj.show_instancer_for_render = False
             shObj.instance_type = 'COLLECTION'
-            shObj.parent = bpy.data.objects[self.object]
+            blObj = bpy.data.objects[self.object]
+            shObj.parent = blObj
             lockObject(shObj, True, True, True)
+            print("%s - %s" % (blObj.forge.objectType, objectTypeToShapeColor.get(blObj.forge.objectType, 0)))
+            shObj['colorIndex'] = objectTypeToShapeColor.get(blObj.forge.objectType, 0)
         
+        coll = None
         if self.shape == 'BOX':
-            shObj.instance_collection = bpy.data.collections['Shape Box']
+            coll = bpy.data.collections['Shape Box']
             shObj.scale = (self.width,self.length,self.top + self.bottom)
         elif self.shape == 'CYLINDER':
-            shObj.instance_collection = bpy.data.collections['Shape Cylinder']
+            coll = bpy.data.collections['Shape Cylinder']
             d = self.width * 2
             shObj.scale = (d,d,self.top + self.bottom)
+        if shObj.instance_collection != coll: shObj.instance_collection = coll
         
         shObj.location = (0,0,(self.top-self.bottom)/2)
     
@@ -352,6 +377,12 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     def FromForgeObject(self, fobj, blobj):
         flags = ForgeObjectFlags(fobj.flags)
         
+        self.objectType = fobj.itemCategory << 8 | fobj.itemVariant
+        self.cachedType = fobj.cachedType
+        self.scriptLabelIndex = fobj.scriptLabelIndex
+        self.otherInfoA = fobj.otherInfoA
+        self.otherInfoB = fobj.otherInfoB
+
         self.physics = flagToPhysEnum[flags & ForgeObjectFlags.PhysicsMask]
         self.team = colorNumberToEnum[fobj.team]
         self.color = colorNumberToEnum[fobj.color]
@@ -365,12 +396,6 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         self.length = fobj.length
         self.top = fobj.top
         self.bottom = fobj.bottom
-
-        self.objectType = fobj.itemCategory << 8 | fobj.itemVariant
-        self.cachedType = fobj.cachedType
-        self.scriptLabelIndex = fobj.scriptLabelIndex
-        self.otherInfoA = fobj.otherInfoA
-        self.otherInfoB = fobj.otherInfoB
 
         fwd = fobj.forward
         up = fobj.up
@@ -516,7 +541,7 @@ class PasteOverload(bpy.types.Operator):
     active: BoolProperty(default=True)
 
     @classmethod
-    def poll(cls, context): return context.active_object is not None and context.active_object.get('isForgeObject',False)
+    def poll(cls, context): return context.active_object != None and context.active_object.get('isForgeObject',False)
     def execute(self, context): return bpy.ops.object.duplicate_move('INVOKE_DEFAULT')
 
 class ConvertForge(bpy.types.Operator):
@@ -541,7 +566,7 @@ def arrayModifier(context, type, count=3, offset=(1,0,0), rotation=(0,0,0), curv
     size = 1
 
     coll = srcObj.instance_collection
-    if coll is not None:
+    if coll != None:
         name = coll.name
 
         for inst_o in coll.objects:
@@ -638,7 +663,7 @@ class SetupArray(bpy.types.Operator):
     @classmethod
     def poll(cls, context): 
         o = context.active_object
-        return o is not None# and o.instance_type == 'COLLECTION' and o.parent is None
+        return o != None# and o.instance_type == 'COLLECTION' and o.parent is None
     def execute(self, context):
         rot = self.rotation
         arrayModifier(context, self.type, self.count, self.offset, (radians(rot[0]),radians(rot[1]),radians(rot[2])), self.size)
@@ -684,6 +709,7 @@ def draw_forgeObjectOverlay():
 
 iconDict = {}
 def fillIconDict(collection):
+    print(">%s<" % collection)
     global iconDict
     for coll in collection.children:
         if len(coll.objects) > 0:
@@ -697,7 +723,7 @@ def exploreChildren(collection, list):
             list.append((coll.name, coll.name, "", iconDict.get(coll, 'NONE'), len(list)))
         else: exploreChildren(coll, list)
     return list
-def genObjectTypesEnum(self, context): return exploreChildren(bpy.data.collections['Forge World Palette'], [])
+def genObjectTypesEnum(self, context): return exploreChildren(bpy.data.collections[mapPalette], [])
 class AddForgeObject(bpy.types.Operator):
     """Add forge object"""
     bl_idname = 'forge.add_object'
@@ -707,7 +733,7 @@ class AddForgeObject(bpy.types.Operator):
     objectType: EnumProperty(name="Object Type", items=genObjectTypesEnum)
     
     def invoke(self, context, event):
-        fillIconDict(bpy.data.collections['Forge World Palette'])
+        fillIconDict(bpy.data.collections[mapPalette])
         context.window_manager.invoke_search_popup(self)
         return {'FINISHED'}
     def execute(self, context):
@@ -724,7 +750,7 @@ def addForgeObjectMenuItem(self, context):
     layout.operator_context = 'INVOKE_DEFAULT'
     layout.operator(AddForgeObject.bl_idname, icon='ADD')
     
-    layout.context_pointer_set('forgeColl',bpy.data.collections['Forge World Palette'])
+    layout.context_pointer_set('forgeColl', bpy.data.collections[mapPalette])
     layout.menu(AddForgeObjectMenu.bl_idname)
 
 class ForgeCollectionProps(bpy.types.PropertyGroup):
@@ -734,7 +760,7 @@ class ForgeCollectionProps(bpy.types.PropertyGroup):
         for i in range(0,len(icons)):
             ico = icons[i]
             icoEnum.append((ico,"",ico,ico,i))
-            #if (ico == 'NONE'): print(i)
+            #if ico == 'NONE': print(i)
         return icoEnum
     icon: EnumProperty(name="Icon",description="Icon used in menus", items=iconsEnum, default=0)
 class ForgeCollectionPanel(bpy.types.Panel):

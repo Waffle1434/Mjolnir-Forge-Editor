@@ -406,6 +406,19 @@ namespace ForgeLib {
             forgeWorldTypes[0x8901] = "Tree, Dead";
             #endregion
             forgeWorldTypes[0x8D00] = "Target Designator";// Other (MCC)
+            #region Hidden Structure Blocks
+            forgeWorldTypes[0x4E00] = "Block, 2x2, Invisible";
+            forgeWorldTypes[0x4F00] = "Block, 1x1, Invisible";
+            forgeWorldTypes[0x5000] = "Block, 2x2x2, Invisible";
+            forgeWorldTypes[0x5100] = "Block, 4x4x2, Invisible";
+            forgeWorldTypes[0x5200] = "Block, 4x4x4, Invisible";
+            forgeWorldTypes[0x5300] = "Block, 2x1, Flat, Invisible";
+            forgeWorldTypes[0x5400] = "Block, 1x1, Flat, Invisible";
+            forgeWorldTypes[0x5500] = "Block, 1x1, Small, Invisible";
+            forgeWorldTypes[0x5600] = "Block, 2x2, Flat, Invisible";
+            forgeWorldTypes[0x5700] = "Block, 4x2, Flat, Invisible";
+            forgeWorldTypes[0x5800] = "Block, 4x4, Flat, Invisible";
+            #endregion
             #endregion
         }
 
