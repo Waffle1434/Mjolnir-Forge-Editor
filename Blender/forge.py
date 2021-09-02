@@ -338,12 +338,13 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         if shObj is None:
             shObj = bpy.data.objects.new("%s Shape" % self.object, None)
             self.shapeObject = shObj.name
-            collChildren = context.scene.collection.children
+            '''collChildren = context.scene.collection.children
             shapesCollection = collChildren.get(shapesCollName, None)
             if shapesCollection is None:
                 shapesCollection = bpy.data.collections.new(shapesCollName)
                 collChildren.link(shapesCollection)
-            coll = shapesCollection if shapesCollection != None else context.collection
+            coll = shapesCollection if shapesCollection != None else context.collection'''
+            coll = context.collection
             coll.objects.link(shObj)
             shObj.rotation_euler = Euler((0,0,radians(90)))
             shObj.show_instancer_for_viewport = shObj.show_instancer_for_render = False
@@ -351,8 +352,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
             blObj = bpy.data.objects[self.object]
             shObj.parent = blObj
             lockObject(shObj, True, True, True)
-            print("%s - %s" % (blObj.forge.objectType, objectTypeToShapeColor.get(blObj.forge.objectType, 0)))
-            shObj['colorIndex'] = objectTypeToShapeColor.get(blObj.forge.objectType, 0)
+            #shObj['colorIndex'] = objectTypeToShapeColor.get(blObj.forge.objectType, 0)
         
         coll = None
         if self.shape == 'BOX':
@@ -684,7 +684,7 @@ def tryGetForgeObjectFromInstance(inst):
         if o.is_instancer: return o
     elif o.get('isForgeObject',False):
         p = o.parent
-        if p is None or p.instance_type == 'COLLECTION': return o
+        if p is None or p.instance_type == 'NONE' or p.instance_type == 'COLLECTION': return o
     else: return None
 
 def draw_forgeObjectOverlay():
@@ -716,14 +716,14 @@ def fillIconDict(collection):
             if iconDict.get(coll, None) is None: iconDict[coll] = coll.forge.icon
         else: fillIconDict(coll)
 
-def exploreChildren(collection, list):
+def getCollectionEnums(collection, list):
     global iconDict
     for coll in collection.children:
         if len(coll.objects) > 0:
             list.append((coll.name, coll.name, "", iconDict.get(coll, 'NONE'), len(list)))
-        else: exploreChildren(coll, list)
+        else: getCollectionEnums(coll, list)
     return list
-def genObjectTypesEnum(self, context): return exploreChildren(bpy.data.collections[mapPalette], [])
+def genObjectTypesEnum(self, context): return getCollectionEnums(bpy.data.collections[mapPalette], [])
 class AddForgeObject(bpy.types.Operator):
     """Add forge object"""
     bl_idname = 'forge.add_object'
