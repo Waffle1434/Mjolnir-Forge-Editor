@@ -10,6 +10,8 @@ shapesCollName = 'Shapes'
 mapPalette = 'Forge World Palette'
 dllPath = bpy.path.abspath("//") + "ForgeBridge.dll"
 forge = cdll.LoadLibrary(dllPath)
+persist_vars = bpy.app.driver_namespace
+defaultGtLabel = ('NO_LABEL', "No Label", "Default")
 
 class float3(Structure):
     _fields_ = [ ('x', c_float), ('y', c_float), ('z', c_float) ]
@@ -36,7 +38,7 @@ class ForgeObject(Structure):
         ('spawnSequence', c_byte),
         ('spawnTime', c_ubyte),
         ('cachedType', c_ubyte),
-        ('scriptLabelIndex', c_ushort),
+        ('gtLabelIndex', c_ushort),
         ('flags', c_ubyte),
         ('team', c_ubyte),
         ('otherInfoA', c_ubyte),
@@ -58,6 +60,7 @@ class ForgeObjectFlags(enum.IntFlag):
 forge.TrySetConnect.restype = c_bool
 forge.GetLastError.restype = c_wchar_p
 forge.GetMapName.restype = c_wchar_p
+forge.GetGtLabel.restype = c_wchar_p
 forge.GetObjectPtr.restype = POINTER(ForgeObject)
 forge.ForgeObject_GetItemName.restype = c_wchar_p
 forge.ItemNameToType.argtypes = [c_wchar_p]
@@ -88,9 +91,19 @@ physEnumToFlag = inverseDict(flagToPhysEnum)
 symmetryToFlag = inverseDict(flagToSymmetry)
 colorEnumToNumber = inverseDict(colorNumberToEnum)
 shapeEnumToNumber = inverseDict(shapeNumberToEnum)
+gtIndexToLabel = {}
+gtLabelToIndex = {}
 
 #teleporterTypes = ("Receiver Node","Sender Node","Two-Way Node")
 teleporterTypes = (12,13,14)
+
+def initGtLabels():
+    global gtIndexToLabel
+    gtIndexToLabel = {65535: 'NO_LABEL'}
+    persist_vars['gtIndexToLabel'] = gtIndexToLabel
+def initInvGtLabels():
+    global gtLabelToIndex
+    gtLabelToIndex = inverseDict(gtIndexToLabel)
 
 def lockObject(obj, scale=True, loc=False, rot=False):
     for i_ax in range(0,3):
@@ -126,7 +139,15 @@ def importForgeObjects(context, self=None, createCollections=False):
     if forge.GetMapName() == "None":
         print(forge.GetLastError())
     c = forge.GetObjectCount()
-    print("Map: %s, %d Objects"%(forge.GetMapName(), c))
+    gt_c = forge.GetGtLabelCount()
+    print("Map: %s, %d Objects, %d Gametype Labels"%(forge.GetMapName(), c, gt_c))
+
+    initGtLabels()
+    for i in range(0,gt_c):
+        label = forge.GetGtLabel(i).upper()
+        gtIndexToLabel[i] = label
+    initInvGtLabels()
+    persist_vars['gtIndexToLabel'] = gtIndexToLabel
 
     for i in range(0,maxObjectCount):
         fobj = forge.GetObjectPtr(i).contents
@@ -145,7 +166,7 @@ def importForgeObjects(context, self=None, createCollections=False):
         blobj = createForgeObject(context, itemName, i)
         blobj.forge.FromForgeObject(fobj, blobj)
 
-        if itemName == "Initial Loadout Camera":
+        if itemName == "Initial Loadout Camera":# TODO: put in collection instead
             cam = bpy.data.objects.new("Initial Loadout Camera", bpy.data.cameras.new("Initial Loadout Camera"))
             context.collection.objects.link(cam)
             cam.parent = blobj
@@ -279,56 +300,18 @@ class TeleportPlayerToCursor(bpy.types.Operator):
         return {'FINISHED'}'''
 
 class ForgeObjectProps(bpy.types.PropertyGroup):
-    teamEnum = [
-        ('RED', "Red", ""),
-        ('BLUE', "Blue", ""),
-        ('GREEN', "Green", ""),
-        ('ORANGE', "Orange", ""),
-        ('PURPLE', "Purple", ""),
-        ('YELLOW', "Yellow", ""),
-        ('BROWN', "Brown", ""),
-        ('PINK', "Pink", ""),
-        ('NEUTRAL', "Neutral", "")
-    ]
-    colorEnum = teamEnum + [ ('TEAM_COLOR', "Team", "") ]
-
-    object: StringProperty()
-    shapeObject: StringProperty()
-    
-    objectType: IntProperty()
-    cachedType: IntProperty()
-    scriptLabelIndex: IntProperty(name="Game Type Label", description="Index number determining how the gametype interprets this object", default=65535)
-    otherInfoA: IntProperty()
-    otherInfoB: IntProperty()
+    def GetLabelEnum(self, context):
+        labelEnum = []
+        for i, label in persist_vars['gtIndexToLabel'].items():
+            if i == 65535: labelEnum.append(('NO_LABEL',"No Label","Default"))
+            else: labelEnum.append((label,label,""))
+        return labelEnum
 
     def UpdateColor(self, context):
         col = self.color
         if col == 'TEAM_COLOR': col = self.team
         self.colorIndex = colorEnumToNumber[col]
 
-    physics: EnumProperty(name="Physics", description="Physics mode", default='PHASED',
-        items=[
-            ('NORMAL', "Normal", "Affected by gravity and movable"),
-            ('FIXED', "Fixed", "Unaffected by gravity"),
-            ('PHASED', "Phased", "Unaffected by gravity and collisionless"),
-        ]
-    )
-    team: EnumProperty(name="Team", description="Object team", items=teamEnum, default='NEUTRAL', update=UpdateColor)
-    color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR', update=UpdateColor)
-    colorIndex: IntProperty(default=8)
-    spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100)
-    spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, max=180)# 0 is never
-    gameSpecific: BoolProperty(name="Game Specific", description="Should object exclusively spawn for current gamemode")
-    placeAtStart: BoolProperty(name="Place At Start", description="Should object spawn at start", default=True)
-    symmetry: EnumProperty(name="Symmetry", description="Gamemode symmetry",
-        items=[
-            ('BOTH', "Both", "Present in symmetric and asymmetric gamemodes (default)"),
-            ('SYMMETRIC', "Symmetric", "Present only in symmetric gamemodes"),
-            ('ASYMMETRIC', "Asymmetric", "Present only in asymmetric gamemodes"),
-        ],
-        default='BOTH'
-    )
-    
     def UpdateShape(self, context):
         shObj = bpy.data.objects.get(self.shapeObject, None)
         if self.shape == 'NONE':
@@ -365,6 +348,52 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         if shObj.instance_collection != coll: shObj.instance_collection = coll
         
         shObj.location = (0,0,(self.top-self.bottom)/2)
+
+    teamEnum = [
+        ('RED', "Red", ""),
+        ('BLUE', "Blue", ""),
+        ('GREEN', "Green", ""),
+        ('ORANGE', "Orange", ""),
+        ('PURPLE', "Purple", ""),
+        ('YELLOW', "Yellow", ""),
+        ('BROWN', "Brown", ""),
+        ('PINK', "Pink", ""),
+        ('NEUTRAL', "Neutral", "")
+    ]
+    colorEnum = teamEnum + [ ('TEAM_COLOR', "Team", "") ]
+
+    object: StringProperty()
+    shapeObject: StringProperty()
+    
+    objectType: IntProperty()
+    cachedType: IntProperty()
+    gtLabel: EnumProperty(name="Game Type Label", description="How the gametype interprets this object", items=GetLabelEnum, default=0)
+    otherInfoA: IntProperty()
+    otherInfoB: IntProperty()
+
+    
+    physics: EnumProperty(name="Physics", description="Physics mode", default='PHASED',
+        items=[
+            ('NORMAL', "Normal", "Affected by gravity and movable"),
+            ('FIXED', "Fixed", "Unaffected by gravity"),
+            ('PHASED', "Phased", "Unaffected by gravity and collisionless"),
+        ]
+    )
+    team: EnumProperty(name="Team", description="Object team", items=teamEnum, default='NEUTRAL', update=UpdateColor)
+    color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR', update=UpdateColor)
+    colorIndex: IntProperty(default=8)
+    spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100)
+    spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, max=180)# 0 is never
+    gameSpecific: BoolProperty(name="Game Specific", description="Should object exclusively spawn for current gamemode")
+    placeAtStart: BoolProperty(name="Place At Start", description="Should object spawn at start", default=True)
+    symmetry: EnumProperty(name="Symmetry", description="Gamemode symmetry",
+        items=[
+            ('BOTH', "Both", "Present in symmetric and asymmetric gamemodes (default)"),
+            ('SYMMETRIC', "Symmetric", "Present only in symmetric gamemodes"),
+            ('ASYMMETRIC', "Asymmetric", "Present only in asymmetric gamemodes"),
+        ],
+        default='BOTH'
+    )
     
     shape: EnumProperty(name="Shape", description="Area shape", default='NONE', update=UpdateShape,
         items=[('NONE', "None", ""), ('CYLINDER', "Cylinder", ""), ('BOX', "Box", "")]
@@ -379,7 +408,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         
         self.objectType = fobj.itemCategory << 8 | fobj.itemVariant
         self.cachedType = fobj.cachedType
-        self.scriptLabelIndex = fobj.scriptLabelIndex
+        self.gtLabel = gtIndexToLabel[fobj.gtLabelIndex]
         self.otherInfoA = fobj.otherInfoA
         self.otherInfoB = fobj.otherInfoB
 
@@ -402,8 +431,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         right = fwd.cross(up)
         pos = fobj.position
         blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
-
-        #self.UpdateShape(bpy.context)
+    
     def ToForgeObject(self, fobj, blobj, inst=None):
         m = blobj.matrix_world if inst is None else inst.matrix_world
         fobj.forward = float3.fromVector(m.col[1])
@@ -414,10 +442,9 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         ty = forge.ItemNameToType(coll.name_full) if coll != None else self.objectType
         fobj.itemCategory = ty >> 8
         fobj.itemVariant = ty & 0x00FF
-        #fobj.idExt = 0xFFFFFFFF
 
         fobj.cachedType = self.cachedType
-        fobj.scriptLabelIndex = self.scriptLabelIndex
+        fobj.gtLabelIndex = gtLabelToIndex[self.gtLabel]
         fobj.otherInfoA = self.otherInfoA
         fobj.otherInfoB = self.otherInfoB
 
@@ -501,7 +528,7 @@ def drawForgeObjectProperties(self, context, region):
     col2.prop(fprops, 'bottom')
 
     col = layout.column(align=True)
-    col.prop(fprops, 'scriptLabelIndex')
+    col.prop(fprops, 'gtLabel')
     
     #layout.operator('render.render')
 def pollForgePanel(self, context):
@@ -709,7 +736,6 @@ def draw_forgeObjectOverlay():
 
 iconDict = {}
 def fillIconDict(collection):
-    print(">%s<" % collection)
     global iconDict
     for coll in collection.children:
         if len(coll.objects) > 0:
@@ -803,7 +829,6 @@ reg_classes = [
 # TeleportPlayer, TeleportPlayerToCursor
 reg_objMenus = [convertForgeMenuItem, setupArrayMenuItem]
 reg_addMenus = [addForgeObjectMenuItem]
-persist_vars = bpy.app.driver_namespace
 
 def registerDrawEvent(event, item):
     id = event.bl_rna.name
@@ -827,6 +852,8 @@ def register():
     bpy.types.Collection.forge = bpy.props.PointerProperty(type=ForgeCollectionProps)
 
     persist_vars['forgeObjectsOverlay_handle'] = bpy.types.SpaceView3D.draw_handler_add(draw_forgeObjectOverlay, (), 'WINDOW', 'POST_PIXEL')
+    if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()
+    initInvGtLabels()
 def unregister():
     forge.TrySetConnect(False)
     for cls in reg_classes:

@@ -82,15 +82,10 @@ namespace ForgeLib {
         public static string GetLastError() => lastError;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        public static string GetMapName() => MapUtil.ToString(currentMap);
-
-        [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static int GetObjectCount() => forgeObjects.Count;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static unsafe ForgeObject* GetObjectPtr(int i) => MccForgeObject.GetPointer(i);
-        //public static unsafe ForgeObject* GetObjectPtr(int i) => forgeObjects[i].data;
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static unsafe string ForgeObject_GetItemName(int i) => forgeObjects[i].data->ItemName;
@@ -103,8 +98,9 @@ namespace ForgeLib {
 
         static void GetPointers() {
             reachBase = memory.ModuleBaseAddress("haloreach.dll");
-
-            forgeObjectArrayPointer = memory.ReadPointer(reachBase + 0x232A4E8) + 0x19FC;
+            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x232A4E8);
+            gtLabelsPointer = forgeBase + 0x7F4;
+            forgeObjectArrayPointer = forgeBase + 0x19FC;
 
             mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
             mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
@@ -119,12 +115,14 @@ namespace ForgeLib {
             GetPointers();
 
             _CacheCurrentMap();
+            GetGtLabels();
 
             mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
 
             GetForgeObjects();
         }
 
+        #region Map Name
         static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + 0x257C3D4));
 
         static void _CacheCurrentMap() {
@@ -138,6 +136,31 @@ namespace ForgeLib {
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static void CacheCurrentMap() => _CacheCurrentMap();
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        public static string GetMapName() => MapUtil.ToString(currentMap);
+        #endregion
+
+        #region Labels
+        static UIntPtr gtLabelsPointer;
+        public static readonly List<string> gtLabels = new List<string>();
+
+        static void GetGtLabels() {
+            gtLabels.Clear();
+            foreach (string label in memory.ReadString(gtLabelsPointer, 4096, false).Split('\0')) {
+                if (string.IsNullOrEmpty(label)) break;
+                gtLabels.Add(label);
+            }
+        }
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        public static int GetGtLabelCount() => gtLabels.Count;
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        public static string GetGtLabel(int i) => gtLabels[i];
+        #endregion
 
         static void GetForgeObjects() {
             // TODO: read as one byte array (maxObjects * ForgeObject.size bytes)

@@ -64,7 +64,7 @@ namespace ForgeLib {
         [FieldOffset(65)] public byte spawnSequence;
         [FieldOffset(66)] public byte spawnTime;
         [FieldOffset(67)] public byte cachedType;
-        [FieldOffset(68)] public ushort scriptLabelIndex;
+        [FieldOffset(68)] public ushort gtLabelIndex;
         [FieldOffset(70)] public Flags flags;
         [FieldOffset(71)] public Color team;
         [FieldOffset(72)] public TypeSpecificInfo otherInfo;
