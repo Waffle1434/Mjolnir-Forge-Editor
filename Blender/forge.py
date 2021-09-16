@@ -1,15 +1,17 @@
 import bpy, enum, time, blf, textwrap
 from ctypes import *
+from os.path import exists
 from math import *
 from mathutils import *
 from bpy.props import *
+
+print("Mjolnir v0.9.8")
 
 maxObjectCount = 650
 propSceneName = 'Props'
 shapesCollName = 'Shapes'
 mapPalette = 'Forge World Palette'
 dllPath = bpy.path.abspath("//") + "ForgeBridge.dll"
-forge = cdll.LoadLibrary(dllPath)
 persist_vars = bpy.app.driver_namespace
 defaultGtLabel = ('NO_LABEL', "No Label", "Default")
 
@@ -57,16 +59,6 @@ class ForgeObjectFlags(enum.IntFlag):
     SymmetryMask  = 0b00001100,
     HideAtStart   = 0b00000010
 
-forge.TrySetConnect.restype = c_bool
-forge.GetLastError.restype = c_wchar_p
-forge.GetMapName.restype = c_wchar_p
-forge.GetGtLabel.restype = c_wchar_p
-forge.GetObjectPtr.restype = POINTER(ForgeObject)
-forge.ForgeObject_GetItemName.restype = c_wchar_p
-forge.ItemNameToType.argtypes = [c_wchar_p]
-forge.TryGetMonitorPosition.restype = c_bool
-forge.TryTeleportMonitor.restype = c_bool
-
 def inverseDict(dict):# TODO: two way dictionary class
     invDict = {}
     for key, val in dict.items():
@@ -104,6 +96,16 @@ def initGtLabels():
 def initInvGtLabels():
     global gtLabelToIndex
     gtLabelToIndex = inverseDict(gtIndexToLabel)
+
+def wrapText(text):
+    strList = []
+    for line in text.split('\n'):
+        strList += textwrap.TextWrapper(width=60).wrap(text=line)
+    return strList
+def wrapTextPanel(self, text, scale=0.75):
+    layout = self.layout.column(align=True)
+    layout.scale_y = scale
+    for wrapped in wrapText(text): layout.label(text=wrapped)
 
 def lockObject(obj, scale=True, loc=False, rot=False):
     for i_ax in range(0,3):
@@ -202,6 +204,20 @@ def exportForgeObjects(context, self=None):
     else: self.report({'WARNING' if hitLimit else 'INFO'}, msg)
     return True
 
+def executeAndReport(self, context, method):
+    error = False
+    try:
+        if method(context, self): return {'FINISHED'}
+        else: error = True
+    except:
+        error = True
+    finally:
+        if error:
+            msg = forge.GetLastError()
+            print(msg)
+            self.report({'ERROR'}, msg)
+            return {'CANCELLED'}
+
 class ImportForgeObjects(bpy.types.Operator):
     """Attempt to connect to MCC and import current forge objects"""
     bl_idname = 'forge.import'
@@ -214,13 +230,8 @@ class ImportForgeObjects(bpy.types.Operator):
         if not self.additive:
             for o in context.scene.objects:
                 if o.get('isForgeObject', False): bpy.data.objects.remove(o, do_unlink=True)
-
-        if importForgeObjects(context, self): return {'FINISHED'}
-        else:
-            msg = forge.GetLastError()
-            print(msg)
-            self.report({'ERROR'}, msg)
-            return {'CANCELLED'}
+        
+        return executeAndReport(self, context, importForgeObjects)
 class ExportForgeObjects(bpy.types.Operator):
     """Export current forge objects into MCC's forge"""
     bl_idname = 'forge.export'
@@ -236,12 +247,7 @@ class ExportForgeObjects(bpy.types.Operator):
             self.neverAsk=True
             return self.execute(context)
     def draw(self, context):
-        textTowrap = "This modifies MCC's RAM, changes take effect after round restart. This can accidentally cause crashes or corrupt the map. Before saving ingame, restart the round and ensure objects haven't unexpectedly changed."
-        wList = textwrap.TextWrapper(width=60).wrap(text=textTowrap)
-
-        layout = self.layout.column(align=True)
-        layout.scale_y = 0.7
-        for text in wList: layout.label(text=text)
+        wrapTextPanel(self, "This modifies MCC's RAM, changes take effect after round restart. This can accidentally cause crashes or corrupt the map. Before saving ingame, restart the round and ensure objects haven't unexpectedly changed.")
 
         col = self.layout.column(align=True)
         col.prop(self, "confirm")
@@ -253,12 +259,8 @@ class ExportForgeObjects(bpy.types.Operator):
             self.report({'ERROR'}, "Cancelled Export")
             return {'CANCELLED'}
         persist_vars['forge_show_warning'] = not self.neverAsk
-        if exportForgeObjects(context, self): return {'FINISHED'}
-        else:
-            msg = forge.GetLastError()
-            print(msg)
-            self.report({'ERROR'}, msg)
-            return {'CANCELLED'}
+
+        return executeAndReport(self, context, exportForgeObjects)
 
 def importForgeMenu(self, context): self.layout.operator(ImportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
 def exportForgeMenu(self, context): self.layout.operator(ExportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
@@ -821,9 +823,31 @@ class AddForgeObjectMenu(bpy.types.Menu):
                 self.layout.context_pointer_set('forgeColl',coll)
                 layout.menu(self.__class__.bl_idname, text=name, icon=coll.forge.icon)
 
+class ErrorMessage(bpy.types.Operator):
+    """Error message"""
+    bl_idname = 'forge.error'
+    bl_label = "Error"
+
+    message: bpy.props.StringProperty()
+    url: bpy.props.StringProperty()
+
+    def invoke(self, context, event):
+        print("Error: " + self.message + "\n")
+        return context.window_manager.invoke_props_dialog(self)
+    def draw(self, context):
+        wrapTextPanel(self, self.message)
+
+        if self.url != "":
+            layout = self.layout.column(align=True)
+            layout.operator_context = 'INVOKE_DEFAULT'
+            op = layout.operator('wm.url_open', text="Open Webpage")
+            op.url = self.url
+    def execute(self, context):
+        return {'CANCELLED'}
+
 reg_classes = [
     ForgeObjectProps, ForgeCollectionProps, 
-    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray,
+    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray, ErrorMessage,
     ForgeObjectPanel, ForgeObjectPanel_Sidebar, ForgeCollectionPanel, AddForgeObjectMenu
 ]
 # TeleportPlayer, TeleportPlayerToCursor
@@ -850,6 +874,30 @@ def register():
 
     bpy.types.Object.forge = bpy.props.PointerProperty(type=ForgeObjectProps)
     bpy.types.Collection.forge = bpy.props.PointerProperty(type=ForgeCollectionProps)
+
+    if not exists(dllPath):
+        bpy.ops.forge.error('INVOKE_DEFAULT', 
+            message="ForgeBridge.dll not found!\nPlease download the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 
+            url="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
+        return
+    global forge
+    forge = cdll.LoadLibrary(dllPath)
+    try:
+        print("ForgeBridge.dll Version %d" % forge.GetDllVersion())
+        forge.TrySetConnect.restype = c_bool
+        forge.GetLastError.restype = c_wchar_p
+        forge.GetMapName.restype = c_wchar_p
+        forge.GetGtLabel.restype = c_wchar_p
+        forge.GetObjectPtr.restype = POINTER(ForgeObject)
+        forge.ForgeObject_GetItemName.restype = c_wchar_p
+        forge.ItemNameToType.argtypes = [c_wchar_p]
+        forge.TryGetMonitorPosition.restype = c_bool
+        forge.TryTeleportMonitor.restype = c_bool
+    except Exception as ex:
+        bpy.ops.forge.error('INVOKE_DEFAULT', 
+            message="Outdated ForgeBridge.dll in use!\nPlease download the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 
+            rl="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
+        print(ex)
 
     persist_vars['forgeObjectsOverlay_handle'] = bpy.types.SpaceView3D.draw_handler_add(draw_forgeObjectOverlay, (), 'WINDOW', 'POST_PIXEL')
     if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()

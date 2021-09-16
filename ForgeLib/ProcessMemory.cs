@@ -30,28 +30,26 @@ namespace ForgeLib {
         }
 
         public bool OpenProcess(int pid) {
-            if (isAdmin) DebugMsg("WARNING: This program may not be running with raised privileges.");
-            if (pid <= 0) { DebugMsg("ERROR: Invalid process ID."); return false; }
+            if (!isAdmin) DebugMsg("WARNING: This program may not be running with admin privileges. Run Blender as administrator.");
+            if (pid <= 0) { DebugMsg($"ERROR: Invalid process ID: {pid}"); return false; }
             if (process != null && process.Id == pid) return true;
             try {
                 process = Process.GetProcessById(pid);
                 if (process != null && !process.Responding) { DebugMsg("ERROR: OpenProcess: Process is not responding or null."); return false; }
                 pHandle = OpenProcess(2035711u, true, pid);
-                try { Process.EnterDebugMode(); }
-                catch (Win32Exception) { }
+                try { Process.EnterDebugMode(); } catch (Win32Exception ex) { DebugMsg("ERROR:" + ex); }
                 if (pHandle == IntPtr.Zero || process == null) {
-                    DebugMsg("ERROR: OpenProcess has failed opening a handle to the target process (GetLastWin32ErrorCode: " + Marshal.GetLastWin32Error() + ")");
-                    Process.LeaveDebugMode();
+                    DebugMsg($"ERROR: Failed to open process {pid} (Win32Error {Marshal.GetLastWin32Error()})");
+                    try { Process.LeaveDebugMode(); } catch (Win32Exception ex) { DebugMsg("ERROR:" + ex); }
                     process = null;
                     return false;
                 }
+
                 is64bit = Environment.Is64BitOperatingSystem && IsWow64Process(pHandle, out var lpSystemInfo) && !lpSystemInfo;
+                const string architectureError = "WARNING: Game is %s, but dll is %s! Dll needs to be recompiled for correct architecture.";
+                if (is64bit && IntPtr.Size != 8) DebugMsg(string.Format(architectureError, "x64", "x86"));
+                else if (!is64bit && IntPtr.Size == 8) DebugMsg(string.Format(architectureError, "x86", "x64"));
 
-
-                if (is64bit && IntPtr.Size != 8)
-                    DebugMsg("WARNING: Game is x64, but dll is x86! You will be missing some modules, change the Solution Platform.");
-                else if (!is64bit && IntPtr.Size == 8)
-                    DebugMsg("WARNING: Game is x86, but dll is x64! You will be missing some modules, change the Solution Platform.");
                 modules.Clear();
                 foreach (ProcessModule module in process.Modules) {
                     string moduleName = module.ModuleName;
@@ -60,8 +58,8 @@ namespace ForgeLib {
 
                 return true;
             }
-            catch (Exception ex2) {
-                DebugMsg("ERROR: OpenProcess has crashed:\n" + ex2);
+            catch (Exception ex) {
+                DebugMsg("ERROR: Failed to open process:\n" + ex);
                 return false;
             }
         }
