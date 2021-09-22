@@ -129,7 +129,7 @@ namespace ForgeLib {
         public string ItemName {
             get {
                 if (ItemParser.TryTypeToName(Type, ForgeBridge.currentMap, out string name)) return name;
-                return "Unknown";
+                return $"Unknown (0x{Type:X})";
             }
         }
 

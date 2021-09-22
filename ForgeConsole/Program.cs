@@ -15,10 +15,10 @@ namespace ForgeConsole {
 
             Console.WriteLine($"Map: {ForgeBridge.GetMapName()}, {ForgeBridge.GetObjectCount()} Objects");
 
-            if (ForgeBridge.TryGetMonitorPosition(out float3 pos)) {
+            /*if (ForgeBridge.TryGetMonitorPosition(out float3 pos)) {
                 Console.WriteLine($"Player Position: {pos}");
                 ForgeBridge.TryTeleportMonitor(new float3(pos.x, pos.y, pos.z + 10f));
-            }
+            }*/
 
             unsafe {
                 int c = ForgeBridge.GetObjectCount();

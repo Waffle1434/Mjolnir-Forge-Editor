@@ -419,6 +419,10 @@ namespace ForgeLib {
             forgeWorldTypes[0x5700] = "Block, 4x2, Flat, Invisible";
             forgeWorldTypes[0x5800] = "Block, 4x4, Flat, Invisible";
             #endregion
+            #region Hidden Misc
+            forgeWorldTypes[0x8A00] = "Generator";
+            forgeWorldTypes[0x8B00] = "Vending Machine";
+            #endregion
             #endregion
         }
 
