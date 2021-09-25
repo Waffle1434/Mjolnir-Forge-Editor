@@ -1,9 +1,10 @@
 import bpy, enum, time, blf, textwrap
+from bpy.types import Operator
+from bpy.props import *
 from ctypes import *
 from os.path import exists
 from math import *
 from mathutils import *
-from bpy.props import *
 
 print("Mjolnir v0.9.8")
 
@@ -218,7 +219,7 @@ def executeAndReport(self, context, method):
             self.report({'ERROR'}, msg)
             return {'CANCELLED'}
 
-class ImportForgeObjects(bpy.types.Operator):
+class ImportForgeObjects(Operator):
     """Attempt to connect to MCC and import current forge objects"""
     bl_idname = 'forge.import'
     bl_label = "Import Forge Objects"
@@ -232,7 +233,7 @@ class ImportForgeObjects(bpy.types.Operator):
                 if o.get('isForgeObject', False): bpy.data.objects.remove(o, do_unlink=True)
         
         return executeAndReport(self, context, importForgeObjects)
-class ExportForgeObjects(bpy.types.Operator):
+class ExportForgeObjects(Operator):
     """Export current forge objects into MCC's forge"""
     bl_idname = 'forge.export'
     bl_label = "Export Forge Objects"
@@ -265,7 +266,7 @@ class ExportForgeObjects(bpy.types.Operator):
 def importForgeMenu(self, context): self.layout.operator(ImportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
 def exportForgeMenu(self, context): self.layout.operator(ExportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
 
-'''class TeleportPlayer(bpy.types.Operator):
+'''class TeleportPlayer(Operator):
     """Teleport player monitor to current camera position"""
     bl_idname = "forge.teleport"
     bl_label = "Teleport Monitor to Camera Position"
@@ -283,7 +284,7 @@ def exportForgeMenu(self, context): self.layout.operator(ExportForgeObjects.bl_i
             return {'CANCELLED'}
         
         return {'FINISHED'}
-class TeleportPlayerToCursor(bpy.types.Operator):
+class TeleportPlayerToCursor(Operator):
     """Teleport player monitor to cursor"""
     bl_idname = "forge.teleport_cursor"
     bl_label = "Teleport Monitor to Cursor"
@@ -561,7 +562,7 @@ class ForgeObjectPanel_Sidebar(bpy.types.Panel):
     
     def draw(self, context): drawForgeObjectProperties(self, context, 'UI')
 
-class PasteOverload(bpy.types.Operator):
+class PasteOverload(Operator):
     """Duplicates selected objects (for forge compatibility)"""
     bl_idname = 'view3d.pastebuffer'
     bl_label = "Paste Forge Objects"
@@ -573,7 +574,7 @@ class PasteOverload(bpy.types.Operator):
     def poll(cls, context): return context.active_object != None and context.active_object.get('isForgeObject',False)
     def execute(self, context): return bpy.ops.object.duplicate_move('INVOKE_DEFAULT')
 
-class ConvertForge(bpy.types.Operator):
+class ConvertForge(Operator):
     """Set if object is exported to MCC"""
     bl_idname = 'object.convert_forge'
     bl_label = "Convert Forge Object"
@@ -671,7 +672,7 @@ def arrayModifier(context, type, count=3, offset=(1,0,0), rotation=(0,0,0), curv
     srcObj.select_set(True)
     if type != 'CONST': parentObj.select_set(True)
 
-class SetupArray(bpy.types.Operator):
+class SetupArray(Operator):
     """Setup array (repeated object duplication) for forge object"""
     bl_idname = 'object.setup_array'
     bl_label = "Setup Array"
@@ -752,7 +753,7 @@ def getCollectionEnums(collection, list):
         else: getCollectionEnums(coll, list)
     return list
 def genObjectTypesEnum(self, context): return getCollectionEnums(bpy.data.collections[mapPalette], [])
-class AddForgeObject(bpy.types.Operator):
+class AddForgeObject(Operator):
     """Add forge object"""
     bl_idname = 'forge.add_object'
     bl_label = "Forge Object..."
@@ -823,7 +824,7 @@ class AddForgeObjectMenu(bpy.types.Menu):
                 self.layout.context_pointer_set('forgeColl',coll)
                 layout.menu(self.__class__.bl_idname, text=name, icon=coll.forge.icon)
 
-class ErrorMessage(bpy.types.Operator):
+class ErrorMessage(Operator):
     """Error message"""
     bl_idname = 'forge.error'
     bl_label = "Error"
@@ -903,7 +904,8 @@ def register():
     if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()
     initInvGtLabels()
 def unregister():
-    forge.TrySetConnect(False)
+    try: forge.TrySetConnect(False)
+    except: pass
     for cls in reg_classes:
         try: bpy.utils.unregister_class(cls)
         except: pass
@@ -912,7 +914,8 @@ def unregister():
     removeDrawEvents(bpy.types.TOPBAR_MT_file_import)
     removeDrawEvents(bpy.types.TOPBAR_MT_file_export)
     bpy.types.SpaceView3D.draw_handler_remove(persist_vars['forgeObjectsOverlay_handle'], 'WINDOW')
-if __name__ == "__main__":
-    try: unregister()
-    except: pass
-    register()
+
+
+try: unregister()
+except: pass
+register()

@@ -101,7 +101,7 @@ namespace ForgeLib {
 
         static void GetPointers() {
             reachBase = memory.ModuleBaseAddress("haloreach.dll");
-            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x232A4E8);
+            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x23C9968);
             gtLabelsPointer = forgeBase + 0x7F4;
             forgeObjectArrayPointer = forgeBase + 0x19FC;
 
