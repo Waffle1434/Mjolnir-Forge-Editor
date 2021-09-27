@@ -5,6 +5,7 @@ from ctypes import *
 from os.path import exists
 from math import *
 from mathutils import *
+from bpy_extras.io_utils import ImportHelper
 
 print("Mjolnir v0.9.8")
 
@@ -846,9 +847,26 @@ class ErrorMessage(Operator):
     def execute(self, context):
         return {'CANCELLED'}
 
+
+class ImportMVAR(Operator, ImportHelper):
+    """Import Halo Reach Map Variant"""
+    bl_idname = 'forge.import_mvar'
+    bl_label = "Import MVAR"
+    filename_ext = ".mvar"
+    filter_glob: StringProperty( default="*.mvar", options={'HIDDEN'}, maxlen=255 )
+
+    def execute(self, context):
+        print("!")
+        #return read_some_data(context, self.filepath, self.use_setting)
+        return {'FINISHED'}
+
+def importMvarMenu(self, context): self.layout.operator(ImportMVAR.bl_idname, text="Map Variant (.mvar)", icon='ANTIALIASED')
+
+
+
 reg_classes = [
     ForgeObjectProps, ForgeCollectionProps, 
-    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray, ErrorMessage,
+    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray, ErrorMessage, ImportMVAR,
     ForgeObjectPanel, ForgeObjectPanel_Sidebar, ForgeCollectionPanel, AddForgeObjectMenu
 ]
 # TeleportPlayer, TeleportPlayerToCursor
@@ -872,6 +890,9 @@ def register():
     for item in reg_addMenus: registerDrawEvent(bpy.types.VIEW3D_MT_add, item)
     registerDrawEvent(bpy.types.TOPBAR_MT_file_import, importForgeMenu)
     registerDrawEvent(bpy.types.TOPBAR_MT_file_export, exportForgeMenu)
+
+    registerDrawEvent(bpy.types.TOPBAR_MT_file_import, importMvarMenu)
+    #registerDrawEvent(bpy.types.TOPBAR_MT_file_export, exportForgeMenu)
 
     bpy.types.Object.forge = bpy.props.PointerProperty(type=ForgeObjectProps)
     bpy.types.Collection.forge = bpy.props.PointerProperty(type=ForgeCollectionProps)
