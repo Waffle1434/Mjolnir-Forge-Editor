@@ -83,106 +83,40 @@ stream = BitStream(f)
 
 #debug = True
 
-def highest_bit_set(value):
-    r = 0
-    while True:
-        value = value >> 1
-        if value == 0: break
-        r += 1
-    return r
-
-def _sub4DC8E0(bitcount, mapBounds, out):
-    # Determines the proper bitcounts to use for object position coordinates, given the 
-    # map bounds and the baseline bitcount specified.
-    rangesByAxis = [# TODO: Cache
-        mapBounds[0][1] - mapBounds[0][0],
-        mapBounds[1][1] - mapBounds[1][0],
-        mapBounds[2][1] - mapBounds[2][0]
-    ]
-    out[0] = bitcount
-    out[1] = bitcount
-    out[2] = bitcount
-    #min_step # register XMM6 # minimum possible representable distance
+def processPos(bitcount, rangesByAxis, out):
+    # Determines the proper bitcounts to use for object position coordinates, given the map bounds and the baseline bitcount specified.
     MINIMUM_UNIT_16BIT = 0.00833333333 # hex 0x3C088889 == 0.00833333376795F
-    if bitcount > 0x10:
-        # something to do with the "extra" bits if bitcount == 0x10 then min_step is just the constant
-        min_step = MINIMUM_UNIT_16BIT
-        ecx  = bitcount - 0x10 # (ecx = (dword)bitcount + 0xFFFFFFF0) i.e. (ecx = bitcount + -10)
-        xmm0 = 1 << ecx # 1 << cl
-        min_step /= xmm0
-        # I think that min_step is something like our "effective precision," where 
-        # the target is 16 bits (0x10) for 0.01-gradian steps, and if we have 
-        # more bits, then we can use smaller steps with min_step being the step 
-        # size...
-    else:
-        # something to do with the "missing" bits if bitcount == 0x10 then min_step is just the constant
-        min_step = 1 << (0x10 - bitcount)
-        min_step *= MINIMUM_UNIT_16BIT
-        # ...whereas if we have fewer than 16 bits, then we need to use a larger 
-        # (i.e. less precise) step size.
+    if bitcount > 0x10: min_step = MINIMUM_UNIT_16BIT / (1 << (bitcount - 0x10))
+    else: min_step = (1 << (0x10 - bitcount)) * MINIMUM_UNIT_16BIT
     
-    if (min_step >= 0.0001): # hex 0x38D1B717 == 9.99999974738e-05
+    if min_step >= 0.0001: # hex 0x38D1B717 == 9.99999974738e-05
         min_step *= 2
         for i in range(3):
-            xmm0 = ceil(rangesByAxis[i] / min_step)
-            edx  = floor(xmm0) # truncate to integer
-            edx = min(0x800000, edx)
-            ecx = -1
-            if (edx): # asm: TEST EDX, EDX JE
-                ecx = 31
-                if (edx >= 0): # asm: JS
-                    ecx = highest_bit_set(edx)
+            edx = min(0x800000, ceil(rangesByAxis[i] / min_step))
+            ecx = (int(log(edx,2)) if edx >= 0 else 31) if edx else -1 # 23
 
-            r8 = 0
-            if (ecx != -1):
-                eax = (1 << ecx) - 1
-                r8  = ecx + (1 if ((edx & eax) != 0) else 0)
+            out[i] = min(26, 
+                (ecx + (1 if ((edx & ((1 << ecx) - 1)) != 0) else 0)) if ecx != -1 
+                else 0
+            )
+    else: out[0] = out[1] = out[2] = 26
 
-            eax = min(26, r8)
-            out[i] = eax
-    else:
-        for i in range(3):
-            out[i] = 26
-
+def readShapeDimension(stream):
+    eax = stream.ReadStructBits('H',11)[0]
+    if not eax: return 0
+    elif eax == 0x7FF: return 200
+    else: return (eax - 1) * 0.0977517142892 + 0.0488758571446
 def readShape(stream):
-    sw = stream.ReadStructBits('B',2)[0]
-    shape = sw
-    xmm3 = 0.0977517142892
-    xmm0 = 0
-    xmm4 = 0.0488758571446
-    xmm2 = 200
-    if sw == 1:
-        a = stream.ReadStructBits('H',11)[0]
-        if not a: shapeWidth = 0
-        elif a == 0x7FF: shapeWidth = 200 # float
-        else: shapeWidth = (a - 1) * 0.0977517142892 + 0.0488758571446
-        return
-    elif sw == 3:
-        eax = stream.ReadStructBits('H',sw + 8)[0]
-        if not eax: shapeWidth = xmm0
-        elif eax == 0x7FF: shapeWidth = xmm2
-        else: shapeWidth = (eax - 1) * xmm3 + xmm4
+    shape = stream.ReadStructBits('B',2)[0]
+    if shape < 1 or shape > 3: return
 
-        eax = stream.ReadStructBits('H',11)[0]
-        if eax == 0: shapeLength = xmm0
-        elif eax == 0x7FF: shapeLength = xmm2
-        else: shapeLength = (eax - 1) * xmm3 + xmm4
-    elif sw == 2:
-        eax = stream.ReadStructBits('H',11)[0]
-        if not eax: shapeWidth = xmm0
-        elif eax == 0x7FF: shapeWidth = xmm2
-        else: shapeWidth = (eax - 1) * xmm3 + xmm4
-    else: return
+    shapeWidth = readShapeDimension(stream)
+
+    if shape == 1: return
+    elif shape == 3: shapeLength = readShapeDimension(stream)
     
-    eax = stream.ReadStructBits('H',11)[0]
-    if not eax: shapeTop = xmm0
-    elif eax == 0x7FF:  shapeTop = xmm2
-    else: shapeTop = (eax - 1) * xmm3 + xmm4
-    
-    eax = stream.ReadStructBits('H',11)[0]
-    if not eax:  shapeBottom = xmm0
-    elif eax == 0x7FF: shapeBottom = xmm2
-    else: shapeBottom = (eax - 1) * xmm3 + xmm4
+    shapeTop = readShapeDimension(stream)
+    shapeBottom = readShapeDimension(stream)
 
 
 def readBlf(stream, size):
@@ -203,7 +137,13 @@ def readMvar(stream, size):
     stream.SeekBits(startPos + 223*8 + 2, io.SEEK_SET)
     mapBounds = (stream.ReadStruct('ff',8), stream.ReadStruct('ff',8), stream.ReadStruct('ff',8))
     #from collections import namedtuple
-    print('Bounds: %s %s %s' % (mapBounds[0],mapBounds[1],mapBounds[2]))
+    print('Bounds: %s' % str(mapBounds))
+
+    rangesByAxis = [
+        mapBounds[0][1] - mapBounds[0][0],
+        mapBounds[1][1] - mapBounds[1][0],
+        mapBounds[2][1] - mapBounds[2][0]
+    ]
     
     stream.SeekBits(startPos + 255*8 + 2, io.SEEK_SET)
     strCount = stream.ReadStructBits('H',9)[0]
@@ -211,7 +151,6 @@ def readMvar(stream, size):
 
     #global debug
     #debug = True
-
 
     if strCount > 0:
         offsets = []
@@ -249,38 +188,31 @@ def readMvar(stream, size):
 
         #Position
         bitcount = 21
-        rbp60 = [0, 0, 0]
-        a = stream.ReadStructBits('?',1)[0] # can't understand how this is used
+        axisBits = [0, 0, 0]
+        a = stream.ReadStructBits('?',1)[0]
         if a:
-            if mapBounds: _sub4DC8E0(bitcount, mapBounds, rbp60)
+            if mapBounds: processPos(bitcount, rangesByAxis, axisBits)
             else: print("POS TODO1")
         else:
-            if mapBounds: _sub4DC8E0(bitcount, mapBounds, rbp60)
-            else:
-                if not stream.ReadStructBits('?',1)[0]:
-                    b = stream.ReadStructBits('B',2)[0]
-                    if (b != -1): print("POS TODO2")# != 3?!
-        pos = [0,0,0]
-        pos[0] = unpack('>I',b'\x00' + stream.ReadBits(rbp60[0]))[0] # compressed float
-        pos[1] = unpack('>I',b'\x00' + stream.ReadBits(rbp60[1]))[0] # compressed float
-        pos[2] = unpack('>I',b'\x00' + stream.ReadBits(rbp60[2]))[0] # compressed float
+            if mapBounds: processPos(bitcount, rangesByAxis, axisBits)
+            elif not stream.ReadStructBits('?',1)[0] and stream.ReadStructBits('B',2)[0] != -1: print("POS TODO2")# != 3?!
+        pos = [
+            unpack('>I',b'\x00' + stream.ReadBits(axisBits[0]))[0],
+            unpack('>I',b'\x00' + stream.ReadBits(axisBits[1]))[0],
+            unpack('>I',b'\x00' + stream.ReadBits(axisBits[2]))[0]
+        ]
+        pos[0] = (0.5 + pos[0]) * (rangesByAxis[0] / (1 << axisBits[0])) + mapBounds[0][0]
+        pos[1] = (0.5 + pos[1]) * (rangesByAxis[1] / (1 << axisBits[1])) + mapBounds[1][0]
+        pos[2] = (0.5 + pos[2]) * (rangesByAxis[2] / (1 << axisBits[2])) + mapBounds[2][0]
 
-        rng = mapBounds[0][1] - mapBounds[0][0]
-        pos[0] = (0.5 + pos[0]) * (rng / (1 << rbp60[0])) + mapBounds[0][0]
-        
-        rng = mapBounds[1][1] - mapBounds[1][0]
-        pos[1] = (0.5 + pos[1]) * (rng / (1 << rbp60[1])) + mapBounds[1][0]
-        
-        rng = mapBounds[2][1] - mapBounds[2][0]
-        pos[2] = (0.5 + pos[2]) * (rng / (1 << rbp60[2])) + mapBounds[2][0]
-
-        print('%d - %s' % (i,pos))
+        #print('%d - %s' % (i,pos))
+        if i == 400:
+            print('%d - %s' % (i,pos))
+            print(pos[0] - 26.504993438720703 + pos[1] - 173.5377311706543 + pos[2] - 36.39936447143555)
 
         vertical = stream.ReadStructBits('?',1)[0]
-        if vertical:
-            axisAngleAxis = [0,0,1]
-        else:
-            stream.SeekBits(20)#load axisAngleAxis
+        if vertical: axisAngleAxis = [0,0,1]
+        else: stream.SeekBits(20)# TODO: load axisAngleAxis
         
         ang = stream.ReadStructBits('H',14)[0]
         #loadAxisAngleAngle(ang)
@@ -295,12 +227,10 @@ def readMvar(stream, size):
         
         respawnTime = stream.ReadStructBits('B',8)[0]
         cachedType = stream.ReadStructBits('B',5)[0]
-        if stream.ReadStructBits('?',1)[0]: forgeLabelIndex = -1 # absence bit
-        else: forgeLabelIndex = stream.ReadStructBits('B',8)[0] # word
+        forgeLabelIndex = -1 if stream.ReadStructBits('?',1)[0] else stream.ReadStructBits('B',8)[0]
         flags = stream.ReadStructBits('B',8)[0]
         team = stream.ReadStructBits('B',4)[0] - 1
-        if not stream.ReadStructBits('?',1)[0]: color = stream.ReadStructBits('B',3)[0]
-        else: color = -1
+        color = -1 if stream.ReadStructBits('?',1)[0] else stream.ReadStructBits('B',3)[0]
         
         if cachedType == 1:# weapon
             spareClips = stream.ReadStructBits('B',8)[0]
@@ -309,8 +239,7 @@ def readMvar(stream, size):
         elif cachedType <= 0xE:# teleporter
             teleporterChannel = stream.ReadStructBits('B',5)[0]
             teleporterPassability = stream.ReadStructBits('B',5)[0]
-        elif cachedType == 0x13:
-            locationNameIndex = stream.ReadStructBits('B',8)[0] - 1
+        elif cachedType == 0x13: locationNameIndex = stream.ReadStructBits('B',8)[0] - 1
     tEl = (time.time_ns() - st) * 1e-6
     print('Loaded %d Objects (%dms)' % (i,tEl))
 
