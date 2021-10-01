@@ -11,45 +11,37 @@ class BitStream:
     
     def ReadBytes(self, count): return self.ReadBits(8*count)
     def ReadBits(self, count):
-        startOffset = self.bitPos % 8
         finalPos = self.bitPos + count
         lShift = finalPos % 8
         rShift = -finalPos % 8
+        skip = self.bitPos % 8 + rShift >= 8
         carryMask = 2**rShift - 1# redundant because of shift?
-        firstMask = (0xFF >> rShift << (rShift + startOffset) & 0xFF) >> startOffset # simplify to bool
         fullBitMask = 2**count - 1 << rShift
 
         byteCount = ceil(finalPos/8) - floor(self.bitPos/8)
-        #bytes = self.byteStream.peek(byteCount)
-        #self.SeekBits(count)
         bytes = self.byteStream.read(byteCount)
         self.SeekBits(self.bitPos + count, io.SEEK_SET)
 
-        if debug: print('Read %d bits' % count)
+        #if debug: print('Read %d bits' % count)
 
         outBytes = bytearray()
         carry = 0
+        #if debug: print('masked: %s & %s = %s' % (format(by,'08b'),format(firstMask,'08b'),format(by & firstMask,'08b')))
         for i in range(byteCount):
-            skip = False
-            curMask = fullBitMask >> 8*(byteCount-1 - i) & 0xFF
-            by = bytes[i] & curMask
-            carryNext = (by & carryMask) << lShift# overfloW?!
-            if carryNext > 255:
-                raise
+            by = bytes[i] & (fullBitMask >> 8*(byteCount-1 - i) & 0xFF)
+            carryNext = (by & carryMask) << lShift# TODO: overflow?!
+            #if carryNext > 255: raise
 
-            if debug:
+            '''if debug:
                 curBitPos = self.bitPos-count + i*8
-                print('%d+%d\t%s c: & %s << %d = %s' % (int(curBitPos/8),curBitPos % 8, format(by,'08b'), format(carryMask,'08b'),lShift,format(carryNext,'08b')))
+                print('%d+%d\t%s c: & %s << %d = %s' % (int(curBitPos/8),curBitPos % 8, format(by,'08b'), format(carryMask,'08b'),lShift,format(carryNext,'08b')))'''
 
-            if i == 0:
-                if firstMask == 0: skip = True
-                else:
-                    if debug: print('masked: %s & %s = %s' % (format(by,'08b'),format(firstMask,'08b'),format(by & firstMask,'08b')))
             if not skip: 
                 outBytes.append((by >> rShift) | carry)
-                if debug: print('out: %s >> %d = %s | %s = %s' % (format(by,'08b'),rShift,format(by >> rShift,'08b'),format(carry,'08b'),format(outBytes[-1],'08b')))
-            elif debug: print("skipped")
-            if debug: print("")
+                #if debug: print('out: %s >> %d = %s | %s = %s' % (format(by,'08b'),rShift,format(by >> rShift,'08b'),format(carry,'08b'),format(outBytes[-1],'08b')))
+            else: skip = False
+            #elif debug: print("skipped")
+            #if debug: print("")
             carry = carryNext
         return outBytes
         
@@ -66,6 +58,12 @@ class BitStream:
     def ReadUInt32(self): return unpack('>I',self.ReadBytes(4))[0]
     def ReadUInt16(self): return unpack('>H',self.ReadBytes(2))[0]
     def ReadFloat(self): return unpack('>f',self.ReadBytes(4))[0]
+    def ReadBoolBit(self): return unpack('?',self.ReadBits(1))[0]
+    def ReadUInt8Bits(self, count): return unpack('B',self.ReadBits(count))[0]
+    def ReadUInt16Bits(self, count): return unpack('>H',self.ReadBits(count))[0]
+    def ReadUInt32Bits(self, count): return unpack('>I',self.ReadBits(count))[0]
+    def ReadUInt64Bits(self, count): return unpack('>L',self.ReadBits(count))[0]
+    def ReadUInt128Bits(self, count): return unpack('>Q',self.ReadBits(count))[0]
     def ReadStruct(self, format, count): return unpack('>'+format,self.ReadBytes(count))
     def ReadStructBits(self, format, count): return unpack('>'+format,self.ReadBits(count))
     def Seek(self, offset, mode=io.SEEK_CUR): self.SeekBits(8*offset,mode)
@@ -102,12 +100,12 @@ def processPos(bitcount, rangesByAxis, out):
     else: out[0] = out[1] = out[2] = 26
 
 def readShapeDimension(stream):
-    eax = stream.ReadStructBits('H',11)[0]
+    eax = stream.ReadUInt16Bits(11)
     if not eax: return 0
     elif eax == 0x7FF: return 200
     else: return (eax - 1) * 0.0977517142892 + 0.0488758571446
 def readShape(stream):
-    shape = stream.ReadStructBits('B',2)[0]
+    shape = stream.ReadUInt8Bits(2)
     if shape < 1 or shape > 3: return
 
     shapeWidth = readShapeDimension(stream)
@@ -146,7 +144,7 @@ def readMvar(stream, size):
     ]
     
     stream.SeekBits(startPos + 255*8 + 2, io.SEEK_SET)
-    strCount = stream.ReadStructBits('H',9)[0]
+    strCount = stream.ReadUInt16Bits(9)
     print('%d Gametype Labels' % strCount)
 
     #global debug
@@ -155,15 +153,15 @@ def readMvar(stream, size):
     if strCount > 0:
         offsets = []
         for i in range(strCount):
-            presence = stream.ReadStructBits('?',1)[0]
+            presence = stream.ReadBoolBit()
             if not presence: continue
-            offset = stream.ReadStructBits('H',12)[0]
+            offset = stream.ReadUInt16Bits(12)
             offsets.append(offset)
 
-        dataLength   = stream.ReadStructBits('H',13)[0]
-        isCompressed = stream.ReadStructBits('?',1)[0]
+        dataLength   = stream.ReadUInt16Bits(13)
+        isCompressed = stream.ReadBoolBit()
         if isCompressed:
-            compSize   = stream.ReadStructBits('H',13)[0]
+            compSize   = stream.ReadUInt16Bits(13)
             stream.Seek(4) # skip zlib header's uncompressed size
             decodedStrs = zlib.decompress(stream.ReadBytes(compSize-4))
             if len(decodedStrs) != dataLength:
@@ -177,25 +175,25 @@ def readMvar(stream, size):
     
     st = time.time_ns()
     for i in range(651):
-        presence = stream.ReadStructBits('?',1)[0]
+        presence = stream.ReadBoolBit()
         if not presence: break
-        unk00 = stream.ReadStructBits('B',2)[0]
-        noSubcat = not stream.ReadStructBits('?',1)[0]
-        if noSubcat: subcat = stream.ReadStructBits('B',8)[0]
-        absence = stream.ReadStructBits('?',1)[0]
+        unk00 = stream.ReadUInt8Bits(2)
+        noSubcat = not stream.ReadBoolBit()
+        if noSubcat: subcat = stream.ReadUInt8Bits(8)
+        absence = stream.ReadBoolBit()
         if absence: objType = 0xFF
-        else: objType = stream.ReadStructBits('B',5)[0]
+        else: objType = stream.ReadUInt8Bits(5)
 
         #Position
         bitcount = 21
         axisBits = [0, 0, 0]
-        a = stream.ReadStructBits('?',1)[0]
+        a = stream.ReadBoolBit()
         if a:
             if mapBounds: processPos(bitcount, rangesByAxis, axisBits)
             else: print("POS TODO1")
         else:
             if mapBounds: processPos(bitcount, rangesByAxis, axisBits)
-            elif not stream.ReadStructBits('?',1)[0] and stream.ReadStructBits('B',2)[0] != -1: print("POS TODO2")# != 3?!
+            elif not stream.ReadBoolBit() and stream.ReadUInt8Bits(2) != -1: print("POS TODO2")# != 3?!
         pos = [
             unpack('>I',b'\x00' + stream.ReadBits(axisBits[0]))[0],
             unpack('>I',b'\x00' + stream.ReadBits(axisBits[1]))[0],
@@ -210,36 +208,36 @@ def readMvar(stream, size):
             print('%d - %s' % (i,pos))
             print(pos[0] - 26.504993438720703 + pos[1] - 173.5377311706543 + pos[2] - 36.39936447143555)
 
-        vertical = stream.ReadStructBits('?',1)[0]
+        vertical = stream.ReadBoolBit()
         if vertical: axisAngleAxis = [0,0,1]
         else: stream.SeekBits(20)# TODO: load axisAngleAxis
         
-        ang = stream.ReadStructBits('H',14)[0]
+        ang = stream.ReadUInt16Bits(14)
         #loadAxisAngleAngle(ang)
-        spawnRelativeToMapIndex = stream.ReadStructBits('H',10)[0]
+        spawnRelativeToMapIndex = stream.ReadUInt16Bits(10)
 
         #load data
         readShape(stream)
         
-        eax = stream.ReadStructBits('B',8)[0]
+        eax = stream.ReadUInt8Bits(8)
         if eax & 0x80000000: eax |= 0xFFFFFF00 # test if signed
         spawnSequence = eax & 0xFF
         
-        respawnTime = stream.ReadStructBits('B',8)[0]
-        cachedType = stream.ReadStructBits('B',5)[0]
-        forgeLabelIndex = -1 if stream.ReadStructBits('?',1)[0] else stream.ReadStructBits('B',8)[0]
-        flags = stream.ReadStructBits('B',8)[0]
-        team = stream.ReadStructBits('B',4)[0] - 1
-        color = -1 if stream.ReadStructBits('?',1)[0] else stream.ReadStructBits('B',3)[0]
+        respawnTime = stream.ReadUInt8Bits(8)
+        cachedType = stream.ReadUInt8Bits(5)
+        forgeLabelIndex = -1 if stream.ReadBoolBit() else stream.ReadUInt8Bits(8)
+        flags = stream.ReadUInt8Bits(8)
+        team = stream.ReadUInt8Bits(4) - 1
+        color = -1 if stream.ReadBoolBit() else stream.ReadUInt8Bits(3)
         
         if cachedType == 1:# weapon
-            spareClips = stream.ReadStructBits('B',8)[0]
+            spareClips = stream.ReadUInt8Bits(8)
             continue
         elif cachedType <= 0xB: continue
         elif cachedType <= 0xE:# teleporter
-            teleporterChannel = stream.ReadStructBits('B',5)[0]
-            teleporterPassability = stream.ReadStructBits('B',5)[0]
-        elif cachedType == 0x13: locationNameIndex = stream.ReadStructBits('B',8)[0] - 1
+            teleporterChannel = stream.ReadUInt8Bits(5)
+            teleporterPassability = stream.ReadUInt8Bits(5)
+        elif cachedType == 0x13: locationNameIndex = stream.ReadUInt8Bits(8) - 1
     tEl = (time.time_ns() - st) * 1e-6
     print('Loaded %d Objects (%dms)' % (i,tEl))
 
