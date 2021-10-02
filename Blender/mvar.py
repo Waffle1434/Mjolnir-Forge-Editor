@@ -2,7 +2,7 @@ import io, zlib, time
 from struct import *
 from math import *
 
-debug = False
+#debug = False
 
 class BitStream:
     def __init__(self, byteStream):
@@ -20,7 +20,7 @@ class BitStream:
 
         byteCount = ceil(finalPos/8) - floor(self.bitPos/8)
         bytes = self.byteStream.read(byteCount)
-        self.SeekBits(self.bitPos + count, io.SEEK_SET)
+        self.SeekBits(count)
 
         #if debug: print('Read %d bits' % count)
 
@@ -64,6 +64,7 @@ class BitStream:
     def ReadUInt32Bits(self, count): return unpack('>I',self.ReadBits(count))[0]
     def ReadUInt64Bits(self, count): return unpack('>L',self.ReadBits(count))[0]
     def ReadUInt128Bits(self, count): return unpack('>Q',self.ReadBits(count))[0]
+    def ReadUIntBits(self, count): return int.from_bytes(self.ReadBits(count),'big')
     def ReadStruct(self, format, count): return unpack('>'+format,self.ReadBytes(count))
     def ReadStructBits(self, format, count): return unpack('>'+format,self.ReadBits(count))
     def Seek(self, offset, mode=io.SEEK_CUR): self.SeekBits(8*offset,mode)
@@ -73,59 +74,21 @@ class BitStream:
         else: raise
         self.byteStream.seek(floor(self.bitPos/8))
 
+def ReadShapeDimension(stream):
+    value = stream.ReadUInt16Bits(11)
+    if not value: return 0
+    elif value == 0x7FF: return 200
+    else: return (value - 1) * 0.0977517142892 + 0.0488758571446
 
-filename = "D:\Games\Steam\steamapps\common\Halo The Master Chief Collection\haloreach\map_variants\hr_forgeWorld_theCage.mvar"
-
-f = open(filename, 'rb')
-stream = BitStream(f)
-
-#debug = True
-
-def processPos(bitcount, rangesByAxis, out):
-    # Determines the proper bitcounts to use for object position coordinates, given the map bounds and the baseline bitcount specified.
-    MINIMUM_UNIT_16BIT = 0.00833333333 # hex 0x3C088889 == 0.00833333376795F
-    if bitcount > 0x10: min_step = MINIMUM_UNIT_16BIT / (1 << (bitcount - 0x10))
-    else: min_step = (1 << (0x10 - bitcount)) * MINIMUM_UNIT_16BIT
-    
-    if min_step >= 0.0001: # hex 0x38D1B717 == 9.99999974738e-05
-        min_step *= 2
-        for i in range(3):
-            edx = min(0x800000, ceil(rangesByAxis[i] / min_step))
-            ecx = (int(log(edx,2)) if edx >= 0 else 31) if edx else -1 # 23
-
-            out[i] = min(26, 
-                (ecx + (1 if ((edx & ((1 << ecx) - 1)) != 0) else 0)) if ecx != -1 
-                else 0
-            )
-    else: out[0] = out[1] = out[2] = 26
-
-def readShapeDimension(stream):
-    eax = stream.ReadUInt16Bits(11)
-    if not eax: return 0
-    elif eax == 0x7FF: return 200
-    else: return (eax - 1) * 0.0977517142892 + 0.0488758571446
-def readShape(stream):
-    shape = stream.ReadUInt8Bits(2)
-    if shape < 1 or shape > 3: return
-
-    shapeWidth = readShapeDimension(stream)
-
-    if shape == 1: return
-    elif shape == 3: shapeLength = readShapeDimension(stream)
-    
-    shapeTop = readShapeDimension(stream)
-    shapeBottom = readShapeDimension(stream)
-
-
-def readBlf(stream, size):
+def ReadBlamEngineFileHeader(stream, size):
     stream.Seek(size - 8)
-def readChdr(stream, size):
+def ReadContentHeader(stream, size):
     stream.Seek(135)
     title = stream.ReadString16(128)
     description = stream.ReadString16(128)
     print('%s - %s' % (title,description))
     stream.Seek(49)
-def readMvar(stream, size):
+def ReadMapVariant(stream, size):
     startPos = stream.bitPos
     stream.SeekBits(110*8 + 7)
     title = stream.ReadString16(128,True)
@@ -142,6 +105,25 @@ def readMvar(stream, size):
         mapBounds[1][1] - mapBounds[1][0],
         mapBounds[2][1] - mapBounds[2][0]
     ]
+
+    if mapBounds:# Determines the proper bitcounts to use for object position coordinates, given the map bounds and the baseline bitcount specified.
+        bitcount = 21
+        MINIMUM_UNIT_16BIT = 0.00833333333 # hex 0x3C088889 == 0.00833333376795F
+        if bitcount > 16: min_step = MINIMUM_UNIT_16BIT / (1 << (bitcount - 16))
+        else: min_step = (1 << (16 - bitcount)) * MINIMUM_UNIT_16BIT
+        
+        axisBits = [0,0,0]
+        if min_step >= 0.0001: # hex 0x38D1B717 == 9.99999974738e-05
+            min_step *= 2
+            for i in range(3):
+                edx = min(0x800000, ceil(rangesByAxis[i] / min_step))
+                ecx = (int(log(edx,2)) if edx >= 0 else 31) if edx else -1 # 23
+
+                axisBits[i] = min(26, 
+                    (ecx + (1 if ((edx & ((1 << ecx) - 1)) != 0) else 0)) if ecx != -1 
+                    else 0
+                )
+        else: axisBits = [26,26,26]
     
     stream.SeekBits(startPos + 255*8 + 2, io.SEEK_SET)
     strCount = stream.ReadUInt16Bits(9)
@@ -184,27 +166,21 @@ def readMvar(stream, size):
         if absence: objType = 0xFF
         else: objType = stream.ReadUInt8Bits(5)
 
-        #Position
-        bitcount = 21
-        axisBits = [0, 0, 0]
+        # Position
         a = stream.ReadBoolBit()
-        if a:
-            if mapBounds: processPos(bitcount, rangesByAxis, axisBits)
-            else: print("POS TODO1")
-        else:
-            if mapBounds: processPos(bitcount, rangesByAxis, axisBits)
-            elif not stream.ReadBoolBit() and stream.ReadUInt8Bits(2) != -1: print("POS TODO2")# != 3?!
+        if not mapBounds:
+            print("POS TODO")
+            if not a and not stream.ReadBoolBit() and stream.ReadUInt8Bits(2) != -1: print("POS TODO2")# != 3?!
+            raise
+            
         pos = [
-            unpack('>I',b'\x00' + stream.ReadBits(axisBits[0]))[0],
-            unpack('>I',b'\x00' + stream.ReadBits(axisBits[1]))[0],
-            unpack('>I',b'\x00' + stream.ReadBits(axisBits[2]))[0]
+            (0.5 + unpack('>I',b'\x00' + stream.ReadBits(axisBits[0]))[0]) * (rangesByAxis[0] / (1 << axisBits[0])) + mapBounds[0][0],
+            (0.5 + unpack('>I',b'\x00' + stream.ReadBits(axisBits[1]))[0]) * (rangesByAxis[1] / (1 << axisBits[1])) + mapBounds[1][0],
+            (0.5 + unpack('>I',b'\x00' + stream.ReadBits(axisBits[2]))[0]) * (rangesByAxis[2] / (1 << axisBits[2])) + mapBounds[2][0]
         ]
-        pos[0] = (0.5 + pos[0]) * (rangesByAxis[0] / (1 << axisBits[0])) + mapBounds[0][0]
-        pos[1] = (0.5 + pos[1]) * (rangesByAxis[1] / (1 << axisBits[1])) + mapBounds[1][0]
-        pos[2] = (0.5 + pos[2]) * (rangesByAxis[2] / (1 << axisBits[2])) + mapBounds[2][0]
 
         #print('%d - %s' % (i,pos))
-        if i == 400:
+        if i == 400:# Debugging
             print('%d - %s' % (i,pos))
             print(pos[0] - 26.504993438720703 + pos[1] - 173.5377311706543 + pos[2] - 36.39936447143555)
 
@@ -216,8 +192,14 @@ def readMvar(stream, size):
         #loadAxisAngleAngle(ang)
         spawnRelativeToMapIndex = stream.ReadUInt16Bits(10)
 
-        #load data
-        readShape(stream)
+        # Load Object Data
+        shape = stream.ReadUInt8Bits(2)
+        if shape > 0 and shape < 4:
+            shapeWidth = ReadShapeDimension(stream)
+            if shape == 3: shapeLength = ReadShapeDimension(stream)
+            if shape != 1:
+                shapeTop = ReadShapeDimension(stream)
+                shapeBottom = ReadShapeDimension(stream)
         
         eax = stream.ReadUInt8Bits(8)
         if eax & 0x80000000: eax |= 0xFFFFFF00 # test if signed
@@ -230,34 +212,34 @@ def readMvar(stream, size):
         team = stream.ReadUInt8Bits(4) - 1
         color = -1 if stream.ReadBoolBit() else stream.ReadUInt8Bits(3)
         
-        if cachedType == 1:# weapon
-            spareClips = stream.ReadUInt8Bits(8)
-            continue
-        elif cachedType <= 0xB: continue
-        elif cachedType <= 0xE:# teleporter
+        if cachedType == 1: spareClips = stream.ReadUInt8Bits(8)# weapon
+        elif cachedType > 11 and cachedType <= 14:# teleporter
             teleporterChannel = stream.ReadUInt8Bits(5)
             teleporterPassability = stream.ReadUInt8Bits(5)
-        elif cachedType == 0x13: locationNameIndex = stream.ReadUInt8Bits(8) - 1
+        elif cachedType == 19: locationNameIndex = stream.ReadUInt8Bits(8) - 1
     tEl = (time.time_ns() - st) * 1e-6
     print('Loaded %d Objects (%dms)' % (i,tEl))
+def TryReadMvarFile(filename):
+    f = open(filename, 'rb')
+    stream = BitStream(f)
 
+    try:
+        while True:
+            signature = stream.ReadString(4)
+            
+            fnc = dictToFnc.get(signature, None)
+            if fnc != None:
+                size = stream.ReadUInt32()
+                print('%s (%d)' % (signature,size))
+                fnc(stream, size)
+            else: break
+        return True
+    except Exception as ex:
+        print(ex)
+        pass
+    return False
 
-dictToFnc = { '_blf':readBlf, 'chdr':readChdr, 'mvar':readMvar }
+dictToFnc = { '_blf':ReadBlamEngineFileHeader, 'chdr':ReadContentHeader, 'mvar':ReadMapVariant }
 
-
-try:
-    while True:
-        signature = stream.ReadString(4)
-        
-        fnc = dictToFnc.get(signature, None)
-        if fnc != None:
-            size = stream.ReadUInt32()
-            print('%s (%d)' % (signature,size))
-            fnc(stream, size)
-        else: break
-except Exception as ex:
-    print(ex)
-    pass
-
+TryReadMvarFile("D:\Games\Steam\steamapps\common\Halo The Master Chief Collection\haloreach\map_variants\hr_forgeWorld_theCage.mvar")
 print("done")
-

@@ -1,10 +1,11 @@
-import bpy, enum, time, blf, textwrap
+import bpy, enum, time, blf, textwrap, io, zlib
 from bpy.types import Operator
 from bpy.props import *
 from ctypes import *
 from os.path import exists
 from math import *
 from mathutils import *
+from struct import *
 from bpy_extras.io_utils import ImportHelper
 
 print("Mjolnir v0.9.8")
@@ -20,6 +21,11 @@ defaultGtLabel = ('NO_LABEL', "No Label", "Default")
 class float3(Structure):
     _fields_ = [ ('x', c_float), ('y', c_float), ('z', c_float) ]
     def cross(self, other): return float3(self.y * other.z - self.z * other.y, self.z * other.x - self.x * other.z, self.x * other.y - self.y * other.x)
+    def normalized(self):
+        sqrMag = self.x*self.x + self.y*self.y + self.z*self.z
+        if sqrMag == 0: return float3()
+        invMag = 1 / sqrt(sqrMag)
+        return float3(self.x*invMag, self.y*invMag, self.z*invMag)
     def fromVector(vec): return float3(vec.x,vec.y,vec.z)
     def toVector(self): return Vector((self.x,self.y,self.z))
     def __str__(self): return "(%.2f,%.2f,%.2f)"%(self.x,self.y,self.z)
@@ -412,7 +418,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         
         self.objectType = fobj.itemCategory << 8 | fobj.itemVariant
         self.cachedType = fobj.cachedType
-        self.gtLabel = gtIndexToLabel[fobj.gtLabelIndex]
+        self.gtLabel = gtIndexToLabel.get(fobj.gtLabelIndex, defaultGtLabel[0])
         self.otherInfoA = fobj.otherInfoA
         self.otherInfoB = fobj.otherInfoB
 
@@ -856,11 +862,466 @@ class ImportMVAR(Operator, ImportHelper):
     filter_glob: StringProperty( default="*.mvar", options={'HIDDEN'}, maxlen=255 )
 
     def execute(self, context):
-        print("!")
-        #return read_some_data(context, self.filepath, self.use_setting)
-        return {'FINISHED'}
+        if TryReadMvarFile(self.filepath): return {'FINISHED'}
+        else: return{'CANCELLED'}
 
 def importMvarMenu(self, context): self.layout.operator(ImportMVAR.bl_idname, text="Map Variant (.mvar)", icon='ANTIALIASED')
+
+forgeItemNames = {
+	#Universal
+	#Weapons Human
+	0x0000:"Assault Rifle", 0x0100:"DMR", 0x0200:"Grenade Launcher", 0x0300:"Magnum", 0x0400:"Rocket Launcher", 0x0500:"Shotgun", 0x0600:"Sniper Rifle", 0x0700:"Spartan Laser", 0x0800:"Frag Grenade", 0x0900:"Mounted Machinegun",
+	#Weapons Covenant
+	0x0A00:"Concussion Rifle", 0x0B00:"Energy Sword", 0x0C00:"Fuel Rod Gun", 0x0D00:"Gravity Hammer", 0x0E00:"Focus Rifle", 0x0F00:"Needle Rifle", 0x1000:"Needler", 0x1100:"Plasma Launcher", 0x1200:"Plasma Pistol", 0x1300:"Plasma Repeater", 0x1400:"Plasma Rifle", 0x1500:"Spiker", 0x1600:"Plasma Grenade", 0x1700:"Plasma Turret",
+	#Armor Abilities
+	0x1800:"Active Camouflage", 0x1900:"Armor Lock", 0x1A00:"Drop Shield", 0x1B00:"Evade", 0x1C00:"Hologram", 0x1D00:"Jet Pack", 0x1E00:"Sprint",
+
+	#Forge World
+	#Vehicles
+	0x1F00:"Banshee", 0x2000:"Falcon", 0x2100:"Ghost", 0x2200:"Mongoose", 0x2300:"Revenant", 0x2400:"Scorpion", 0x2500:"Shade Turret", 0x2600:"Warthog, Default", 0x2601:"Warthog, Gauss", 0x2602:"Warthog, Rocket", 0x2700:"Wraith",
+	#Gadgets
+	0x2800:"Fusion Coil", 0x2801:"Landmine", 0x2802:"Plasma Battery", 0x2803:"Propane Tank", 0x2900:"Health Station", 0x2A00:"Camo Powerup", 0x2A01:"Overshield", 0x2A02:"Custom Powerup", 0x2B00:"Cannon, Man", 0x2B01:"Cannon, Man, Heavy", 0x2B02:"Cannon, Man, Light", 0x2B03:"Cannon, Vehicle", 0x2B04:"Gravity Lift", 0x2C00:"One Way Shield 2", 0x2D00:"One Way Shield 3", 0x2E00:"One Way Shield 4", 0x2F00:"FX:Colorblind", 0x2F01:"FX:Next Gen", 0x2F02:"FX:Juicy", 0x2F03:"FX:Nova", 0x2F04:"FX:Olde Timey", 0x2F05:"FX:Pen And Ink", 0x2F06:"FX:Purple", 0x2F07:"FX:Green", 0x2F08:"FX:Orange", 0x3000:"Shield Door, Small", 0x3100:"Shield Door, Medium", 0x3200:"Shield Door, Large", 0x3300:"Receiver Node", 0x3301:"Sender Node", 0x3302:"Two-Way Node", 0x3400:"Die", 0x3401:"Golf Ball", 0x3402:"Golf Club", 0x3403:"Kill Ball", 0x3404:"Soccer Ball", 0x3405:"Tin Cup", 0x3500:"Light, Red", 0x3501:"Light, Blue", 0x3502:"Light, Green", 0x3503:"Light, Orange", 0x3504:"Light, Purple", 0x3505:"Light, Yellow", 0x3506:"Light, White", 0x3507:"Light, Red, Flashing", 0x3508:"Light, Yellow, Flashing",
+	#Spawning
+	0x3600:"Initial Spawn", 0x3700:"Respawn Point", 0x3800:"Initial Loadout Camera", 0x3900:"Respawn Zone", 0x3A00:"Respawn Zone, Weak", 0x3B00:"Respawn Zone, Anti", 0x3C00:"Safe Boundary", 0x3C01:"Soft Safe Boundary", 0x3D00:"Kill Boundary", 0x3D01:"Soft Kill Boundary",
+	#Objectives
+	0x3E00:"Flag Stand", 0x3F00:"Capture Plate", 0x4000:"Hill Marker",
+	#Scenery
+	0x4100:"Barricade, Small", 0x4101:"Barricade, Large", 0x4102:"Covenant Barrier", 0x4103:"Portable Shield", 0x4200:"Camping Stool", 0x4300:"Crate, Heavy Duty", 0x4301:"Crate, Heavy, Small", 0x4302:"Covenant Crate", 0x4303:"Crate, Half Open", 0x4400:"Sandbag Wall", 0x4401:"Sandbag, Turret Wall", 0x4402:"Sandbag Corner, 45", 0x4403:"Sandbag Corner, 90", 0x4404:"Sandbag Endcap", 0x4500:"Street Cone",
+	#Structure
+	#Building Blocks
+	0x4600:"Block, 1x1", 0x4601:"Block, 1x1, Flat", 0x4602:"Block, 1x1, Short", 0x4603:"Block, 1x1, Tall", 0x4604:"Block, 1x1, Tall And Thin", 0x4605:"Block, 1x2", 0x4606:"Block, 1x4", 0x4607:"Block, 2x1, Flat", 0x4608:"Block, 2x2", 0x4609:"Block, 2x2, Flat", 0x460A:"Block, 2x2, Short", 0x460B:"Block, 2x2, Tall", 0x460C:"Block, 2x3", 0x460D:"Block, 2x4", 0x460E:"Block, 3x1, Flat", 0x460F:"Block, 3x3", 0x4610:"Block, 3x3, Flat", 0x4611:"Block, 3x3, Short", 0x4612:"Block, 3x3, Tall", 0x4613:"Block, 3x4", 0x4614:"Block, 4x4", 0x4615:"Block, 4x4, Flat", 0x4616:"Block, 4x4, Short", 0x4617:"Block, 4x4, Tall", 0x4618:"Block, 5x1, Short", 0x4619:"Block, 5x5, Flat",
+	#Bridges And Platforms
+	0x4700:"Bridge, Small", 0x4701:"Bridge, Medium", 0x4702:"Bridge, Large", 0x4703:"Bridge, XLarge", 0x4704:"Bridge, Diagonal", 0x4705:"Bridge, Diag, Small", 0x4706:"Dish", 0x4707:"Dish, Open", 0x4708:"Corner, 45 Degrees", 0x4709:"Corner, 2x2", 0x470A:"Corner, 4x4", 0x470B:"Landing Pad", 0x470C:"Platform, Ramped", 0x470D:"Platform, Large", 0x470E:"Platform, XL", 0x470F:"Platform, XXL", 0x4710:"Platform, Y", 0x4711:"Platform, Y, Large", 0x4712:"Sniper Nest", 0x4713:"Staircase",
+	#Buildings
+	0x4714:"Walkway, Large", 0x4800:"Bunker, Small", 0x4801:"Bunker, Small, Covered", 0x4802:"Bunker, Box", 0x4803:"Bunker, Round", 0x4804:"Bunker, Ramp", 0x4805:"Pyramid", 0x4806:"Tower, 2 Story", 0x4807:"Tower, 3 Story", 0x4808:"Tower, Tall", 0x4809:"Room, Double", 0x480A:"Room, Triple",
+	#Decorative
+	0x4900:"Antenna, Small", 0x4901:"Antenna, Satellite", 0x4902:"Brace", 0x4903:"Brace, Large", 0x4904:"Brace, Tunnel", 0x4905:"Column", 0x4906:"Cover", 0x4907:"Cover, Crenellation", 0x4908:"Cover, Glass", 0x4909:"Glass Sail", 0x490A:"Railing, Small", 0x490B:"Railing, Medium", 0x490C:"Railing, Long", 0x490D:"Teleporter Frame", 0x490E:"Strut", 0x490F:"Large Walkway Cover",
+	#Doors, Windows, And Walls
+	0x4A00:"Door", 0x4A01:"Door, Double", 0x4A02:"Window", 0x4A03:"Window, Double", 0x4A04:"Wall", 0x4A05:"Wall, Double", 0x4A06:"Wall, Corner", 0x4A07:"Wall, Curved", 0x4A08:"Wall, Coliseum", 0x4A09:"Window, Colesium", 0x4A0A:"Tunnel, Short", 0x4A0B:"Tunnel, Long",
+	#Inclines
+	0x4B00:"Bank, 1x1", 0x4B01:"Bank, 1x2", 0x4B02:"Bank, 2x1", 0x4B03:"Bank, 2x2", 0x4B04:"Ramp, 1x2", 0x4B05:"Ramp, 1x2, Shallow", 0x4B06:"Ramp, 2x2", 0x4B07:"Ramp, 2x2, Steep", 0x4B08:"Ramp, Circular, Small", 0x4B09:"Ramp, Circular, Large", 0x4B0A:"Ramp, Bridge, Small", 0x4B0B:"Ramp, Bridge, Medium", 0x4B0C:"Ramp, Bridge, Large", 0x4B0D:"Ramp, XL", 0x4B0E:"Ramp, Stunt",
+	#Natural
+	0x4C00:"Rock, Small", 0x4C01:"Rock, Flat", 0x4C02:"Rock, Medium 1", 0x4C03:"Rock, Medium 2", 0x4C04:"Rock, Spire 1", 0x4C05:"Rock, Spire 2", 0x4C06:"Rock, Seastack", 0x4C07:"Rock, Arch",
+	0x4D00:"Grid",
+	#Vehicles (MCC)
+	0x5900:"Falcon, Nose Gun", 0x5901:"Falcon, Grenadier", 0x5902:"Falcon, Transport", 0x5A00:"Warthog, Transport", 0x5B00:"Sabre", 0x5C00:"Seraph", 0x5D00:"Cart, Electric", 0x5E00:"Forklift", 0x5F00:"Pickup", 0x6000:"Truck Cab", 0x6100:"Van, Oni", 0x6200:"Shade, Fuel Rod",
+	#Gadgets (MCC)
+	0x6300:"Cannon, Man, Forerunner", 0x6301:"Cannon, Man, Heavy, Forerunner", 0x6302:"Cannon, Man, Light, Forerunner", 0x6303:"Gravity Lift, Forerunner", 0x6304:"Gravity Lift, Tall, Forerunner", 0x6305:"Cannon, Man, Human", 0x6400:"One Way Shield 1", 0x6500:"One Way Shield 5", 0x6600:"Shield Wall, Small", 0x6700:"Shield Wall, Medium", 0x6800:"Shield Wall, Large", 0x6900:"Shield Wall, X-Large", 0x6A00:"One Way Shield 2", 0x6B00:"One Way Shield 3", 0x6C00:"One Way Shield 4", 0x6D00:"Shield Door, Small", 0x6E00:"Shield Door, Small 1", 0x6F00:"Shield Door, Large", 0x7000:"Shield Door, Large 1", 0x7100:"Ammo Cabinet", 0x7200:"Spnkr Ammo", 0x7300:"Sniper Ammo",
+	#Scenery (MCC)
+	0x7400:"Jersey Barrier", 0x7401:"Jersey Barrier, Short", 0x7402:"Heavy Barrier", 0x7500:"Small, Closed", 0x7501:"Crate, Metal, Multi", 0x7502:"Crate, Metal, Single", 0x7503:"Crate, Fully Open", 0x7504:"Crate, Forerunner, Small", 0x7505:"Crate, Forerunner, Large", 0x7600:"Pallet", 0x7601:"Pallet, Large", 0x7602:"Pallet, Metal", 0x7700:"Driftwood 1", 0x7701:"Driftwood 2", 0x7702:"Driftwood 3", 0x7800:"Phantom", 0x7801:"Spirit", 0x7802:"Pelican", 0x7803:"Drop Pod, Elite", 0x7804:"Anti Air Gun", 0x7900:"Cargo Truck, Destroyed", 0x7901:"Falcon, Destroyed", 0x7902:"Warthog, Destroyed", 0x7A00:"Folding Chair", 0x7B00:"Dumpster", 0x7C00:"Dumpster, Tall", 0x7D00:"Equipment Case", 0x7E00:"Monitor", 0x7F00:"Plasma Storage", 0x8000:"Camping Stool, Covenant", 0x8100:"Covenant Antenna", 0x8200:"Fuel Storage", 0x8300:"Engine Cart", 0x8400:"Missile Cart",
+	#Structure (MCC)
+	0x8500:"Bridge", 0x8501:"Platform, Covenant", 0x8502:"Catwalk, Straight", 0x8503:"Catwalk, Short", 0x8504:"Catwalk, Bend, Left", 0x8505:"Catwalk, Bend, Right", 0x8506:"Catwalk, Angled", 0x8507:"Catwalk, Large", 0x8600:"Bunker, Overlook", 0x8601:"Gunners Nest", 0x8700:"Cover, Small", 0x8701:"Block, Large", 0x8702:"Blocker, Hallway", 0x8703:"Column, Stone", 0x8704:"Tombstone", 0x8705:"Cover, Large, Stone", 0x8706:"Cover, Large", 0x8707:"Walkway Cover", 0x8708:"Walkway Cover, Short", 0x8709:"Cover, Large, Human", 0x870A:"I-Beam", 0x8800:"Wall (MCC)", 0x8801:"Door (MCC)", 0x8802:"Door, Human", 0x8803:"Door A, Forerunner", 0x8804:"Door B, Forerunner", 0x8805:"Door C, Forerunner", 0x8806:"Door D, Forerunner", 0x8807:"Door E, Forerunner", 0x8808:"Door F, Forerunner", 0x8809:"Door G, Forerunner", 0x880A:"Door H, Forerunner", 0x880B:"Wall, Small, Forerunner", 0x880C:"Wall, Large, Forerunner", 0x8900:"Rock, Spire 3", 0x8901:"Tree, Dead",
+	0x8D00:"Target Designator",#Other (MCC)
+	#Hidden Structure Blocks
+	0x4E00:"Block, 2x2, Invisible", 0x4F00:"Block, 1x1, Invisible", 0x5000:"Block, 2x2x2, Invisible", 0x5100:"Block, 4x4x2, Invisible", 0x5200:"Block, 4x4x4, Invisible", 0x5300:"Block, 2x1, Flat, Invisible", 0x5400:"Block, 1x1, Flat, Invisible", 0x5500:"Block, 1x1, Small, Invisible", 0x5600:"Block, 2x2, Flat, Invisible", 0x5700:"Block, 4x2, Flat, Invisible", 0x5800:"Block, 4x4, Flat, Invisible",
+	#Hidden Misc
+	0x8A00:"Generator", 0x8B00:"Vending Machine"
+}
+
+class BitStream:
+    def __init__(self, byteStream):
+        self.byteStream = byteStream
+        self.bitPos = 0
+    
+    def ReadBytes(self, count): return self.ReadBits(8*count)
+    def ReadBits(self, count):
+        finalPos = self.bitPos + count
+        lShift = finalPos % 8
+        rShift = -finalPos % 8
+        skip = self.bitPos % 8 + rShift >= 8
+        carryMask = 2**rShift - 1# redundant because of shift?
+        fullBitMask = 2**count - 1 << rShift
+
+        byteCount = ceil(finalPos/8) - floor(self.bitPos/8)
+        bytes = self.byteStream.read(byteCount)
+        self.SeekBits(count)
+
+        outBytes = bytearray()
+        carry = 0
+        for i in range(byteCount):
+            by = bytes[i] & (fullBitMask >> 8*(byteCount-1 - i) & 0xFF)
+            carryNext = (by & carryMask) << lShift# TODO: overflow?!
+            if not skip: outBytes.append((by >> rShift) | carry)
+            else: skip = False
+            carry = carryNext
+        return outBytes
+        
+    def ReadString(self, count, stopOnNull=False): return self.ReadBytes(count).decode('utf-8',errors='ignore').rstrip('\0')
+    def ReadString16(self, count, stopOnNull=False):
+        if stopOnNull:
+            s = ""
+            for i in range(2*count):
+                char = self.ReadBytes(2)
+                if char == b'\x00\x00': break
+                s += char.decode('utf-16-be',errors='ignore')
+            return s
+        else: return self.ReadBytes(2*count).decode('utf-16-be',errors='ignore').rstrip('\0')
+    def ReadUInt32(self): return unpack('>I',self.ReadBytes(4))[0]
+    def ReadUInt16(self): return unpack('>H',self.ReadBytes(2))[0]
+    def ReadFloat(self): return unpack('>f',self.ReadBytes(4))[0]
+    def ReadBoolBit(self): return unpack('?',self.ReadBits(1))[0]
+    def ReadUInt8Bits(self, count): return unpack('B',self.ReadBits(count))[0]
+    def ReadUInt16Bits(self, count): return unpack('>H',self.ReadBits(count))[0]
+    def ReadUInt32Bits(self, count): return unpack('>I',self.ReadBits(count))[0]
+    def ReadUInt64Bits(self, count): return unpack('>L',self.ReadBits(count))[0]
+    def ReadUInt128Bits(self, count): return unpack('>Q',self.ReadBits(count))[0]
+    def ReadUIntBits(self, count): return int.from_bytes(self.ReadBits(count),'big')
+    def ReadStruct(self, format, count): return unpack('>'+format,self.ReadBytes(count))
+    def ReadStructBits(self, format, count): return unpack('>'+format,self.ReadBits(count))
+    def Seek(self, offset, mode=io.SEEK_CUR): self.SeekBits(8*offset,mode)
+    def SeekBits(self, offset, mode=io.SEEK_CUR):
+        if mode == io.SEEK_SET: self.bitPos = offset
+        elif mode == io.SEEK_CUR: self.bitPos += offset
+        else: raise
+        self.byteStream.seek(floor(self.bitPos/8))
+
+def ReadShapeDimension(stream):
+    value = stream.ReadUInt16Bits(11)
+    if not value: return 0
+    elif value == 0x7FF: return 200
+    else: return (value - 1) * 0.0977517142892 + 0.0488758571446
+def ReadUpAxis(stream):
+    lookup_table = [
+        [0x0000A, 0x002], [0x00015, 0x003],
+        [0x0002A, 0x005], [0x00055, 0x008],
+        [0x000AA, 0x00C], [0x00155, 0x011],
+        [0x002AA, 0x019], [0x00555, 0x023],
+        [0x00AAA, 0x033], [0x01555, 0x048],
+        [0x02AAA, 0x067], [0x05555, 0x092],
+        [0x0AAAA, 0x0D0], [0x15555, 0x126],
+        [0x2AAAA, 0x1A1], [0x55555, 0x24E],
+        [0xAAAAA, 0x343], [0x155555, 0x9D04],
+        [0xAAAAAA, 0x687], [0x555555, 0x93B],
+        [0x2AAAAAA, 0x1A1F], [0x5555555, 0x24F4],
+        [0xAAAAAAA, 0x3440]
+    ]
+    bitcount = 20
+    bits = stream.ReadUIntBits(bitcount)# TODO
+    r9   = bitcount - 6
+    r11  = floor(bits / lookup_table[r9][0])
+    r8   = lookup_table[r9][0] * r11
+    ebx  = bits - r8
+    
+    eax = floor(ebx / lookup_table[r9][1])
+    ecx = lookup_table[r9][1] * eax
+    xmm2 = eax
+    eax *= 2
+    ebx -= ecx
+    ecx = lookup_table[r9][1] - 1
+    xmm0 = ecx
+    ecx -= 1
+    
+    xmm1 = 2 / xmm0
+    xmm2 = xmm2 * xmm1 - 1
+    xmm1 *= 0.5
+    xmm2 += xmm1
+    xmm0 = xmm0
+    xmm1 = xmm1
+    xmm2 = xmm2
+    if eax == ecx: xmm2 = 0
+    
+    ecx  = lookup_table[r9][1] - 1
+    xmm1 = ebx
+    xmm0 = ecx
+    eax = ebx * 2
+    ecx -= 1
+    xmm3 = 2 / xmm0
+    xmm1 *= xmm3
+    xmm3 *= 0.5
+    xmm1 -= 1
+    xmm1 += xmm3
+    xmm0 = xmm0
+    xmm1 = xmm1
+    xmm2 = xmm2
+    xmm3 = xmm3
+        
+    if (eax == ecx): xmm1 = 0
+    
+    if r11 <= 5:
+        if r11 == 0: upAxis = [1, xmm2, xmm1]
+        elif r11 == 3: upAxis = [-1, xmm2, xmm1]
+        elif r11 == 1: upAxis = [xmm2, 1, xmm1]
+        elif r11 == 4: upAxis = [xmm2, -1, xmm1]
+        elif r11 == 2: upAxis = [xmm2, xmm1, 1]
+        elif r11 == 5: upAxis = [xmm2, xmm1, -1]
+        else: upAxis = [0, 0, 1]
+    else:
+        print("need default up vector!")
+        raise
+    return float3(upAxis[0],upAxis[1],upAxis[2]).normalized()
+
+def fnc1(a, b, c):
+    xmm4 = a.z # correct, notwithstanding precision differences
+    xmm7 = a.z * 0 # correct
+    xmm6 = a.x * 0 # correct
+    xmm0 = a.x + a.y + xmm7 # correct, notwithstanding precision differences
+    xmm1 = xmm6 + a.y + xmm7 # correct
+    if (abs(xmm1) > abs(xmm0)):
+        xmm0 = xmm6 - a.y
+        b.y = a.z - xmm6
+        b.x = a.y - xmm7
+    else:
+        xmm6 -= xmm7 # correct
+        xmm0 = a.y - a.x # slightly wrong, possibly explainable by precision differences
+        b.y = xmm6
+        b.x = a.z - (a.y * 0) # correct
+    b.z = xmm0
+    b = b.normalized() # correct, notwithstanding precision differences
+    xmm5 = a.x
+    xmm1 = b.x
+    xmm3 = a.z
+    xmm0 = b.x * a.y # correct
+    xmm8 = a.x * b.y - (b.x * a.y) # correct
+    xmm3 *= b.y # correct
+    xmm2 = xmm3 * b.x # wrong, possibly explainable by precision differences
+    xmm0 = b.z * a.x # correct, notwithstanding precision differences
+    xmm4 = b.z * a.y - xmm3 # correct
+    c.z = xmm8
+    xmm2 -= xmm0 # correct, but this would be due to xmm2's incredibly small value initially
+    c.x = xmm4
+    c.y = xmm2
+    c = c.normalized()
+    return b
+def fnc2(a, b, xmm2, xmm3):
+    #a.enforce_single_precision()
+    #b.enforce_single_precision()
+    cx = xmm3 # correct, notwithstanding precision differences
+    cy = xmm2 # correct, notwithstanding precision differences
+    xmm5 = b.y
+    xmm3 = ((b.x * a.x) + (b.y * a.y) + (b.z * a.z)) * (1.0 - cx) # wrong digits and sign, right mag
+    xmm4 = a.x * cx # correct
+    xmm8 = a.y * cx # correct? it's positive zero in JS but negative in haloreach.dll
+    xmm7 = (b.x * xmm3) + (a.x * cx) # wrong sign and significant digits, right approx. magnitude
+    xmm1 = ((a.z * b.x) - (b.z * a.x)) * cy # correct
+    xmm9 = a.z * cx # correct
+    # and discard xmm10
+    xmm0 = a.z * xmm5
+    xmm2 = (a.x * b.y) - (b.x * a.y) * cy
+    xmm6 = ((b.z * a.y) - xmm0) * cy
+    # and discard xmm11
+    xmm7 -= xmm6 # wrong
+    # and discard xmm6
+    a.x = xmm7
+    # and discard xmm7
+    xmm0 = (xmm3 * b.y) + xmm8 - xmm1
+    # and discard xmm8
+    a.y = xmm0
+    # and discard xmm9
+    xmm3 = b.z + xmm9 - xmm2
+    a.z = xmm3
+    return a
+
+def loadAxisAngleAngle(rawAng, upAxis):
+    xmm1 = rawAng * 0.0003834952 - pi + 0.0001917476
+    rawAxisAngleAngle = rawAng
+    rawAxisAngleRads  = xmm1
+    xmm6 = xmm1
+    rsp20 = float3()
+    rsp30 = float3()
+    rsp20 = fnc1(upAxis, rsp20, rsp30)
+    # good up to here?
+    rotation = float3()
+    rotation.x = rsp20.x
+    rotation.z = rsp20.z
+
+    '''bool result = (xmm6 == PI)
+    if (isNaN(xmm6) || isNaN(PI)): # when would this ever be true?
+        result = (xmm6 == -PI)
+        if (isNaN(xmm6) || isNaN(-PI)) # when would this ever be true?
+            result = false
+            #
+            # The comparisons use UCOMISS, and the weird-ass NaN checks are JP branches. 
+            # UCOMISS should only set the parity flag (PF) if either or both operands 
+            # are NaN, but the code here is written as if the *constant* is the one 
+            # that might be NaN.
+    if (result):
+        xmm7 = 0
+        xmm0 = -1.0
+    else:
+        xmm7 = sinf(xmm6)
+        xmm0 = cosf(xmm6)'''
+    if (xmm6 == pi):
+        xmm7 = 0
+        xmm0 = -1.0
+    else:
+        xmm7 = sin(xmm6)
+        xmm0 = cos(xmm6)
+    rotation = fnc2(rotation, upAxis, xmm7, xmm0)
+    #rotationBad = new MVVector(rotation.x,rotation.y,rotation.z)
+    #rotation.z = 0
+    #right = MVVector.cross(rotation, axisAngleAxis)
+    #rotation = MVVector.cross(axisAngleAxis, right)
+    return rotation.normalized()
+
+def ReadBlamEngineFileHeader(stream, size):
+    stream.Seek(size - 8)
+def ReadContentHeader(stream, size):
+    stream.Seek(135)
+    title = stream.ReadString16(128)
+    description = stream.ReadString16(128)
+    print('%s - %s' % (title,description))
+    stream.Seek(49)
+def ReadMapVariant(stream, size):
+    startPos = stream.bitPos
+    stream.SeekBits(110*8 + 7)
+    title = stream.ReadString16(128,True)
+    description = stream.ReadString16(128,True)
+    print('%s - %s' % (title,description))
+
+    stream.SeekBits(startPos + 223*8 + 2, io.SEEK_SET)
+    mapBounds = (stream.ReadStruct('ff',8), stream.ReadStruct('ff',8), stream.ReadStruct('ff',8))
+    print('Bounds: %s' % str(mapBounds))
+
+    rangesByAxis = [
+        mapBounds[0][1] - mapBounds[0][0],
+        mapBounds[1][1] - mapBounds[1][0],
+        mapBounds[2][1] - mapBounds[2][0]
+    ]
+
+    if mapBounds:# Determines the proper bitcounts to use for object position coordinates, given the map bounds and the baseline bitcount specified.
+        bitcount = 21
+        MINIMUM_UNIT_16BIT = 0.00833333333 # hex 0x3C088889 == 0.00833333376795F
+        if bitcount > 16: min_step = MINIMUM_UNIT_16BIT / (1 << (bitcount - 16))
+        else: min_step = (1 << (16 - bitcount)) * MINIMUM_UNIT_16BIT
+        
+        axisBits = [0,0,0]
+        if min_step >= 0.0001: # hex 0x38D1B717 == 9.99999974738e-05
+            min_step *= 2
+            for i in range(3):
+                edx = min(0x800000, ceil(rangesByAxis[i] / min_step))
+                ecx = (int(log(edx,2)) if edx >= 0 else 31) if edx else -1 # 23
+
+                axisBits[i] = min(26, 
+                    (ecx + (1 if ((edx & ((1 << ecx) - 1)) != 0) else 0)) if ecx != -1 
+                    else 0
+                )
+        else: axisBits = [26,26,26]
+    
+    stream.SeekBits(startPos + 255*8 + 2, io.SEEK_SET)
+    strCount = stream.ReadUInt16Bits(9)
+    print('%d Gametype Labels' % strCount)
+
+    if strCount > 0:
+        offsets = []
+        for i in range(strCount):
+            presence = stream.ReadBoolBit()
+            if not presence: continue
+            offset = stream.ReadUInt16Bits(12)
+            offsets.append(offset)
+
+        dataLength   = stream.ReadUInt16Bits(13)
+        isCompressed = stream.ReadBoolBit()
+        if isCompressed:
+            compSize   = stream.ReadUInt16Bits(13)
+            stream.Seek(4) # skip zlib header's uncompressed size
+            decodedStrs = zlib.decompress(stream.ReadBytes(compSize-4))
+            if len(decodedStrs) != dataLength:
+                print('Expected ~%d bytes got %d (compressed into %d)' % (dataLength,len(decodedStrs),compSize))
+            decodedStrs = decodedStrs.decode('utf-8').rstrip('\0')
+        else:
+            decodedStrs = stream.ReadString(dataLength)
+        
+        labelStrs = decodedStrs.upper().split('\0')
+        print(labelStrs)
+    
+    st = time.time_ns()
+    for i in range(651):
+        presence = stream.ReadBoolBit()
+        if not presence: break
+
+        fobj = ForgeObject()
+        fobj.show = 1
+        unk00 = stream.ReadUInt8Bits(2)
+        noSubcat = not stream.ReadBoolBit()
+        if noSubcat: fobj.itemCategory = stream.ReadUInt8Bits(8)
+        absence = stream.ReadBoolBit()
+        if absence: fobj.itemVariant = 0xFF
+        else: fobj.itemVariant = stream.ReadUInt8Bits(5)
+
+        # Position
+        a = stream.ReadBoolBit()
+        if not mapBounds:
+            print("POS TODO")
+            if not a and not stream.ReadBoolBit() and stream.ReadUInt8Bits(2) != -1: print("POS TODO2")# != 3?!
+            raise
+            
+        fobj.position = float3(
+            (0.5 + unpack('>I',b'\x00' + stream.ReadBits(axisBits[0]))[0]) * (rangesByAxis[0] / (1 << axisBits[0])) + mapBounds[0][0],
+            (0.5 + unpack('>I',b'\x00' + stream.ReadBits(axisBits[1]))[0]) * (rangesByAxis[1] / (1 << axisBits[1])) + mapBounds[1][0],
+            (0.5 + unpack('>I',b'\x00' + stream.ReadBits(axisBits[2]))[0]) * (rangesByAxis[2] / (1 << axisBits[2])) + mapBounds[2][0]
+        )
+
+        vertical = stream.ReadBoolBit()
+        if vertical: upAxis = float3(0,0,1)
+        else: upAxis = ReadUpAxis(stream)
+        
+        rawAng = stream.ReadUInt16Bits(14)
+        ang = (rawAng * 0.0003834952 - pi + 0.0001917476) * 180/pi
+
+        fwd = loadAxisAngleAngle(rawAng, upAxis)
+
+        #fobj.forward = float3(0,1,0)
+        #fobj.forward = float3(0,1,-upAxis.y / upAxis.z).normalized()
+        fobj.forward = fwd
+        fobj.up = upAxis
+
+        if i == 7: print(fwd)
+
+        fobj.spawnRelativeToMapIndex = stream.ReadUInt16Bits(10)
+
+        # Load Object Data
+        fobj.shape = stream.ReadUInt8Bits(2)
+        if fobj.shape > 0 and fobj.shape < 4:
+            fobj.width = ReadShapeDimension(stream)
+            if fobj.shape == 3: fobj.length = ReadShapeDimension(stream)
+            if fobj.shape != 1:
+                fobj.top = ReadShapeDimension(stream)
+                fobj.bottom = ReadShapeDimension(stream)
+        
+        eax = stream.ReadUInt8Bits(8)
+        if eax & 0x80000000: eax |= 0xFFFFFF00 # test if signed
+        fobj.spawnSequence = eax & 0xFF# TODO: make sure signed
+        
+        fobj.respawnTime = stream.ReadUInt8Bits(8)
+        fobj.cachedType = stream.ReadUInt8Bits(5)
+        fobj.gtLabelIndex = -1 if stream.ReadBoolBit() else stream.ReadUInt8Bits(8)
+        fobj.flags = stream.ReadUInt8Bits(8)
+        fobj.team = stream.ReadUInt8Bits(4) - 1
+        fobj.color = -1 if stream.ReadBoolBit() else stream.ReadUInt8Bits(3)
+        
+        if fobj.cachedType == 1: fobj.otherInfoA = stream.ReadUInt8Bits(8)# weapon spare clips
+        elif fobj.cachedType > 11 and fobj.cachedType <= 14:# teleporter
+            fobj.otherInfoA = stream.ReadUInt8Bits(5)# channel
+            fobj.otherInfoB = stream.ReadUInt8Bits(5)# passability
+        elif fobj.cachedType == 19: fobj.otherInfoA = stream.ReadUInt8Bits(8) - 1# locationNameIndex
+
+        blobj = createForgeObject(bpy.context, forgeItemNames.get(fobj.itemCategory << 8 | fobj.itemVariant, "Unknown"), i)
+        blobj.forge.FromForgeObject(fobj, blobj)
+        blobj['ang'] = ang
+    tEl = (time.time_ns() - st) * 1e-6
+    print('Loaded %d Objects (%dms)' % (i,tEl))
+def TryReadMvarFile(filename):
+    f = open(filename, 'rb')
+    stream = BitStream(f)
+
+    #try:
+    while True:
+        signature = stream.ReadString(4)
+        
+        fnc = dictToFnc.get(signature, None)
+        if fnc != None:
+            size = stream.ReadUInt32()
+            print('%s (%d)' % (signature,size))
+            fnc(stream, size)
+        else: break
+    return True
+    '''except Exception as ex:
+        print("Error: %s" % ex)
+        pass'''
+    return False
+
+dictToFnc = { '_blf':ReadBlamEngineFileHeader, 'chdr':ReadContentHeader, 'mvar':ReadMapVariant }
+
 
 
 
@@ -924,6 +1385,8 @@ def register():
     persist_vars['forgeObjectsOverlay_handle'] = bpy.types.SpaceView3D.draw_handler_add(draw_forgeObjectOverlay, (), 'WINDOW', 'POST_PIXEL')
     if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()
     initInvGtLabels()
+
+    TryReadMvarFile("D:\Games\Steam\steamapps\common\Halo The Master Chief Collection\haloreach\map_variants\hr_forgeWorld_theCage.mvar")
 def unregister():
     try: forge.TrySetConnect(False)
     except: pass
