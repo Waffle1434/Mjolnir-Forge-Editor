@@ -21,8 +21,9 @@ defaultGtLabel = ('NO_LABEL', "No Label", "Default")
 class float3(Structure):
     _fields_ = [ ('x', c_float), ('y', c_float), ('z', c_float) ]
     def cross(self, other): return float3(self.y * other.z - self.z * other.y, self.z * other.x - self.x * other.z, self.x * other.y - self.y * other.x)
+    def sqrMag(self): return self.x*self.x + self.y*self.y + self.z*self.z
     def normalized(self):
-        sqrMag = self.x*self.x + self.y*self.y + self.z*self.z
+        sqrMag = self.sqrMag()
         if sqrMag == 0: return float3()
         invMag = 1 / sqrt(sqrMag)
         return float3(self.x*invMag, self.y*invMag, self.z*invMag)
@@ -439,6 +440,9 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         fwd = fobj.forward
         up = fobj.up
         right = fwd.cross(up)
+
+        print('%s - %s %s %s' % (blobj.name, fwd,up,right))
+
         pos = fobj.position
         blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
     
@@ -1080,78 +1084,73 @@ def fnc1(a, b, c):
     xmm2 -= xmm0 # correct, but this would be due to xmm2's incredibly small value initially
     c.x = xmm4
     c.y = xmm2
-    c = c.normalized()
+    c = c.normalized()# unused!
     return b
 def fnc2(a, b, xmm2, xmm3):
     #a.enforce_single_precision()
     #b.enforce_single_precision()
-    cx = xmm3 # correct, notwithstanding precision differences
-    cy = xmm2 # correct, notwithstanding precision differences
-    xmm5 = b.y
-    xmm3 = ((b.x * a.x) + (b.y * a.y) + (b.z * a.z)) * (1.0 - cx) # wrong digits and sign, right mag
-    xmm4 = a.x * cx # correct
-    xmm8 = a.y * cx # correct? it's positive zero in JS but negative in haloreach.dll
-    xmm7 = (b.x * xmm3) + (a.x * cx) # wrong sign and significant digits, right approx. magnitude
-    xmm1 = ((a.z * b.x) - (b.z * a.x)) * cy # correct
-    xmm9 = a.z * cx # correct
-    # and discard xmm10
-    xmm0 = a.z * xmm5
-    xmm2 = (a.x * b.y) - (b.x * a.y) * cy
-    xmm6 = ((b.z * a.y) - xmm0) * cy
-    # and discard xmm11
-    xmm7 -= xmm6 # wrong
-    # and discard xmm6
-    a.x = xmm7
-    # and discard xmm7
-    xmm0 = (xmm3 * b.y) + xmm8 - xmm1
-    # and discard xmm8
-    a.y = xmm0
-    # and discard xmm9
-    xmm3 = b.z + xmm9 - xmm2
-    a.z = xmm3
+    cx = xmm3
+    cy = xmm2
+    # dot(a,b)
+    xmm3 = (a.x*b.x + a.y*b.y + a.z*b.z) * (1 - cx) # wrong digits and sign, right mag
+    a.x = (xmm3*b.x + a.x*cx) - (a.y*b.z - a.z*b.y)*cy# wrong
+    a.y = (xmm3*b.y + a.y*cx) - (a.z*b.x - a.x*b.z)*cy
+    a.z = (xmm3*b.z + a.z*cx) - (a.x*b.y - a.y*b.x)*cy
     return a
 
 def loadAxisAngleAngle(rawAng, upAxis):
-    xmm1 = rawAng * 0.0003834952 - pi + 0.0001917476
-    rawAxisAngleAngle = rawAng
-    rawAxisAngleRads  = xmm1
-    xmm6 = xmm1
+    angRads  = rawAng * 0.0003834952 - pi + 0.0001917476
+    '''xmm6 = angRads
     rsp20 = float3()
     rsp30 = float3()
     rsp20 = fnc1(upAxis, rsp20, rsp30)
     # good up to here?
     rotation = float3()
     rotation.x = rsp20.x
-    rotation.z = rsp20.z
+    rotation.z = rsp20.z'''
 
-    '''bool result = (xmm6 == PI)
-    if (isNaN(xmm6) || isNaN(PI)): # when would this ever be true?
-        result = (xmm6 == -PI)
-        if (isNaN(xmm6) || isNaN(-PI)) # when would this ever be true?
-            result = false
+    '''result = (xmm6 == pi)
+    if (isnan(xmm6) or isnan(pi)): # when would this ever be true?
+        result = (xmm6 == -pi)
+        if (isnan(xmm6) or isnan(-pi)): # when would this ever be true?
+            result = False
             #
             # The comparisons use UCOMISS, and the weird-ass NaN checks are JP branches. 
             # UCOMISS should only set the parity flag (PF) if either or both operands 
             # are NaN, but the code here is written as if the *constant* is the one 
             # that might be NaN.
-    if (result):
+    if result:
         xmm7 = 0
         xmm0 = -1.0
     else:
-        xmm7 = sinf(xmm6)
-        xmm0 = cosf(xmm6)'''
-    if (xmm6 == pi):
+        xmm7 = sin(xmm6)
+        xmm0 = cos(xmm6)'''
+    
+    '''if (xmm6 == pi):
         xmm7 = 0
         xmm0 = -1.0
     else:
         xmm7 = sin(xmm6)
         xmm0 = cos(xmm6)
+    
     rotation = fnc2(rotation, upAxis, xmm7, xmm0)
-    #rotationBad = new MVVector(rotation.x,rotation.y,rotation.z)
-    #rotation.z = 0
-    #right = MVVector.cross(rotation, axisAngleAxis)
-    #rotation = MVVector.cross(axisAngleAxis, right)
-    return rotation.normalized()
+    return rotation.normalized()'''
+
+    s = sin(angRads)
+    c = cos(angRads)
+    _c = 1 - c
+
+    x = upAxis.x
+    y = upAxis.y
+    z = upAxis.z
+
+    m = Matrix((
+        (c + x*x*_c, x*y*_c - z*s, x*z*_c + y*s), 
+        (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s), 
+        (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c)
+    ))
+
+    return float3.fromVector(m @ Vector((0,1,0))).normalized()
 
 def ReadBlamEngineFileHeader(stream, size):
     stream.Seek(size - 8)
@@ -1265,7 +1264,9 @@ def ReadMapVariant(stream, size):
         fobj.forward = fwd
         fobj.up = upAxis
 
-        if i == 7: print(fwd)
+        if i == 140:
+            print(fwd)
+            print(upAxis)
 
         fobj.spawnRelativeToMapIndex = stream.ReadUInt16Bits(10)
 
@@ -1298,6 +1299,38 @@ def ReadMapVariant(stream, size):
         blobj = createForgeObject(bpy.context, forgeItemNames.get(fobj.itemCategory << 8 | fobj.itemVariant, "Unknown"), i)
         blobj.forge.FromForgeObject(fobj, blobj)
         blobj['ang'] = ang
+        blobj['up'] = Vector((upAxis.x, upAxis.y, upAxis.z))
+
+        angRads  = rawAng * 0.0003834952 - pi + 0.0001917476
+        s = sin(angRads)
+        c = cos(angRads)
+        _c = 1 - c
+
+        x = upAxis.x
+        y = upAxis.y
+        z = upAxis.z
+        m = Matrix((
+            (c + x*x*_c, x*y*_c - z*s, x*z*_c + y*s, 0), 
+            (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s, 0), 
+            (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c, 0),
+            (0,0,0,1)
+        ))
+        '''m = Matrix((
+            (c + x*x*_c, x*z*_c - y*s, x*y*_c + z*s, 0), 
+            (z*x*_c + y*s, c + z*z*_c, z*y*_c - x*s, 0), 
+            (y*x*_c - z*s, y*z*_c + x*s, c + y*y*_c, 0),
+            (0,0,0,1)
+        ))'''
+        m = Matrix((
+            (c + x*x*_c, x*y*_c - z*s, x*z*_c + y*s, fobj.position.x), 
+            (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s, fobj.position.y), 
+            (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c, fobj.position.z),
+            (0,0,0,1)
+        ))
+
+        #blobj.matrix_world = Matrix.Translation((fobj.position.x, fobj.position.y, fobj.position.z)) @ m #@ Matrix.Rotation(radians(180), 4, 'Z') @ Matrix.Rotation(radians(-90), 4, 'X')
+        #blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
+        #blobj.matrix_world = 
     tEl = (time.time_ns() - st) * 1e-6
     print('Loaded %d Objects (%dms)' % (i,tEl))
 def TryReadMvarFile(filename):
