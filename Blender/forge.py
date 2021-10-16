@@ -978,6 +978,7 @@ class BitStream:
         elif mode == io.SEEK_CUR: self.bitPos += offset
         else: raise
         self.byteStream.seek(floor(self.bitPos/8))
+    def PosToString(self): return '%d bytes, %d bits' % (floor(self.bitPos/8), self.bitPos%8)
 
 def ReadShapeDimension(stream):
     value = stream.ReadUInt16Bits(11)
@@ -1155,19 +1156,31 @@ def loadAxisAngleAngle(rawAng, upAxis):
 def ReadBlamEngineFileHeader(stream, size):
     stream.Seek(size - 8)
 def ReadContentHeader(stream, size):
+    startPos = stream.bitPos
     stream.Seek(135)
     title = stream.ReadString16(128)
     description = stream.ReadString16(128)
     print('%s - %s' % (title,description))
-    stream.Seek(49)
+    stream.SeekBits(startPos + 8*(size-8), io.SEEK_SET)
 def ReadMapVariant(stream, size):
     startPos = stream.bitPos
-    stream.SeekBits(110*8 + 7)
+    stream.SeekBits(64*8 + 4)
+    print(stream.PosToString())
+    activity = stream.ReadUInt8Bits(3) - 1
+    gameMode = stream.ReadUInt8Bits(3)
+    engine = stream.ReadUInt8Bits(3)
+    mapId = stream.ReadUInt32()
+    stream.SeekBits(298)
     title = stream.ReadString16(128,True)
     description = stream.ReadString16(128,True)
     print('%s - %s' % (title,description))
 
-    stream.SeekBits(startPos + 223*8 + 2, io.SEEK_SET)
+    if (activity == 2): stream.SeekBytes(2)
+    if (gameMode == 1): stream.SeekBits(52)
+    elif (gameMode == 2): stream.SeekBits(34)
+
+    stream.SeekBits(115)
+
     mapBounds = (stream.ReadStruct('ff',8), stream.ReadStruct('ff',8), stream.ReadStruct('ff',8))
     print('Bounds: %s' % str(mapBounds))
 
@@ -1196,7 +1209,7 @@ def ReadMapVariant(stream, size):
                 )
         else: axisBits = [26,26,26]
     
-    stream.SeekBits(startPos + 255*8 + 2, io.SEEK_SET)
+    stream.Seek(8)
     strCount = stream.ReadUInt16Bits(9)
     print('%d Gametype Labels' % strCount)
 
