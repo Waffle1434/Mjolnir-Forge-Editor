@@ -21,6 +21,7 @@ defaultGtLabel = ('NO_LABEL', "No Label", "Default")
 class float3(Structure):
     _fields_ = [ ('x', c_float), ('y', c_float), ('z', c_float) ]
     def cross(self, other): return float3(self.y * other.z - self.z * other.y, self.z * other.x - self.x * other.z, self.x * other.y - self.y * other.x)
+    def dot(self, other): return self.x*other.x + self.y*other.y + self.z*other.z
     def sqrMag(self): return self.x*self.x + self.y*self.y + self.z*self.z
     def normalized(self):
         sqrMag = self.sqrMag()
@@ -1137,7 +1138,7 @@ def loadAxisAngleAngle(rawAng, upAxis):
     rotation = fnc2(rotation, upAxis, xmm7, xmm0)
     return rotation.normalized()'''
 
-    s = sin(angRads)
+    '''s = sin(angRads)
     c = cos(angRads)
     _c = 1 - c
 
@@ -1148,10 +1149,36 @@ def loadAxisAngleAngle(rawAng, upAxis):
     m = Matrix((
         (c + x*x*_c, x*y*_c - z*s, x*z*_c + y*s), 
         (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s), 
-        (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c)
-    ))
+        (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c),
+    ))'''
 
-    return float3.fromVector(m @ Vector((0,1,0))).normalized()
+    #return float3.fromVector(m @ Vector((0,1,0))).normalized()
+    #return float3.fromVector(m @ Vector((1,0,0))).normalized()
+    #return float3.fromVector(m @ Vector((0,0,1))).normalized()
+    #return float3.fromVector((m @ Matrix.Rotation(radians(-90), 3, 'Z')) @ Vector((0,1,0))).normalized()
+    #return float3.fromVector((Matrix.Rotation(radians(-90), 3, 'Z') @ m) @ Vector((0,1,0))).normalized()
+    frm = float3(0,0,1)
+    right = frm.cross(upAxis)
+    #return upAxis.cross(right).normalized()
+
+    angRads2 = acos(frm.dot(upAxis))
+
+    s = sin(angRads2)
+    c = cos(angRads2)
+    _c = 1 - c
+
+    x = right.x
+    y = right.y
+    z = right.z
+
+    m = Matrix((
+        (c + x*x*_c, x*y*_c - z*s, x*z*_c + y*s), 
+        (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s), 
+        (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c),
+    ))
+    #return float3.fromVector((m @ Matrix.Rotation(angRads - (pi/2), 3, 'Z')) @ Vector((0,1,0))).normalized()
+    return float3.fromVector((m @ Matrix.Rotation(angRads, 3, 'Z')) @ Vector((1,0,0))).normalized()
+    #return float3.fromVector((Matrix.Rotation(angRads, 3, 'Z')) @ Vector((1,0,0))).normalized()
 
 def ReadBlamEngineFileHeader(stream, size):
     stream.Seek(size - 8)
@@ -1270,6 +1297,8 @@ def ReadMapVariant(stream, size):
         rawAng = stream.ReadUInt16Bits(14)
         ang = (rawAng * 0.0003834952 - pi + 0.0001917476) * 180/pi
 
+        if (i == 4):
+            print("debug")
         fwd = loadAxisAngleAngle(rawAng, upAxis)
 
         #fobj.forward = float3(0,1,0)
@@ -1277,7 +1306,7 @@ def ReadMapVariant(stream, size):
         fobj.forward = fwd
         fobj.up = upAxis
 
-        if i == 140:
+        if i == 4:
             print(fwd)
             print(upAxis)
 
@@ -1313,8 +1342,9 @@ def ReadMapVariant(stream, size):
         blobj.forge.FromForgeObject(fobj, blobj)
         blobj['ang'] = ang
         blobj['up'] = Vector((upAxis.x, upAxis.y, upAxis.z))
+        blobj['fwd'] = Vector((fwd.x, fwd.y, fwd.z))
 
-        angRads  = rawAng * 0.0003834952 - pi + 0.0001917476
+        '''angRads  = rawAng * 0.0003834952 - pi + 0.0001917476
         s = sin(angRads)
         c = cos(angRads)
         _c = 1 - c
@@ -1327,19 +1357,19 @@ def ReadMapVariant(stream, size):
             (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s, 0), 
             (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c, 0),
             (0,0,0,1)
-        ))
+        ))'''
         '''m = Matrix((
             (c + x*x*_c, x*z*_c - y*s, x*y*_c + z*s, 0), 
             (z*x*_c + y*s, c + z*z*_c, z*y*_c - x*s, 0), 
             (y*x*_c - z*s, y*z*_c + x*s, c + y*y*_c, 0),
             (0,0,0,1)
         ))'''
-        m = Matrix((
+        '''m = Matrix((
             (c + x*x*_c, x*y*_c - z*s, x*z*_c + y*s, fobj.position.x), 
             (y*x*_c + z*s, c + y*y*_c, y*z*_c - x*s, fobj.position.y), 
             (z*x*_c - y*s, z*y*_c + x*s, c + z*z*_c, fobj.position.z),
             (0,0,0,1)
-        ))
+        ))'''
 
         #blobj.matrix_world = Matrix.Translation((fobj.position.x, fobj.position.y, fobj.position.z)) @ m #@ Matrix.Rotation(radians(180), 4, 'Z') @ Matrix.Rotation(radians(-90), 4, 'X')
         #blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
@@ -1367,7 +1397,6 @@ def TryReadMvarFile(filename):
     return False
 
 dictToFnc = { '_blf':ReadBlamEngineFileHeader, 'chdr':ReadContentHeader, 'mvar':ReadMapVariant }
-
 
 
 
@@ -1432,7 +1461,9 @@ def register():
     if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()
     initInvGtLabels()
 
-    TryReadMvarFile("D:\Games\Steam\steamapps\common\Halo The Master Chief Collection\haloreach\map_variants\hr_forgeWorld_theCage.mvar")
+    #TryReadMvarFile("D:\Games\Steam\steamapps\common\Halo The Master Chief Collection\haloreach\map_variants\hr_forgeWorld_theCage.mvar")
+    TryReadMvarFile("D:\Games\Steam\steamapps\common\Halo The Master Chief Collection\haloreach\map_variants\hr_forgeWorld_asylum.mvar")
+    #TryReadMvarFile(r"C:\Users\super\AppData\LocalLow\MCC\LocalFiles\000901fe00493098\HaloReach\Map\rot_samples_1.mvar")
 def unregister():
     try: forge.TrySetConnect(False)
     except: pass
