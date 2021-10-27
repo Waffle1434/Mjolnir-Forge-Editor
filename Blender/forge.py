@@ -386,7 +386,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR', update=UpdateColor)
     colorIndex: IntProperty(default=8)
     spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100)
-    spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, max=180)# 0 is never
+    spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, soft_max=180, max=255)# 0 is never
     gameSpecific: BoolProperty(name="Game Specific", description="Should object exclusively spawn for current gamemode")
     placeAtStart: BoolProperty(name="Place At Start", description="Should object spawn at start", default=True)
     symmetry: EnumProperty(name="Symmetry", description="Gamemode symmetry",

@@ -44,7 +44,7 @@ namespace ForgeLib {
         //static unsafe float3* playerMonitorPosition;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
-        public static int GetDllVersion() => 1;
+        public static int GetDllVersion() => 2;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static bool TrySetConnect(bool connect) {
@@ -126,13 +126,14 @@ namespace ForgeLib {
         }
 
         #region Map Name
-        static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + 0x257C3D4));
+        const int mapNameOffset = 0x26849B3;
+        static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + mapNameOffset));
 
         static void _CacheCurrentMap() {
             currentMap = GetCurrentMap();
 
             if (currentMap == Map.None) {
-                lastError = $"Map: >{memory.ReadString(reachBase + 0x257C3D4)}< ({reachBase:X} {reachBase + 0x257C3D4:X})";
+                lastError += $"\nMap: >{memory.ReadString(reachBase + mapNameOffset)}< ({reachBase:X} {reachBase + mapNameOffset:X})";
                 currentMap = Map.Forge_World;
             }
         }
@@ -174,7 +175,7 @@ namespace ForgeLib {
                 bool isObject = flag == 1;
 
                 if (flag > 1) {
-                    lastError = "Unknown flag!";
+                    lastError += "\nUnknown flag!";
                     throw new Exception(lastError);
                 }
 

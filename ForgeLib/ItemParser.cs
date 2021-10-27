@@ -25,404 +25,985 @@ namespace ForgeLib {
             public bool TryGetValue(T2 key, out T1 value) => t2Tot1.TryGetValue(key, out value);
         }
 
+        static void AddNext<T>(this TwoWayDictionary<int, T> dict, ref int key, T value) {
+            dict[key] = value;
+            key = (key + (1 << 8)) & 0xFF00;
+        }
+        static void AddSubcategory<T>(this TwoWayDictionary<int, T> dict, ref int key, params T[] values) {
+            foreach (T value in values)
+                dict[key++] = value;
+            key = (key + (1 << 8)) & 0xFF00;
+        }
+
         static TwoWayDictionary<int, string> universalTypes = new TwoWayDictionary<int, string>();
         static Dictionary<Map, TwoWayDictionary<int, string>> maps = new Dictionary<Map, TwoWayDictionary<int, string>>();
-        static TwoWayDictionary<int, string> forgeWorldTypes = new TwoWayDictionary<int, string>();
 
         static ItemParser() {
             #region Universal
             #region Weapons Human
-            universalTypes[0x0000] = "Assault Rifle";
-            universalTypes[0x0100] = "DMR";
-            universalTypes[0x0200] = "Grenade Launcher";
-            universalTypes[0x0300] = "Magnum";
-            universalTypes[0x0400] = "Rocket Launcher";
-            universalTypes[0x0500] = "Shotgun";
-            universalTypes[0x0600] = "Sniper Rifle";
-            universalTypes[0x0700] = "Spartan Laser";
-            universalTypes[0x0800] = "Frag Grenade";
-            universalTypes[0x0900] = "Mounted Machinegun";
+            int key = 0;
+            universalTypes.AddNext(ref key, "Assault Rifle");
+            universalTypes.AddNext(ref key, "DMR");
+            universalTypes.AddNext(ref key, "Grenade Launcher");
+            universalTypes.AddNext(ref key, "Magnum");
+            universalTypes.AddNext(ref key, "Rocket Launcher");
+            universalTypes.AddNext(ref key, "Shotgun");
+            universalTypes.AddNext(ref key, "Sniper Rifle");
+            universalTypes.AddNext(ref key, "Spartan Laser");
+            universalTypes.AddNext(ref key, "Frag Grenade");
+            universalTypes.AddNext(ref key, "Mounted Machinegun");
             #endregion
             #region Weapons Covenant
-            universalTypes[0x0A00] = "Concussion Rifle";
-            universalTypes[0x0B00] = "Energy Sword";
-            universalTypes[0x0C00] = "Fuel Rod Gun";
-            universalTypes[0x0D00] = "Gravity Hammer";
-            universalTypes[0x0E00] = "Focus Rifle";
-            universalTypes[0x0F00] = "Needle Rifle";
-            universalTypes[0x1000] = "Needler";
-            universalTypes[0x1100] = "Plasma Launcher";
-            universalTypes[0x1200] = "Plasma Pistol";
-            universalTypes[0x1300] = "Plasma Repeater";
-            universalTypes[0x1400] = "Plasma Rifle";
-            universalTypes[0x1500] = "Spiker";
-            universalTypes[0x1600] = "Plasma Grenade";
-            universalTypes[0x1700] = "Plasma Turret";
+            universalTypes.AddNext(ref key, "Concussion Rifle");
+            universalTypes.AddNext(ref key, "Energy Sword");
+            universalTypes.AddNext(ref key, "Fuel Rod Gun");
+            universalTypes.AddNext(ref key, "Gravity Hammer");
+            universalTypes.AddNext(ref key, "Focus Rifle");
+            universalTypes.AddNext(ref key, "Needle Rifle");
+            universalTypes.AddNext(ref key, "Needler");
+            universalTypes.AddNext(ref key, "Plasma Launcher");
+            universalTypes.AddNext(ref key, "Plasma Pistol");
+            universalTypes.AddNext(ref key, "Plasma Repeater");
+            universalTypes.AddNext(ref key, "Plasma Rifle");
+            universalTypes.AddNext(ref key, "Spiker");
+            universalTypes.AddNext(ref key, "Plasma Grenade");
+            universalTypes.AddNext(ref key, "Plasma Turret");
             #endregion
             #region Armor Abilities
-            universalTypes[0x1800] = "Active Camouflage";
-            universalTypes[0x1900] = "Armor Lock";
-            universalTypes[0x1A00] = "Drop Shield";
-            universalTypes[0x1B00] = "Evade";
-            universalTypes[0x1C00] = "Hologram";
-            universalTypes[0x1D00] = "Jet Pack";
-            universalTypes[0x1E00] = "Sprint";
+            universalTypes.AddNext(ref key, "Active Camouflage");
+            universalTypes.AddNext(ref key, "Armor Lock");
+            universalTypes.AddNext(ref key, "Drop Shield");
+            universalTypes.AddNext(ref key, "Evade");
+            universalTypes.AddNext(ref key, "Hologram");
+            universalTypes.AddNext(ref key, "Jet Pack");
+            universalTypes.AddNext(ref key, "Sprint");
             #endregion
             #endregion
 
             #region Forge World
-            maps[Map.Forge_World] = forgeWorldTypes;
+            TwoWayDictionary<int, string> forgeWorld = new TwoWayDictionary<int, string>();
+            maps[Map.Forge_World] = forgeWorld;
             #region Vehicles
-            forgeWorldTypes[0x1F00] = "Banshee";
-            forgeWorldTypes[0x2000] = "Falcon";
-            forgeWorldTypes[0x2100] = "Ghost";
-            forgeWorldTypes[0x2200] = "Mongoose";
-            forgeWorldTypes[0x2300] = "Revenant";
-            forgeWorldTypes[0x2400] = "Scorpion";
-            forgeWorldTypes[0x2500] = "Shade Turret";
-            forgeWorldTypes[0x2600] = "Warthog, Default";
-            forgeWorldTypes[0x2601] = "Warthog, Gauss";
-            forgeWorldTypes[0x2602] = "Warthog, Rocket";
-            forgeWorldTypes[0x2700] = "Wraith";
+            forgeWorld.AddNext(ref key, "Banshee");
+            forgeWorld.AddNext(ref key, "Falcon");
+            forgeWorld.AddNext(ref key, "Ghost");
+            forgeWorld.AddNext(ref key, "Mongoose");
+            forgeWorld.AddNext(ref key, "Revenant");
+            forgeWorld.AddNext(ref key, "Scorpion");
+            forgeWorld.AddNext(ref key, "Shade Turret");
+            forgeWorld.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            forgeWorld.AddNext(ref key, "Wraith");
             #endregion
             #region Gadgets
-            forgeWorldTypes[0x2800] = "Fusion Coil";
-            forgeWorldTypes[0x2801] = "Landmine";
-            forgeWorldTypes[0x2802] = "Plasma Battery";
-            forgeWorldTypes[0x2803] = "Propane Tank";
-            forgeWorldTypes[0x2900] = "Health Station";
-            forgeWorldTypes[0x2A00] = "Camo Powerup";
-            forgeWorldTypes[0x2A01] = "Overshield";
-            forgeWorldTypes[0x2A02] = "Custom Powerup";
-            forgeWorldTypes[0x2B00] = "Cannon, Man";
-            forgeWorldTypes[0x2B01] = "Cannon, Man, Heavy";
-            forgeWorldTypes[0x2B02] = "Cannon, Man, Light";
-            forgeWorldTypes[0x2B03] = "Cannon, Vehicle";
-            forgeWorldTypes[0x2B04] = "Gravity Lift";
-            forgeWorldTypes[0x2C00] = "One Way Shield 2";
-            forgeWorldTypes[0x2D00] = "One Way Shield 3";
-            forgeWorldTypes[0x2E00] = "One Way Shield 4";
-            forgeWorldTypes[0x2F00] = "FX:Colorblind";
-            forgeWorldTypes[0x2F01] = "FX:Next Gen";
-            forgeWorldTypes[0x2F02] = "FX:Juicy";
-            forgeWorldTypes[0x2F03] = "FX:Nova";
-            forgeWorldTypes[0x2F04] = "FX:Olde Timey";
-            forgeWorldTypes[0x2F05] = "FX:Pen And Ink";
-            forgeWorldTypes[0x2F06] = "FX:Purple";
-            forgeWorldTypes[0x2F07] = "FX:Green";
-            forgeWorldTypes[0x2F08] = "FX:Orange";
-            forgeWorldTypes[0x3000] = "Shield Door, Small";
-            forgeWorldTypes[0x3100] = "Shield Door, Medium";
-            forgeWorldTypes[0x3200] = "Shield Door, Large";
-            forgeWorldTypes[0x3300] = "Receiver Node";
-            forgeWorldTypes[0x3301] = "Sender Node";
-            forgeWorldTypes[0x3302] = "Two-Way Node";
-            forgeWorldTypes[0x3400] = "Die";
-            forgeWorldTypes[0x3401] = "Golf Ball";
-            forgeWorldTypes[0x3402] = "Golf Club";
-            forgeWorldTypes[0x3403] = "Kill Ball";
-            forgeWorldTypes[0x3404] = "Soccer Ball";
-            forgeWorldTypes[0x3405] = "Tin Cup";
-            forgeWorldTypes[0x3500] = "Light, Red";
-            forgeWorldTypes[0x3501] = "Light, Blue";
-            forgeWorldTypes[0x3502] = "Light, Green";
-            forgeWorldTypes[0x3503] = "Light, Orange";
-            forgeWorldTypes[0x3504] = "Light, Purple";
-            forgeWorldTypes[0x3505] = "Light, Yellow";
-            forgeWorldTypes[0x3506] = "Light, White";
-            forgeWorldTypes[0x3507] = "Light, Red, Flashing";
-            forgeWorldTypes[0x3508] = "Light, Yellow, Flashing";
+            forgeWorld.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            forgeWorld.AddNext(ref key, "Health Station");
+            forgeWorld.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            forgeWorld.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            forgeWorld.AddNext(ref key, "One Way Shield 2");
+            forgeWorld.AddNext(ref key, "One Way Shield 3");
+            forgeWorld.AddNext(ref key, "One Way Shield 4");
+            forgeWorld.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink",
+                "FX:Purple",
+                "FX:Green",
+                "FX:Orange");
+            forgeWorld.AddNext(ref key, "Shield Door, Small");
+            forgeWorld.AddNext(ref key, "Shield Door, Medium");
+            forgeWorld.AddNext(ref key, "Shield Door, Large");
+            forgeWorld.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            forgeWorld.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
+            forgeWorld.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            forgeWorldTypes[0x3600] = "Initial Spawn";
-            forgeWorldTypes[0x3700] = "Respawn Point";
-            forgeWorldTypes[0x3800] = "Initial Loadout Camera";
-            forgeWorldTypes[0x3900] = "Respawn Zone";
-            forgeWorldTypes[0x3A00] = "Respawn Zone, Weak";
-            forgeWorldTypes[0x3B00] = "Respawn Zone, Anti";
-            forgeWorldTypes[0x3C00] = "Safe Boundary";
-            forgeWorldTypes[0x3C01] = "Soft Safe Boundary";
-            forgeWorldTypes[0x3D00] = "Kill Boundary";
-            forgeWorldTypes[0x3D01] = "Soft Kill Boundary";
+            forgeWorld.AddNext(ref key, "Initial Spawn");
+            forgeWorld.AddNext(ref key, "Respawn Point");
+            forgeWorld.AddNext(ref key, "Initial Loadout Camera");
+            forgeWorld.AddNext(ref key, "Respawn Zone");
+            forgeWorld.AddNext(ref key, "Respawn Zone, Weak");
+            forgeWorld.AddNext(ref key, "Respawn Zone, Anti");
+            forgeWorld.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            forgeWorld.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            forgeWorldTypes[0x3E00] = "Flag Stand";
-            forgeWorldTypes[0x3F00] = "Capture Plate";
-            forgeWorldTypes[0x4000] = "Hill Marker";
+            forgeWorld.AddNext(ref key, "Flag Stand");
+            forgeWorld.AddNext(ref key, "Capture Plate");
+            forgeWorld.AddNext(ref key, "Hill Marker");
             #endregion
             #region Scenery
-            forgeWorldTypes[0x4100] = "Barricade, Small";
-            forgeWorldTypes[0x4101] = "Barricade, Large";
-            forgeWorldTypes[0x4102] = "Covenant Barrier";
-            forgeWorldTypes[0x4103] = "Portable Shield";
-            forgeWorldTypes[0x4200] = "Camping Stool";
-            forgeWorldTypes[0x4300] = "Crate, Heavy Duty";
-            forgeWorldTypes[0x4301] = "Crate, Heavy, Small";
-            forgeWorldTypes[0x4302] = "Covenant Crate";
-            forgeWorldTypes[0x4303] = "Crate, Half Open";
-            forgeWorldTypes[0x4400] = "Sandbag Wall";
-            forgeWorldTypes[0x4401] = "Sandbag, Turret Wall";
-            forgeWorldTypes[0x4402] = "Sandbag Corner, 45";
-            forgeWorldTypes[0x4403] = "Sandbag Corner, 90";
-            forgeWorldTypes[0x4404] = "Sandbag Endcap";
-            forgeWorldTypes[0x4500] = "Street Cone";
+            forgeWorld.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Covenant Barrier",
+                "Portable Shield");
+            forgeWorld.AddNext(ref key, "Camping Stool");
+            forgeWorld.AddSubcategory(ref key,
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open");
+            forgeWorld.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag, Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            forgeWorld.AddNext(ref key, "Street Cone");
             #endregion
             #region Structure
             #region Building Blocks
-            forgeWorldTypes[0x4600] = "Block, 1x1";
-            forgeWorldTypes[0x4601] = "Block, 1x1, Flat";
-            forgeWorldTypes[0x4602] = "Block, 1x1, Short";
-            forgeWorldTypes[0x4603] = "Block, 1x1, Tall";
-            forgeWorldTypes[0x4604] = "Block, 1x1, Tall And Thin";
-            forgeWorldTypes[0x4605] = "Block, 1x2";
-            forgeWorldTypes[0x4606] = "Block, 1x4";
-            forgeWorldTypes[0x4607] = "Block, 2x1, Flat";
-            forgeWorldTypes[0x4608] = "Block, 2x2";
-            forgeWorldTypes[0x4609] = "Block, 2x2, Flat";
-            forgeWorldTypes[0x460A] = "Block, 2x2, Short";
-            forgeWorldTypes[0x460B] = "Block, 2x2, Tall";
-            forgeWorldTypes[0x460C] = "Block, 2x3";
-            forgeWorldTypes[0x460D] = "Block, 2x4";
-            forgeWorldTypes[0x460E] = "Block, 3x1, Flat";
-            forgeWorldTypes[0x460F] = "Block, 3x3";
-            forgeWorldTypes[0x4610] = "Block, 3x3, Flat";
-            forgeWorldTypes[0x4611] = "Block, 3x3, Short";
-            forgeWorldTypes[0x4612] = "Block, 3x3, Tall";
-            forgeWorldTypes[0x4613] = "Block, 3x4";
-            forgeWorldTypes[0x4614] = "Block, 4x4";
-            forgeWorldTypes[0x4615] = "Block, 4x4, Flat";
-            forgeWorldTypes[0x4616] = "Block, 4x4, Short";
-            forgeWorldTypes[0x4617] = "Block, 4x4, Tall";
-            forgeWorldTypes[0x4618] = "Block, 5x1, Short";
-            forgeWorldTypes[0x4619] = "Block, 5x5, Flat";
+            forgeWorld.AddSubcategory(ref key,
+                "Block, 1x1",
+                "Block, 1x1, Flat",
+                "Block, 1x1, Short",
+                "Block, 1x1, Tall",
+                "Block, 1x1, Tall And Thin",
+                "Block, 1x2",
+                "Block, 1x4",
+                "Block, 2x1, Flat",
+                "Block, 2x2",
+                "Block, 2x2, Flat",
+                "Block, 2x2, Short",
+                "Block, 2x2, Tall",
+                "Block, 2x3",
+                "Block, 2x4",
+                "Block, 3x1, Flat",
+                "Block, 3x3",
+                "Block, 3x3, Flat",
+                "Block, 3x3, Short",
+                "Block, 3x3, Tall",
+                "Block, 3x4",
+                "Block, 4x4",
+                "Block, 4x4, Flat",
+                "Block, 4x4, Short",
+                "Block, 4x4, Tall",
+                "Block, 5x1, Short",
+                "Block, 5x5, Flat");
             #endregion
             #region Bridges And Platforms
-            forgeWorldTypes[0x4700] = "Bridge, Small";
-            forgeWorldTypes[0x4701] = "Bridge, Medium";
-            forgeWorldTypes[0x4702] = "Bridge, Large";
-            forgeWorldTypes[0x4703] = "Bridge, XLarge";
-            forgeWorldTypes[0x4704] = "Bridge, Diagonal";
-            forgeWorldTypes[0x4705] = "Bridge, Diag, Small";
-            forgeWorldTypes[0x4706] = "Dish";
-            forgeWorldTypes[0x4707] = "Dish, Open";
-            forgeWorldTypes[0x4708] = "Corner, 45 Degrees";
-            forgeWorldTypes[0x4709] = "Corner, 2x2";
-            forgeWorldTypes[0x470A] = "Corner, 4x4";
-            forgeWorldTypes[0x470B] = "Landing Pad";
-            forgeWorldTypes[0x470C] = "Platform, Ramped";
-            forgeWorldTypes[0x470D] = "Platform, Large";
-            forgeWorldTypes[0x470E] = "Platform, XL";
-            forgeWorldTypes[0x470F] = "Platform, XXL";
-            forgeWorldTypes[0x4710] = "Platform, Y";
-            forgeWorldTypes[0x4711] = "Platform, Y, Large";
-            forgeWorldTypes[0x4712] = "Sniper Nest";
-            forgeWorldTypes[0x4713] = "Staircase";
+            forgeWorld.AddSubcategory(ref key,
+                "Bridge, Small",
+                "Bridge, Medium",
+                "Bridge, Large",
+                "Bridge, XLarge",
+                "Bridge, Diagonal",
+                "Bridge, Diag, Small",
+                "Dish",
+                "Dish, Open",
+                "Corner, 45 Degrees",
+                "Corner, 2x2",
+                "Corner, 4x4",
+                "Landing Pad",
+                "Platform, Ramped",
+                "Platform, Large",
+                "Platform, XL",
+                "Platform, XXL",
+                "Platform, Y",
+                "Platform, Y, Large",
+                "Sniper Nest",
+                "Staircase",
+                "Walkway, Large");
             #endregion
             #region Buildings
-            forgeWorldTypes[0x4714] = "Walkway, Large";
-            forgeWorldTypes[0x4800] = "Bunker, Small";
-            forgeWorldTypes[0x4801] = "Bunker, Small, Covered";
-            forgeWorldTypes[0x4802] = "Bunker, Box";
-            forgeWorldTypes[0x4803] = "Bunker, Round";
-            forgeWorldTypes[0x4804] = "Bunker, Ramp";
-            forgeWorldTypes[0x4805] = "Pyramid";
-            forgeWorldTypes[0x4806] = "Tower, 2 Story";
-            forgeWorldTypes[0x4807] = "Tower, 3 Story";
-            forgeWorldTypes[0x4808] = "Tower, Tall";
-            forgeWorldTypes[0x4809] = "Room, Double";
-            forgeWorldTypes[0x480A] = "Room, Triple";
+            forgeWorld.AddSubcategory(ref key,
+                "Bunker, Small",
+                "Bunker, Small, Covered",
+                "Bunker, Box",
+                "Bunker, Round",
+                "Bunker, Ramp",
+                "Pyramid",
+                "Tower, 2 Story",
+                "Tower, 3 Story",
+                "Tower, Tall",
+                "Room, Double",
+                "Room, Triple");
             #endregion
             #region Decorative
-            forgeWorldTypes[0x4900] = "Antenna, Small";
-            forgeWorldTypes[0x4901] = "Antenna, Satellite";
-            forgeWorldTypes[0x4902] = "Brace";
-            forgeWorldTypes[0x4903] = "Brace, Large";
-            forgeWorldTypes[0x4904] = "Brace, Tunnel";
-            forgeWorldTypes[0x4905] = "Column";
-            forgeWorldTypes[0x4906] = "Cover";
-            forgeWorldTypes[0x4907] = "Cover, Crenellation";
-            forgeWorldTypes[0x4908] = "Cover, Glass";
-            forgeWorldTypes[0x4909] = "Glass Sail";
-            forgeWorldTypes[0x490A] = "Railing, Small";
-            forgeWorldTypes[0x490B] = "Railing, Medium";
-            forgeWorldTypes[0x490C] = "Railing, Long";
-            forgeWorldTypes[0x490D] = "Teleporter Frame";
-            forgeWorldTypes[0x490E] = "Strut";
-            forgeWorldTypes[0x490F] = "Large Walkway Cover";
+            forgeWorld.AddSubcategory(ref key,
+                "Antenna, Small",
+                "Antenna, Satellite",
+                "Brace",
+                "Brace, Large",
+                "Brace, Tunnel",
+                "Column",
+                "Cover",
+                "Cover, Crenellation",
+                "Cover, Glass",
+                "Glass Sail",
+                "Railing, Small",
+                "Railing, Medium",
+                "Railing, Long",
+                "Teleporter Frame",
+                "Strut",
+                "Large Walkway Cover");
             #endregion
             #region Doors, Windows, And Walls
-            forgeWorldTypes[0x4A00] = "Door";
-            forgeWorldTypes[0x4A01] = "Door, Double";
-            forgeWorldTypes[0x4A02] = "Window";
-            forgeWorldTypes[0x4A03] = "Window, Double";
-            forgeWorldTypes[0x4A04] = "Wall";
-            forgeWorldTypes[0x4A05] = "Wall, Double";
-            forgeWorldTypes[0x4A06] = "Wall, Corner";
-            forgeWorldTypes[0x4A07] = "Wall, Curved";
-            forgeWorldTypes[0x4A08] = "Wall, Coliseum";
-            forgeWorldTypes[0x4A09] = "Window, Colesium";
-            forgeWorldTypes[0x4A0A] = "Tunnel, Short";
-            forgeWorldTypes[0x4A0B] = "Tunnel, Long";
+            forgeWorld.AddSubcategory(ref key,
+                "Door",
+                "Door, Double",
+                "Window",
+                "Window, Double",
+                "Wall",
+                "Wall, Double",
+                "Wall, Corner",
+                "Wall, Curved",
+                "Wall, Coliseum",
+                "Window, Colesium",
+                "Tunnel, Short",
+                "Tunnel, Long");
             #endregion
             #region Inclines
-            forgeWorldTypes[0x4B00] = "Bank, 1x1";
-            forgeWorldTypes[0x4B01] = "Bank, 1x2";
-            forgeWorldTypes[0x4B02] = "Bank, 2x1";
-            forgeWorldTypes[0x4B03] = "Bank, 2x2";
-            forgeWorldTypes[0x4B04] = "Ramp, 1x2";
-            forgeWorldTypes[0x4B05] = "Ramp, 1x2, Shallow";
-            forgeWorldTypes[0x4B06] = "Ramp, 2x2";
-            forgeWorldTypes[0x4B07] = "Ramp, 2x2, Steep";
-            forgeWorldTypes[0x4B08] = "Ramp, Circular, Small";
-            forgeWorldTypes[0x4B09] = "Ramp, Circular, Large";
-            forgeWorldTypes[0x4B0A] = "Ramp, Bridge, Small";
-            forgeWorldTypes[0x4B0B] = "Ramp, Bridge, Medium";
-            forgeWorldTypes[0x4B0C] = "Ramp, Bridge, Large";
-            forgeWorldTypes[0x4B0D] = "Ramp, XL";
-            forgeWorldTypes[0x4B0E] = "Ramp, Stunt";
+            forgeWorld.AddSubcategory(ref key,
+                "Bank, 1x1",
+                "Bank, 1x2",
+                "Bank, 2x1",
+                "Bank, 2x2",
+                "Ramp, 1x2",
+                "Ramp, 1x2, Shallow",
+                "Ramp, 2x2",
+                "Ramp, 2x2, Steep",
+                "Ramp, Circular, Small",
+                "Ramp, Circular, Large",
+                "Ramp, Bridge, Small",
+                "Ramp, Bridge, Medium",
+                "Ramp, Bridge, Large",
+                "Ramp, XL",
+                "Ramp, Stunt");
             #endregion
             #region Natural
-            forgeWorldTypes[0x4C00] = "Rock, Small";
-            forgeWorldTypes[0x4C01] = "Rock, Flat";
-            forgeWorldTypes[0x4C02] = "Rock, Medium 1";
-            forgeWorldTypes[0x4C03] = "Rock, Medium 2";
-            forgeWorldTypes[0x4C04] = "Rock, Spire 1";
-            forgeWorldTypes[0x4C05] = "Rock, Spire 2";
-            forgeWorldTypes[0x4C06] = "Rock, Seastack";
-            forgeWorldTypes[0x4C07] = "Rock, Arch";
+            forgeWorld.AddSubcategory(ref key,
+                "Rock, Small",
+                "Rock, Flat",
+                "Rock, Medium 1",
+                "Rock, Medium 2",
+                "Rock, Spire 1",
+                "Rock, Spire 2",
+                "Rock, Seastack",
+                "Rock, Arch");
             #endregion
-            forgeWorldTypes[0x4D00] = "Grid";
+            forgeWorld.AddNext(ref key, "Grid");
+            #endregion
+            #region Hidden Structure Blocks
+            forgeWorld.AddNext(ref key, "Block, 2x2, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 1x1, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 2x2x2, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 4x4x2, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 4x4x4, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            forgeWorld.AddNext(ref key, "Block, 4x4, Flat, Invisible");
             #endregion
             #region Vehicles (MCC)
-            forgeWorldTypes[0x5900] = "Falcon, Nose Gun";
-            forgeWorldTypes[0x5901] = "Falcon, Grenadier";
-            forgeWorldTypes[0x5902] = "Falcon, Transport";
-            forgeWorldTypes[0x5A00] = "Warthog, Transport";
-            forgeWorldTypes[0x5B00] = "Sabre";
-            forgeWorldTypes[0x5C00] = "Seraph";
-            forgeWorldTypes[0x5D00] = "Cart, Electric";
-            forgeWorldTypes[0x5E00] = "Forklift";
-            forgeWorldTypes[0x5F00] = "Pickup";
-            forgeWorldTypes[0x6000] = "Truck Cab";
-            forgeWorldTypes[0x6100] = "Van, Oni";
-            forgeWorldTypes[0x6200] = "Shade, Fuel Rod";
+            forgeWorld.AddSubcategory(ref key, "Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
+            forgeWorld.AddNext(ref key, "Warthog, Transport");
+            forgeWorld.AddNext(ref key, "Sabre");
+            forgeWorld.AddNext(ref key, "Seraph");
+            forgeWorld.AddNext(ref key, "Cart, Electric");
+            forgeWorld.AddNext(ref key, "Forklift");
+            forgeWorld.AddNext(ref key, "Pickup");
+            forgeWorld.AddNext(ref key, "Truck Cab");
+            forgeWorld.AddNext(ref key, "Van, Oni");
+            forgeWorld.AddNext(ref key, "Shade, Fuel Rod");
             #endregion
             #region Gadgets (MCC)
-            forgeWorldTypes[0x6300] = "Cannon, Man, Forerunner";
-            forgeWorldTypes[0x6301] = "Cannon, Man, Heavy, Forerunner";
-            forgeWorldTypes[0x6302] = "Cannon, Man, Light, Forerunner";
-            forgeWorldTypes[0x6303] = "Gravity Lift, Forerunner";
-            forgeWorldTypes[0x6304] = "Gravity Lift, Tall, Forerunner";
-            forgeWorldTypes[0x6305] = "Cannon, Man, Human";
-            forgeWorldTypes[0x6400] = "One Way Shield 1";
-            forgeWorldTypes[0x6500] = "One Way Shield 5";
-            forgeWorldTypes[0x6600] = "Shield Wall, Small";
-            forgeWorldTypes[0x6700] = "Shield Wall, Medium";
-            forgeWorldTypes[0x6800] = "Shield Wall, Large";
-            forgeWorldTypes[0x6900] = "Shield Wall, X-Large";
-            forgeWorldTypes[0x6A00] = "One Way Shield 2";
-            forgeWorldTypes[0x6B00] = "One Way Shield 3";
-            forgeWorldTypes[0x6C00] = "One Way Shield 4";
-            forgeWorldTypes[0x6D00] = "Shield Door, Small";
-            forgeWorldTypes[0x6E00] = "Shield Door, Small 1";
-            forgeWorldTypes[0x6F00] = "Shield Door, Large";
-            forgeWorldTypes[0x7000] = "Shield Door, Large 1";
-            forgeWorldTypes[0x7100] = "Ammo Cabinet";
-            forgeWorldTypes[0x7200] = "Spnkr Ammo";
-            forgeWorldTypes[0x7300] = "Sniper Ammo";
+            forgeWorld.AddSubcategory(ref key,
+                "Cannon, Man, Forerunner",
+                "Cannon, Man, Heavy, Forerunner",
+                "Cannon, Man, Light, Forerunner",
+                "Gravity Lift, Forerunner",
+                "Gravity Lift, Tall, Forerunner",
+                "Cannon, Man, Human");
+            forgeWorld.AddNext(ref key, "One Way Shield 1");
+            forgeWorld.AddNext(ref key, "One Way Shield 5");
+            forgeWorld.AddNext(ref key, "Shield Wall, Small");
+            forgeWorld.AddNext(ref key, "Shield Wall, Medium");
+            forgeWorld.AddNext(ref key, "Shield Wall, Large");
+            forgeWorld.AddNext(ref key, "Shield Wall, X-Large");
+            forgeWorld.AddNext(ref key, "One Way Shield 2");
+            forgeWorld.AddNext(ref key, "One Way Shield 3");
+            forgeWorld.AddNext(ref key, "One Way Shield 4");
+            forgeWorld.AddNext(ref key, "Shield Door, Small");
+            forgeWorld.AddNext(ref key, "Shield Door, Small 1");
+            forgeWorld.AddNext(ref key, "Shield Door, Large");
+            forgeWorld.AddNext(ref key, "Shield Door, Large 1");
+            forgeWorld.AddNext(ref key, "Ammo Cabinet");
+            forgeWorld.AddNext(ref key, "Spnkr Ammo");
+            forgeWorld.AddNext(ref key, "Sniper Ammo");
             #endregion
             #region Scenery (MCC)
-            forgeWorldTypes[0x7400] = "Jersey Barrier";
-            forgeWorldTypes[0x7401] = "Jersey Barrier, Short";
-            forgeWorldTypes[0x7402] = "Heavy Barrier";
-            forgeWorldTypes[0x7500] = "Small, Closed";
-            forgeWorldTypes[0x7501] = "Crate, Metal, Multi";
-            forgeWorldTypes[0x7502] = "Crate, Metal, Single";
-            forgeWorldTypes[0x7503] = "Crate, Fully Open";
-            forgeWorldTypes[0x7504] = "Crate, Forerunner, Small";
-            forgeWorldTypes[0x7505] = "Crate, Forerunner, Large";
-            forgeWorldTypes[0x7600] = "Pallet";
-            forgeWorldTypes[0x7601] = "Pallet, Large";
-            forgeWorldTypes[0x7602] = "Pallet, Metal";
-            forgeWorldTypes[0x7700] = "Driftwood 1";
-            forgeWorldTypes[0x7701] = "Driftwood 2";
-            forgeWorldTypes[0x7702] = "Driftwood 3";
-            forgeWorldTypes[0x7800] = "Phantom";
-            forgeWorldTypes[0x7801] = "Spirit";
-            forgeWorldTypes[0x7802] = "Pelican";
-            forgeWorldTypes[0x7803] = "Drop Pod, Elite";
-            forgeWorldTypes[0x7804] = "Anti Air Gun";
-            forgeWorldTypes[0x7900] = "Cargo Truck, Destroyed";
-            forgeWorldTypes[0x7901] = "Falcon, Destroyed";
-            forgeWorldTypes[0x7902] = "Warthog, Destroyed";
-            forgeWorldTypes[0x7A00] = "Folding Chair";
-            forgeWorldTypes[0x7B00] = "Dumpster";
-            forgeWorldTypes[0x7C00] = "Dumpster, Tall";
-            forgeWorldTypes[0x7D00] = "Equipment Case";
-            forgeWorldTypes[0x7E00] = "Monitor";
-            forgeWorldTypes[0x7F00] = "Plasma Storage";
-            forgeWorldTypes[0x8000] = "Camping Stool, Covenant";
-            forgeWorldTypes[0x8100] = "Covenant Antenna";
-            forgeWorldTypes[0x8200] = "Fuel Storage";
-            forgeWorldTypes[0x8300] = "Engine Cart";
-            forgeWorldTypes[0x8400] = "Missile Cart";
+            forgeWorld.AddSubcategory(ref key, "Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
+            forgeWorld.AddSubcategory(ref key,
+                "Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Fully Open",
+                "Crate, Forerunner, Small",
+                "Crate, Forerunner, Large");
+            forgeWorld.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            forgeWorld.AddSubcategory(ref key, "Driftwood 1", "Driftwood 2", "Driftwood 3");
+            forgeWorld.AddSubcategory(ref key, "Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
+            forgeWorld.AddSubcategory(ref key, "Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
+            forgeWorld.AddNext(ref key, "Folding Chair");
+            forgeWorld.AddNext(ref key, "Dumpster");
+            forgeWorld.AddNext(ref key, "Dumpster, Tall");
+            forgeWorld.AddNext(ref key, "Equipment Case");
+            forgeWorld.AddNext(ref key, "Monitor");
+            forgeWorld.AddNext(ref key, "Plasma Storage");
+            forgeWorld.AddNext(ref key, "Camping Stool, Covenant");
+            forgeWorld.AddNext(ref key, "Covenant Antenna");
+            forgeWorld.AddNext(ref key, "Fuel Storage");
+            forgeWorld.AddNext(ref key, "Engine Cart");
+            forgeWorld.AddNext(ref key, "Missile Cart");
             #endregion
             #region Structure (MCC)
-            forgeWorldTypes[0x8500] = "Bridge";
-            forgeWorldTypes[0x8501] = "Platform, Covenant";
-            forgeWorldTypes[0x8502] = "Catwalk, Straight";
-            forgeWorldTypes[0x8503] = "Catwalk, Short";
-            forgeWorldTypes[0x8504] = "Catwalk, Bend, Left";
-            forgeWorldTypes[0x8505] = "Catwalk, Bend, Right";
-            forgeWorldTypes[0x8506] = "Catwalk, Angled";
-            forgeWorldTypes[0x8507] = "Catwalk, Large";
-            forgeWorldTypes[0x8600] = "Bunker, Overlook";
-            forgeWorldTypes[0x8601] = "Gunners Nest";
-            forgeWorldTypes[0x8700] = "Cover, Small";
-            forgeWorldTypes[0x8701] = "Block, Large";
-            forgeWorldTypes[0x8702] = "Blocker, Hallway";
-            forgeWorldTypes[0x8703] = "Column, Stone";
-            forgeWorldTypes[0x8704] = "Tombstone";
-            forgeWorldTypes[0x8705] = "Cover, Large, Stone";
-            forgeWorldTypes[0x8706] = "Cover, Large";
-            forgeWorldTypes[0x8707] = "Walkway Cover";
-            forgeWorldTypes[0x8708] = "Walkway Cover, Short";
-            forgeWorldTypes[0x8709] = "Cover, Large, Human";
-            forgeWorldTypes[0x870A] = "I-Beam";
-            forgeWorldTypes[0x8800] = "Wall (MCC)";
-            forgeWorldTypes[0x8801] = "Door (MCC)";
-            forgeWorldTypes[0x8802] = "Door, Human";
-            forgeWorldTypes[0x8803] = "Door A, Forerunner";
-            forgeWorldTypes[0x8804] = "Door B, Forerunner";
-            forgeWorldTypes[0x8805] = "Door C, Forerunner";
-            forgeWorldTypes[0x8806] = "Door D, Forerunner";
-            forgeWorldTypes[0x8807] = "Door E, Forerunner";
-            forgeWorldTypes[0x8808] = "Door F, Forerunner";
-            forgeWorldTypes[0x8809] = "Door G, Forerunner";
-            forgeWorldTypes[0x880A] = "Door H, Forerunner";
-            forgeWorldTypes[0x880B] = "Wall, Small, Forerunner";
-            forgeWorldTypes[0x880C] = "Wall, Large, Forerunner";
-            forgeWorldTypes[0x8900] = "Rock, Spire 3";
-            forgeWorldTypes[0x8901] = "Tree, Dead";
-            #endregion
-            forgeWorldTypes[0x8D00] = "Target Designator";// Other (MCC)
-            #region Hidden Structure Blocks
-            forgeWorldTypes[0x4E00] = "Block, 2x2, Invisible";
-            forgeWorldTypes[0x4F00] = "Block, 1x1, Invisible";
-            forgeWorldTypes[0x5000] = "Block, 2x2x2, Invisible";
-            forgeWorldTypes[0x5100] = "Block, 4x4x2, Invisible";
-            forgeWorldTypes[0x5200] = "Block, 4x4x4, Invisible";
-            forgeWorldTypes[0x5300] = "Block, 2x1, Flat, Invisible";
-            forgeWorldTypes[0x5400] = "Block, 1x1, Flat, Invisible";
-            forgeWorldTypes[0x5500] = "Block, 1x1, Small, Invisible";
-            forgeWorldTypes[0x5600] = "Block, 2x2, Flat, Invisible";
-            forgeWorldTypes[0x5700] = "Block, 4x2, Flat, Invisible";
-            forgeWorldTypes[0x5800] = "Block, 4x4, Flat, Invisible";
+            forgeWorld.AddSubcategory(ref key,
+                "Bridge",
+                "Platform, Covenant",
+                "Catwalk, Straight",
+                "Catwalk, Short",
+                "Catwalk, Bend, Left",
+                "Catwalk, Bend, Right",
+                "Catwalk, Angled",
+                "Catwalk, Large");
+            forgeWorld.AddSubcategory(ref key, "Bunker, Overlook", "Gunners Nest");
+            forgeWorld.AddSubcategory(ref key,
+                "Cover, Small",
+                "Block, Large",
+                "Blocker, Hallway",
+                "Column, Stone",
+                "Tombstone",
+                "Cover, Large, Stone",
+                "Cover, Large",
+                "Walkway Cover",
+                "Walkway Cover, Short",
+                "Cover, Large, Human",
+                "I-Beam");
+            forgeWorld.AddSubcategory(ref key,
+                "Wall (MCC)",
+                "Door (MCC)",
+                "Door, Human",
+                "Door A, Forerunner",
+                "Door B, Forerunner",
+                "Door C, Forerunner",
+                "Door D, Forerunner",
+                "Door E, Forerunner",
+                "Door F, Forerunner",
+                "Door G, Forerunner",
+                "Door H, Forerunner",
+                "Wall, Small, Forerunner",
+                "Wall, Large, Forerunner");
+            forgeWorld.AddSubcategory(ref key, "Rock, Spire 3", "Tree, Dead");
             #endregion
             #region Hidden Misc
-            forgeWorldTypes[0x8A00] = "Generator";
-            forgeWorldTypes[0x8B00] = "Vending Machine";
+            forgeWorld.AddNext(ref key, "Generator");
+            forgeWorld.AddNext(ref key, "Vending Machine");
+            forgeWorld.AddNext(ref key, "Dinghy");
             #endregion
+            forgeWorld.AddNext(ref key, "Target Designator");// Other (MCC)
+            forgeWorld.AddNext(ref key, "Pelican, Hovering");
+            forgeWorld.AddNext(ref key, "Phantom, Hovering");
+            #endregion
+
+            #region Tempest
+            TwoWayDictionary<int, string> tempest = new TwoWayDictionary<int, string>();
+            maps[Map.Tempest] = tempest;
+            key = 0x1F00;
+            #region Vehicles
+            tempest.AddNext(ref key, "Banshee");
+            tempest.AddNext(ref key, "Ghost");
+            tempest.AddNext(ref key, "Mongoose");
+            tempest.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            tempest.AddNext(ref key, "Wraith");
+            tempest.AddNext(ref key, "Scorpion");
+            #endregion
+            #region Gadgets
+            // exact same as FW?!
+            tempest.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            tempest.AddNext(ref key, "Health Station");
+            tempest.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            tempest.AddSubcategory(ref key,
+                "Cannon, Man, Forerunner",
+                "Cannon, Man, Heavy, Forerunner",
+                "Cannon, Man, Light, Forerunner",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            tempest.AddNext(ref key, "One Way Shield 2");
+            tempest.AddNext(ref key, "One Way Shield 3");
+            tempest.AddNext(ref key, "One Way Shield 4");
+            tempest.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink",
+                "FX:Purple",
+                "FX:Green",
+                "FX:Orange");
+            tempest.AddNext(ref key, "Shield Door, Small");
+            tempest.AddNext(ref key, "Shield Door, Medium");
+            tempest.AddNext(ref key, "Shield Door, Large");
+            tempest.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            tempest.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
+            tempest.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            // same as FW
+            tempest.AddNext(ref key, "Initial Spawn");
+            tempest.AddNext(ref key, "Respawn Point");
+            tempest.AddNext(ref key, "Initial Loadout Camera");
+            tempest.AddNext(ref key, "Respawn Zone");
+            tempest.AddNext(ref key, "Respawn Zone, Weak");
+            tempest.AddNext(ref key, "Respawn Zone, Anti");
+            tempest.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            tempest.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            // same as FW
+            tempest.AddNext(ref key, "Flag Stand");
+            tempest.AddNext(ref key, "Capture Plate");
+            tempest.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            tempest.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Covenant Barrier");
+            tempest.AddSubcategory(ref key,
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open");
+            tempest.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag, Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            tempest.AddNext(ref key, "Street Cone");
+            tempest.AddSubcategory(ref key, "Driftwood 1", "Driftwood 2", "Driftwood 3");
+            #endregion
+            #region Structure
+            #region Building Blocks
+            //FW
+            tempest.AddSubcategory(ref key,
+                "Block, 1x1",
+                "Block, 1x1, Flat",
+                "Block, 1x1, Short",
+                "Block, 1x1, Tall",
+                "Block, 1x1, Tall And Thin",
+                "Block, 1x2",
+                "Block, 1x4",
+                "Block, 2x1, Flat",
+                "Block, 2x2",
+                "Block, 2x2, Flat",
+                "Block, 2x2, Short",
+                "Block, 2x2, Tall",
+                "Block, 2x3",
+                "Block, 2x4",
+                "Block, 3x1, Flat",
+                "Block, 3x3",
+                "Block, 3x3, Flat",
+                "Block, 3x3, Short",
+                "Block, 3x3, Tall",
+                "Block, 3x4",
+                "Block, 4x4",
+                "Block, 4x4, Flat",
+                "Block, 4x4, Short",
+                "Block, 4x4, Tall",
+                "Block, 5x1, Short",
+                "Block, 5x5, Flat");
+            #endregion
+            #region Bridges And Platforms
+            //FW
+            tempest.AddSubcategory(ref key,
+                "Bridge, Small",
+                "Bridge, Medium",
+                "Bridge, Large",
+                "Bridge, XLarge",
+                "Bridge, Diagonal",
+                "Bridge, Diag, Small",
+                "Dish",
+                "Dish, Open",
+                "Corner, 45 Degrees",
+                "Corner, 2x2",
+                "Corner, 4x4",
+                "Landing Pad",
+                "Platform, Ramped",
+                "Platform, Large",
+                "Platform, XL",
+                "Platform, XXL",
+                "Platform, Y",
+                "Platform, Y, Large",
+                "Sniper Nest",
+                "Staircase",
+                "Walkway, Large");
+            #endregion
+            #region Buildings
+            //FW
+            tempest.AddSubcategory(ref key,
+                "Bunker, Small",
+                "Bunker, Small, Covered",
+                "Bunker, Box",
+                "Bunker, Round",
+                "Bunker, Ramp",
+                "Pyramid",
+                "Tower, 2 Story",
+                "Tower, 3 Story",
+                "Tower, Tall",
+                "Room, Double",
+                "Room, Triple");
+            #endregion
+            #region Decorative
+            //FW
+            tempest.AddSubcategory(ref key,
+                "Antenna, Small",
+                "Antenna, Satellite",
+                "Brace",
+                "Brace, Large",
+                "Brace, Tunnel",
+                "Column",
+                "Cover",
+                "Cover, Crenellation",
+                "Cover, Glass",
+                "Glass Sail",
+                "Railing, Small",
+                "Railing, Medium",
+                "Railing, Long",
+                "Teleporter Frame",
+                "Strut",
+                "Large Walkway Cover");
+            #endregion
+            #region Doors, Windows, And Walls
+            //FW
+            tempest.AddSubcategory(ref key,
+                "Door",
+                "Door, Double",
+                "Window",
+                "Window, Double",
+                "Wall",
+                "Wall, Double",
+                "Wall, Corner",
+                "Wall, Curved",
+                "Wall, Coliseum",
+                "Window, Colesium",
+                "Tunnel, Short",
+                "Tunnel, Long");
+            #endregion
+            #region Inclines
+            //FW
+            tempest.AddSubcategory(ref key,
+                "Bank, 1x1",
+                "Bank, 1x2",
+                "Bank, 2x1",
+                "Bank, 2x2",
+                "Ramp, 1x2",
+                "Ramp, 1x2, Shallow",
+                "Ramp, 2x2",
+                "Ramp, 2x2, Steep",
+                "Ramp, Circular, Small",
+                "Ramp, Circular, Large",
+                "Ramp, Bridge, Small",
+                "Ramp, Bridge, Medium",
+                "Ramp, Bridge, Large",
+                "Ramp, XL",
+                "Ramp, Stunt");
+            #endregion
+            #region Natural
+            tempest.AddSubcategory(ref key,
+                "Rock, Small",
+                "Rock, Flat",
+                "Rock, Medium 1",
+                "Rock, Medium 2",
+                "Rock, Spire 1",
+                "Rock, Spire 2",
+                "Rock, Arch",
+                "Rock, Small 1",
+                "Rock, Spire 3");
+            #endregion
+            tempest.AddNext(ref key, "Grid");
+            #endregion
+            #region Hidden Structure Blocks
+            tempest.AddNext(ref key, "Block, 2x2, Invisible");
+            tempest.AddNext(ref key, "Block, 1x1, Invisible");
+            tempest.AddNext(ref key, "Block, 2x2x2, Invisible");
+            tempest.AddNext(ref key, "Block, 4x4x2, Invisible");
+            tempest.AddNext(ref key, "Block, 4x4x4, Invisible");
+            tempest.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            tempest.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            tempest.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            tempest.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            tempest.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            tempest.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            tempest.AddNext(ref key, "Destination Delta(?!)");
+            #endregion
+            #region Vehicles (MCC)
+            //FW
+            tempest.AddSubcategory(ref key, "Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
+            tempest.AddNext(ref key, "Warthog, Transport");
+            tempest.AddNext(ref key, "Sabre");
+            tempest.AddNext(ref key, "Seraph");
+            tempest.AddNext(ref key, "Cart, Electric");
+            tempest.AddNext(ref key, "Forklift");
+            tempest.AddNext(ref key, "Pickup");
+            tempest.AddNext(ref key, "Truck Cab");
+            tempest.AddNext(ref key, "Van, Oni");
+            tempest.AddNext(ref key, "Shade, Fuel Rod");
+            #endregion
+            #region Gadgets (MCC)
+            tempest.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Gravity Lift, Forerunner",
+                "Gravity Lift, Tall, Forerunner",
+                "Cannon, Man, Human");
+            tempest.AddNext(ref key, "One Way Shield 1");
+            tempest.AddNext(ref key, "One Way Shield 5");
+            tempest.AddNext(ref key, "Shield Wall, Small");
+            tempest.AddNext(ref key, "Shield Wall, Medium");
+            tempest.AddNext(ref key, "Shield Wall, Large");
+            tempest.AddNext(ref key, "Shield Wall, X-Large");
+            tempest.AddNext(ref key, "One Way Shield 2");
+            tempest.AddNext(ref key, "One Way Shield 3");
+            tempest.AddNext(ref key, "One Way Shield 4");
+            tempest.AddNext(ref key, "Shield Door, Small");
+            tempest.AddNext(ref key, "Shield Door, Small 1");
+            tempest.AddNext(ref key, "Shield Door, Large");
+            tempest.AddNext(ref key, "Shield Door, Large 1");
+            tempest.AddNext(ref key, "Ammo Cabinet");
+            tempest.AddNext(ref key, "Spnkr Ammo");
+            tempest.AddNext(ref key, "Sniper Ammo");
+            #endregion
+            #region Scenery (MCC)
+            tempest.AddSubcategory(ref key, "Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
+            tempest.AddSubcategory(ref key,
+                "Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Fully Open",
+                "Crate, Forerunner, Small",
+                "Crate, Forerunner, Large");
+            tempest.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            tempest.AddSubcategory(ref key, "Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
+            tempest.AddSubcategory(ref key, "Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
+            tempest.AddNext(ref key, "Folding Chair");
+            tempest.AddNext(ref key, "Dumpster");
+            tempest.AddNext(ref key, "Dumpster, Tall");
+            tempest.AddNext(ref key, "Equipment Case");
+            tempest.AddNext(ref key, "Monitor");
+            tempest.AddNext(ref key, "Plasma Storage");
+            tempest.AddNext(ref key, "Camping Stool, Covenant");
+            tempest.AddNext(ref key, "Covenant Antenna");
+            tempest.AddNext(ref key, "Fuel Storage");
+            tempest.AddNext(ref key, "Engine Cart");
+            tempest.AddNext(ref key, "Missile Cart");
+            #endregion
+            #region Structure (MCC)
+            tempest.AddSubcategory(ref key,
+                "Bridge",
+                "Platform, Covenant",
+                "Catwalk, Straight",
+                "Catwalk, Short",
+                "Catwalk, Bend, Left",
+                "Catwalk, Bend, Right",
+                "Catwalk, Angled",
+                "Catwalk, Large");
+            tempest.AddSubcategory(ref key, "Bunker, Overlook", "Gunners Nest");
+            tempest.AddSubcategory(ref key,
+                "Cover, Small",
+                "Block, Large",
+                "Blocker, Hallway",
+                "Column, Stone",
+                "Tombstone",
+                "Cover, Large, Stone",
+                "Cover, Large",
+                "Walkway Cover",
+                "Walkway Cover, Short",
+                "Cover, Large, Human",
+                "I-Beam");
+            tempest.AddSubcategory(ref key,
+                "Wall (MCC)",
+                "Door (MCC)",
+                "Door, Human",
+                "Door A, Forerunner",
+                "Door B, Forerunner",
+                "Door C, Forerunner",
+                "Door D, Forerunner",
+                "Door E, Forerunner",
+                "Door F, Forerunner",
+                "Door G, Forerunner",
+                "Door H, Forerunner",
+                "Wall, Small, Forerunner",
+                "Wall, Large, Forerunner");
+            tempest.AddNext(ref key, "Tree, Dead");
+            #endregion
+            #region Hidden Misc
+            tempest.AddNext(ref key, "Generator");
+            tempest.AddNext(ref key, "Vending Machine");
+            tempest.AddNext(ref key, "Dinghy");
+            #endregion
+            tempest.AddNext(ref key, "Target Designator");// Other (MCC)
+            tempest.AddNext(ref key, "Pelican, Hovering");
+            tempest.AddNext(ref key, "Phantom, Hovering");
+            #endregion
+
+            #region Ridgeline
+            TwoWayDictionary<int, string> ridgeline = new TwoWayDictionary<int, string>();
+            maps[Map.Ridgeline] = ridgeline;
+            key = 0x1F00;
+            #region Gadgets
+            ridgeline.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            ridgeline.AddNext(ref key, "Health Station");
+            ridgeline.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            ridgeline.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            ridgeline.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink");
+            ridgeline.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            ridgeline.AddSubcategory(ref key,
+                "Die",
+                "Golf Ball",
+                "Golf Club",
+                "Kill Ball",
+                "Soccer Ball",
+                "Tin Cup");
+            ridgeline.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            ridgeline.AddNext(ref key, "Initial Spawn");
+            ridgeline.AddNext(ref key, "Respawn Point");
+            ridgeline.AddNext(ref key, "Initial Loadout Camera");
+            ridgeline.AddNext(ref key, "Respawn Zone");
+            ridgeline.AddNext(ref key, "Respawn Zone, Weak");
+            ridgeline.AddNext(ref key, "Respawn Zone, Anti");
+            ridgeline.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            ridgeline.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            ridgeline.AddNext(ref key, "Flag Stand");
+            ridgeline.AddNext(ref key, "Capture Plate");
+            ridgeline.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            ridgeline.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Jersey Barrier",
+                "Jersey Barrier, Short",
+                "Covenant Barrier",
+                "Portable Shield");
+            ridgeline.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open",
+                "Crate, Fully Open");
+            ridgeline.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            ridgeline.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag, Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            #endregion
+            #region Vehicles
+            ridgeline.AddNext(ref key, "Banshee");
+            ridgeline.AddNext(ref key, "Falcon");
+            ridgeline.AddNext(ref key, "Ghost");
+            ridgeline.AddNext(ref key, "Mongoose");
+            ridgeline.AddNext(ref key, "Revenant");
+            ridgeline.AddNext(ref key, "Scorpion");
+            ridgeline.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            ridgeline.AddNext(ref key, "Wraith");
+            ridgeline.AddNext(ref key, "Shade Turret");
+            #endregion
+            #region Structure
+            #region Building Blocks
+            ridgeline.AddSubcategory(ref key,
+                "Block, 1x1",
+                "Block, 1x1, Flat",
+                "Block, 1x1, Short",
+                "Block, 1x1, Tall",
+                "Block, 1x1, Tall And Thin",
+                "Block, 1x2",
+                "Block, 1x4",
+                "Block, 2x1, Flat",
+                "Block, 2x2",
+                "Block, 2x2, Flat",
+                "Block, 2x2, Short",
+                "Block, 2x2, Tall",
+                "Block, 2x3",
+                "Block, 2x4",
+                "Block, 3x1, Flat",
+                "Block, 3x3",
+                "Block, 3x3, Flat",
+                "Block, 3x3, Short",
+                "Block, 3x3, Tall",
+                "Block, 3x4",
+                "Block, 4x4",
+                "Block, 4x4, Flat",
+                "Block, 4x4, Short",
+                "Block, 4x4, Tall",
+                "Block, 5x1, Short",
+                "Block, 5x5, Flat");
+            #endregion
+            #region Bridges And Platforms
+            ridgeline.AddSubcategory(ref key,
+                "Bridge, Small",
+                "Bridge, Medium",
+                "Bridge, Large",
+                "Bridge, XLarge",
+                "Bridge, Diagonal",
+                "Bridge, Diag, Small",
+                "Corner, 45 Degrees",
+                "Corner, 2x2",
+                "Corner, 4x4",
+                "Landing Pad",
+                "Platform, Ramped",
+                "Platform, Large",
+                "Platform, XL",
+                "Platform, Y",
+                "Platform, Y, Large",
+                "Sniper Nest",
+                "Walkway, Large");
+            #endregion
+            #region Buildings
+            ridgeline.AddSubcategory(ref key,
+                "Bunker, Small",
+                "Bunker, Small, Covered",
+                "Bunker, Box",
+                "Bunker, Ramp",
+                "Tower, 2 Story",
+                "Tower, 3 Story",
+                "Tower, Tall",
+                "Room, Double",
+                "Bunker, Overlook",
+                "Gunner's Nest");
+            #endregion
+            #region Decorative
+            ridgeline.AddSubcategory(ref key,
+                "Antenna, Small",
+                "Brace",
+                "Column",
+                "Cover",
+                "Cover, Crenellation",
+                "Railing, Small",
+                "Railing, Medium",
+                "Railing, Long",
+                "Teleporter Frame",
+                "Strut",
+                "Large Walkway Cover",
+                "Cover, Small");
+            #endregion
+            #region Doors, Windows, And Walls
+            ridgeline.AddSubcategory(ref key,
+                "Door",
+                "Door, Double",
+                "Window",
+                "Window, Double",
+                "Wall",
+                "Wall, Double",
+                "Wall, Corner",
+                "Wall, Curved",
+                "Tunnel, Short",
+                "Tunnel, Long");
+            #endregion
+            #region Inclines
+            ridgeline.AddSubcategory(ref key,
+                "Ramp, 1x2",
+                "Ramp, 1x2, Shallow",
+                "Ramp, 2x2",
+                "Ramp, 2x2, Steep",
+                "Ramp, Circular, Small",
+                "Ramp, Bridge, Small",
+                "Ramp, Bridge, Medium",
+                "Ramp, Bridge, Large",
+                "Ramp, XL");
+            #endregion
+            #region Natural
+            ridgeline.AddSubcategory(ref key,
+                "Rock, Small",
+                "Rock, Flat",
+                "Rock, Medium 1",
+                "Rock, Medium 2",
+                "Rock, Spire 1",
+                "Rock, Spire 2",
+                "Rock, Seastack",
+                "Rock, Arch");
+            #endregion
+            ridgeline.AddNext(ref key, "Grid");
+            ridgeline.AddNext(ref key, "Tree, Dead");
+            #endregion
+            #region Hidden Structure Blocks
+            ridgeline.AddNext(ref key, "Block, 2x2, Invisible");
+            ridgeline.AddNext(ref key, "Block, 1x1, Invisible");
+            ridgeline.AddNext(ref key, "Block, 2x2x2, Invisible");
+            ridgeline.AddNext(ref key, "Block, 4x4x2, Invisible");
+            ridgeline.AddNext(ref key, "Block, 4x4x4, Invisible");
+            ridgeline.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            ridgeline.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            ridgeline.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            ridgeline.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            ridgeline.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            ridgeline.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            ridgeline.AddNext(ref key, "Health Cabinet");
+            #endregion
+
+            #region Breakneck
+
             #endregion
         }
 
