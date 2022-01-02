@@ -1003,7 +1003,222 @@ namespace ForgeLib {
             #endregion
 
             #region Breakneck
+            TwoWayDictionary<int, string> breakneck = new TwoWayDictionary<int, string>();
+            maps[Map.Breakneck] = breakneck;
+            key = 0x1F00;
 
+            #region Gadgets
+            breakneck.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            breakneck.AddNext(ref key, "Health Station");
+            breakneck.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            breakneck.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Man, Human",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            breakneck.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink");
+            breakneck.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            breakneck.AddSubcategory(ref key,
+                "Die",
+                "Golf Ball",
+                "Golf Club",
+                "Kill Ball",
+                "Soccer Ball",
+                "Tin Cup");
+            breakneck.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            breakneck.AddNext(ref key, "Initial Spawn");
+            breakneck.AddNext(ref key, "Respawn Point");
+            breakneck.AddNext(ref key, "Initial Loadout Camera");
+            breakneck.AddNext(ref key, "Respawn Zone");
+            breakneck.AddNext(ref key, "Respawn Zone, Weak");
+            breakneck.AddNext(ref key, "Respawn Zone, Anti");
+            breakneck.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            breakneck.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            breakneck.AddNext(ref key, "Flag Stand");
+            breakneck.AddNext(ref key, "Capture Plate");
+            breakneck.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            breakneck.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Jersey Barrier",
+                "Jersey Barrier, Short",
+                "Covenant Barrier",
+                "Portable Shield");
+            breakneck.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open",
+                "Crate, Fully Open");
+            breakneck.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag, Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            breakneck.AddNext(ref key, "Street Cone");
+            breakneck.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            #endregion
+            #region Vehicles
+            breakneck.AddNext(ref key, "Banshee");
+            breakneck.AddNext(ref key, "Ghost");
+            breakneck.AddNext(ref key, "Mongoose");
+            breakneck.AddNext(ref key, "Revenant");
+            breakneck.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            breakneck.AddNext(ref key, "Wraith");
+            breakneck.AddNext(ref key, "Falcon");
+            breakneck.AddNext(ref key, "Scorpion");
+            #endregion
+            #region Structure
+            #region Building Blocks
+            breakneck.AddSubcategory(ref key,
+                "Block, 1x1",
+                "Block, 1x1, Flat",
+                "Block, 1x1, Short",
+                "Block, 1x1, Tall",
+                "Block, 1x1, Tall And Thin",
+                "Block, 1x2",
+                "Block, 1x4",
+                "Block, 2x1, Flat",
+                "Block, 2x2",
+                "Block, 2x2, Flat",
+                "Block, 2x2, Short",
+                "Block, 2x2, Tall");
+            #endregion
+            #region Bridges And Platforms
+            breakneck.AddSubcategory(ref key,
+                "Bridge, Small",
+                "Bridge, Medium",
+                "Bridge, Large",
+                "Bridge, XLarge",
+                "Bridge, Diagonal",
+                "Bridge, Diag, Small",
+                "Corner, 45 Degrees",
+                "Corner, 2x2",
+                "Corner, 4x4");
+            #endregion
+            #region Buildings
+            breakneck.AddSubcategory(ref key,
+                "Bunker, Small",
+                "Bunker, Small, Covered");
+            #endregion
+            #region Decorative
+            breakneck.AddSubcategory(ref key,
+                "Antenna, Small",
+                "Column",
+                "Railing, Small",
+                "Railing, Medium",
+                "Railing, Long",
+                "Teleporter Frame",
+                "Strut",
+                "Cover, Large",
+                "I-Beam");
+            #endregion
+            #region Doors, Windows, And Walls
+            breakneck.AddSubcategory(ref key,
+                "Wall",
+                "Wall, Double",
+                "Wall, Corner",
+                "Wall, Curved",
+                "Door, Human");
+            #endregion
+            #region Inclines
+            breakneck.AddSubcategory(ref key,
+                "Ramp, 1x2",
+                "Ramp, 1x2, Shallow",
+                "Ramp, 2x2",
+                "Ramp, 2x2, Steep",
+                "Ramp, Circular, Small",
+                "Ramp, Circular, Large",
+                "Ramp, Bridge, Small",
+                "Ramp, Bridge, Medium",
+                "Ramp, Bridge, Large");
+            #endregion
+            breakneck.AddNext(ref key, "Grid");
+            #endregion
+            #region Hidden Structure Blocks
+            breakneck.AddNext(ref key, "Block, 2x2, Invisible");
+            breakneck.AddNext(ref key, "Block, 1x1, Invisible");
+            breakneck.AddNext(ref key, "Block, 2x2x2, Invisible");
+            breakneck.AddNext(ref key, "Block, 4x4x2, Invisible");
+            breakneck.AddNext(ref key, "Block, 4x4x4, Invisible");
+            breakneck.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            breakneck.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            breakneck.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            breakneck.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            breakneck.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            breakneck.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            breakneck.AddNext(ref key, "Health Cabinet");
+            #region Vehicles (MCC)
+            breakneck.AddSubcategory(ref key, "Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
+            breakneck.AddNext(ref key, "Warthog, Transport");
+            breakneck.AddNext(ref key, "Cart, Electric");
+            breakneck.AddNext(ref key, "Forklift");
+            breakneck.AddNext(ref key, "Pickup");
+            breakneck.AddNext(ref key, "Truck Cab");
+            breakneck.AddNext(ref key, "Van, Oni");
+            breakneck.AddNext(ref key, "Shade, Fuel Rod");
+            #endregion
+            #region Gadgets (MCC)
+            breakneck.AddNext(ref key, "One Way Shield 1");
+            breakneck.AddNext(ref key, "One Way Shield 2");
+            breakneck.AddNext(ref key, "One Way Shield 3");
+            breakneck.AddNext(ref key, "One Way Shield 4");
+            breakneck.AddNext(ref key, "One Way Shield 5");
+            breakneck.AddNext(ref key, "Shield Wall, Small");
+            breakneck.AddNext(ref key, "Shield Wall, Medium");
+            breakneck.AddNext(ref key, "Shield Wall, Large");
+            breakneck.AddNext(ref key, "Shield Wall, X-Large");
+            breakneck.AddNext(ref key, "Ammo Cabinet");
+            breakneck.AddNext(ref key, "Spnkr Ammo");
+            breakneck.AddNext(ref key, "Sniper Ammo");
+            #endregion
+            #region Scenery (MCC)
+            breakneck.AddNext(ref key, "Heavy Barrier");
+            breakneck.AddSubcategory(ref key, "Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
+            breakneck.AddSubcategory(ref key, "Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
+            breakneck.AddNext(ref key, "Folding Chair");
+            breakneck.AddNext(ref key, "Dumpster");
+            breakneck.AddNext(ref key, "Dumpster, Tall");
+            breakneck.AddNext(ref key, "Equipment Case");
+            breakneck.AddNext(ref key, "Monitor");
+            breakneck.AddNext(ref key, "Plasma Storage");
+            breakneck.AddNext(ref key, "Camping Stool, Covenant");
+            breakneck.AddNext(ref key, "Covenant Antenna");
+            breakneck.AddNext(ref key, "Fuel Storage");
+            breakneck.AddNext(ref key, "Engine Cart");
+            breakneck.AddNext(ref key, "Missile Cart");
+            #endregion
+            #region Structure (MCC)
+            breakneck.AddSubcategory(ref key, "Wall (MCC)", "Door (MCC)");
+            #endregion
             #endregion
         }
 

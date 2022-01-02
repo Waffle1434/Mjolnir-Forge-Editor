@@ -44,7 +44,7 @@ namespace ForgeLib {
         //static unsafe float3* playerMonitorPosition;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
-        public static int GetDllVersion() => 2;
+        public static int GetDllVersion() => 3;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static bool TrySetConnect(bool connect) {
