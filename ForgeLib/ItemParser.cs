@@ -354,7 +354,7 @@ namespace ForgeLib {
             #region Scenery (MCC)
             forgeWorld.AddSubcategory(ref key, "Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
             forgeWorld.AddSubcategory(ref key,
-                "Small, Closed",
+                "Crate, Small, Closed",
                 "Crate, Metal, Multi",
                 "Crate, Metal, Single",
                 "Crate, Fully Open",
@@ -708,7 +708,7 @@ namespace ForgeLib {
             #region Scenery (MCC)
             tempest.AddSubcategory(ref key, "Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
             tempest.AddSubcategory(ref key,
-                "Small, Closed",
+                "Crate, Small, Closed",
                 "Crate, Metal, Multi",
                 "Crate, Metal, Single",
                 "Crate, Fully Open",
