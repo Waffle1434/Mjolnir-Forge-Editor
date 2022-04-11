@@ -76,9 +76,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="float3.cs" />
+    <Compile Include="BLAM_Common.cs" />
     <Compile Include="ForgeBridge.cs" />
-    <Compile Include="ForgeObject.cs" />
+    <Compile Include="HR_ForgeObject.cs" />
+    <Compile Include="H3_ForgeObject.cs" />
     <Compile Include="ItemParser.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="ProcessMemory.cs" />

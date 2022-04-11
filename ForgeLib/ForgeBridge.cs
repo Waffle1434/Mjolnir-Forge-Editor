@@ -1,10 +1,17 @@
-﻿using RGiesecke.DllExport;
+﻿using ForgeLib.Halo3;
+using RGiesecke.DllExport;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace ForgeLib {
+    public enum Game : byte {
+        None,
+        HaloReach,
+        Halo3,
+    }
+
     public enum Map {
         None,
         Boardwalk,    //50_panopticon
@@ -30,18 +37,20 @@ namespace ForgeLib {
     }
 
     public static class ForgeBridge {
-        public const int maxObjects = 650;
+        public const int HR_maxObjects = 650;
 
         public static ProcessMemory memory = new ProcessMemory();
-        static UIntPtr reachBase;
-
+        public static Game currentGame;
         public static Map currentMap;
         public static Dictionary<int, MccForgeObject> forgeObjects = new Dictionary<int, MccForgeObject>();
         static UIntPtr forgeObjectArrayPointer;
 
+        static UIntPtr reachBase;
         static Dictionary<Map, UIntPtr> mapPlayerPositions = new Dictionary<Map, UIntPtr>();
         static UIntPtr mccPlayerMonitorPosition;
         //static unsafe float3* playerMonitorPosition;
+
+        static H3_MapVariant h3_mvar = new H3_MapVariant();
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static int GetDllVersion() => 4;
@@ -85,10 +94,13 @@ namespace ForgeLib {
         public static string GetLastError() => lastError;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        public static Game GetGame() => currentGame;
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static int GetObjectCount() => forgeObjects.Count;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe ForgeObject* GetObjectPtr(int i) => MccForgeObject.GetPointer(i);
+        public static unsafe HR_ForgeObject* GetObjectPtr(int i) => MccForgeObject.GetPointer(i);
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static unsafe string ForgeObject_GetItemName(int i) => forgeObjects[i].data->ItemName;
@@ -100,15 +112,44 @@ namespace ForgeLib {
         }
 
         static void GetPointers() {
-            reachBase = memory.ModuleBaseAddress("haloreach.dll");
-            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x23CC688);
-            gtLabelsPointer = forgeBase + 0x7F4;
-            forgeObjectArrayPointer = forgeBase + 0x19FC;
+            if (memory.TryGetModuleBaseAddress("haloreach.dll", out reachBase)) {
+                currentGame = Game.HaloReach;
 
-            mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
-            mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
-            mapPlayerPositions[Map.Spire] = reachBase + 0x310EAD0;
-            mapPlayerPositions[Map.None] = default;
+                UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x23CC688);
+                gtLabelsPointer = forgeBase + 0x7F4;
+                forgeObjectArrayPointer = forgeBase + 0x19FC;
+
+                mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
+                mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
+                mapPlayerPositions[Map.Spire] = reachBase + 0x310EAD0;
+                mapPlayerPositions[Map.None] = default;
+            }
+            else if (memory.TryGetModuleBaseAddress("halo3.dll", out UIntPtr halo3Base)) {
+                currentGame = Game.Halo3;
+
+                UIntPtr addr = halo3Base + 0x1F89980;
+                foreach (int offset in new int[] { 0x760, 0x368, 0xA00 })
+                    addr = memory.ReadPointer(addr) + offset;
+
+                unsafe {
+                    fixed (H3_MapVariant* mvarPtr = &h3_mvar) {
+                        if (memory.TryReadStruct(addr, mvarPtr)) {
+                            Console.WriteLine(h3_mvar.data.DisplayName);
+                            Console.WriteLine(h3_mvar.data.Description);
+                            Console.WriteLine(h3_mvar.data.Author);
+
+                            H3_ForgeObject* objPtr = h3_mvar.GetForgeObjects();
+                            for (int i = 0; i < 640; i++) {
+                                H3_ForgeObject obj = *objPtr;
+                                objPtr++;
+                            }
+                        }
+                        else {
+                            Console.WriteLine("Fail!");
+                        }
+                    }
+                }
+            }
         }
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
@@ -169,8 +210,8 @@ namespace ForgeLib {
         static void GetForgeObjects() {
             // TODO: read as one byte array (maxObjects * ForgeObject.size bytes)
             // TODO: less allocatey system that preallocates all MccForgeObjects
-            for (int i = 0; i < maxObjects; i++) {
-                UIntPtr objPtr = forgeObjectArrayPointer + i * ForgeObject.size;
+            for (int i = 0; i < HR_maxObjects; i++) {
+                UIntPtr objPtr = forgeObjectArrayPointer + i * HR_ForgeObject.size;
                 byte flag = memory.ReadByte(objPtr);
                 bool isObject = flag == 1;
 
@@ -207,12 +248,12 @@ namespace ForgeLib {
             GetPointers();
 
             unsafe {
-                for (int i = 0; i < maxObjects; i++) {
+                for (int i = 0; i < HR_maxObjects; i++) {
                     if (forgeObjects.TryGetValue(i, out MccForgeObject fobj)) {
                         fobj.WriteMemory();
                     }
                     else {
-                        UIntPtr objPtr = forgeObjectArrayPointer + i * ForgeObject.size;
+                        UIntPtr objPtr = forgeObjectArrayPointer + i * HR_ForgeObject.size;
                         fobj = new MccForgeObject(objPtr, i);
                         fobj.ReadFromMemory();
                         fobj.data->show = 0;
@@ -253,13 +294,21 @@ namespace ForgeLib {
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static unsafe void AddObject(int i) {
-            if (i >= maxObjects) return;
+            if (i >= HR_maxObjects) return;
 
-            UIntPtr objPtr = forgeObjectArrayPointer + i * ForgeObject.size;
+            UIntPtr objPtr = forgeObjectArrayPointer + i * HR_ForgeObject.size;
             MccForgeObject mccFobj = new MccForgeObject(objPtr, i);
             mccFobj.data->idExt = 0xFFFFFFFF;
             mccFobj.data->spawnRelativeToMapIndex = 0xFFFF;
             forgeObjects[i] = mccFobj;
         }
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        public static unsafe H3_MapVariant* GetH3_MVAR_Ptr() {
+            fixed (H3_MapVariant* ptr = &h3_mvar) return ptr;
+        }
+
+        [DllExport(CallingConvention = CallingConvention.Cdecl)]
+        public static H3_MapVariant GetH3_MVAR() => h3_mvar;
     }
 }

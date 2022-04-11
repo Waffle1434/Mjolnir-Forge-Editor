@@ -1,4 +1,4 @@
-import bpy, enum, time, blf, textwrap, urllib.request, webbrowser
+import bpy, blf, enum, time, textwrap, urllib.request, webbrowser
 from bpy.types import Operator
 from bpy.props import *
 from mathutils import *
@@ -25,21 +25,37 @@ class float3(Structure):
     def fromVector(vec): return float3(vec.x,vec.y,vec.z)
     def toVector(self): return Vector((self.x,self.y,self.z))
     def __str__(self): return "(%.2f,%.2f,%.2f)"%(self.x,self.y,self.z)
+class Transform(Structure):
+    _fields_ = [
+        ('position', float3),
+        ('forward', float3),
+        ('up', float3) 
+    ]
+    def __str__(self): return "%s %s %s"%(self.position, self.forward, self.up)
+class ShapeData(Structure):
+    _fields_ = [
+        ('width', c_float),
+        ('length', c_float),
+        ('top', c_float),
+        ('bottom', c_float)
+    ]
+class Range(Structure):
+    _fields_ = [ ('min', c_float), ('max', c_float) ]
+    def __str__(self): return "(%.2f,%.2f)"%(self.min,self.max)
+class Bounds(Structure):
+    _fields_ = [ ('x', Range), ('y', Range), ('z', Range) ]
+    def __str__(self): return "(%s,%s,%s)"%(self.x,self.y,self.z)
+
 class ForgeObject(Structure):
     _fields_ = [
         ('show', c_ushort),
         ('itemCategory', c_ushort),
         ('idExt', c_uint),
-        ('position', float3),
-        ('forward', float3),
-        ('up', float3),
+        ('transform', Transform),
         ('spawnRelativeToMapIndex', c_ushort),
         ('itemVariant', c_ubyte),
         ('pad1', c_ubyte),
-        ('width', c_float),
-        ('length', c_float),
-        ('top', c_float),
-        ('bottom', c_float),
+        ('shapeDims', ShapeData),
         ('shape', c_ubyte),
         ('spawnSequence', c_byte),
         ('spawnTime', c_ubyte),
@@ -62,6 +78,82 @@ class ForgeObjectFlags(enum.IntFlag):
     Symmetric     = 0b00000100,
     SymmetryMask  = 0b00001100,
     HideAtStart   = 0b00000010
+
+class H3_SaveGame(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ('unique_id', c_ulonglong),
+        ('display_name', c_wchar * 16),
+        ('description', c_char * 128),
+        ('author', c_char * 16),
+        ('e_saved_game_file_type', c_uint),
+        ('author_is_xuid_online', c_ubyte),
+        ('pad0', c_ubyte * 3),
+        ('author_xuid', c_ubyte * 8),# hex
+        ('byte_size', c_ulonglong),
+        ('date', c_ulonglong),
+        ('length_seconds', c_int),
+        ('e_campaign_id', c_int),
+        ('e_map_id', c_int),
+        ('e_game_engine_type', c_int),
+        ('e_campaign_difficulty_level', c_int),
+        ('hopper_id', c_short),
+        ('pad', c_short),
+        ('game_id', c_ulonglong),
+        ('map_variant_version', c_short),
+        ('scenario_objects', c_short),
+        ('variant_objects', c_short),
+        ('quotas', c_short),
+        ('e_map_id_2', c_int),
+        ('bounds', Bounds),
+        ('e_scenario_game_engine', c_int),
+        ('max_budget', c_float),
+        ('spent_budget', c_float),
+        ('showing_helpers', c_short),
+        ('built_in', c_short),
+        ('original_map_signature_hash', c_uint),
+    ]
+class H3_ForgeObject(Structure):
+    _fields_ = [
+        ('placement', c_ushort),
+        ('reuse_timeout', c_ushort),
+        ('object_index', c_int),
+        ('helper_index', c_int),
+        ('definition_index', c_int),
+        ('transform', Transform),
+        ('attached_id', c_int),
+        ('attached_bsp_index', c_ushort),
+        ('attached_type', c_ubyte),
+        ('attached_source', c_ubyte),
+        ('game_engine_flags', c_ubyte),
+        ('scenario', c_ubyte),
+        ('placement', c_ubyte),
+        ('team', c_ubyte),
+        ('shared_storage', c_ubyte),
+        ('spawn_time_seconds', c_ubyte),
+        ('type', c_ubyte),
+        ('shape', c_ubyte),
+        ('shape_dims', ShapeData)
+    ]
+    def __str__(self): return "%d %s"%(self.definition_index, self.transform)
+class Quota(Structure):
+    _fields_ = [
+        ('object_definition_index', c_int),
+        ('min_count', c_ubyte),
+        ('max_count', c_ubyte),
+        ('count', c_ubyte),
+        ('max_allowed', c_ubyte),
+        ('price', c_float),
+    ]
+class H3_MVAR(Structure):
+    _pack_ = 1
+    _fields_ = [
+        ('data', H3_SaveGame),
+        ('objects', H3_ForgeObject * 640),
+        ('object_type_start_index', c_short * 14),
+        ('quotas', Quota * 256),
+        ('gamestate_indices', c_int * 80)
+    ]
 
 def inverseDict(dict):# TODO: two way dictionary class
     invDict = {}
@@ -427,22 +519,24 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         self.placeAtStart = not ForgeObjectFlags.HideAtStart in flags
         self.gameSpecific = ForgeObjectFlags.GameSpecific in flags
         self.shape = shapeNumberToEnum[fobj.shape]
-        self.width = fobj.width
-        self.length = fobj.length
-        self.top = fobj.top
-        self.bottom = fobj.bottom
+        shapeDims = fobj.shapeDims
+        self.width = shapeDims.width
+        self.length = shapeDims.length
+        self.top = shapeDims.top
+        self.bottom = shapeDims.bottom
 
-        fwd = fobj.forward
-        up = fobj.up
+        transform = fobj.transform
+        fwd = transform.forward
+        up = transform.up
         right = fwd.cross(up)
-        pos = fobj.position
+        pos = transform.position
         blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
     
     def ToForgeObject(self, fobj, blobj, inst=None):
         m = blobj.matrix_world if inst is None else inst.matrix_world
-        fobj.forward = float3.fromVector(m.col[1])
-        fobj.up = float3.fromVector(m.col[2])
-        fobj.position = float3.fromVector(m.col[3])
+        fobj.transform.forward = float3.fromVector(m.col[1])
+        fobj.transform.up = float3.fromVector(m.col[2])
+        fobj.transform.position = float3.fromVector(m.col[3])
 
         coll = blobj.instance_collection
         ty = forge.ItemNameToType(coll.name_full) if coll != None else self.objectType
@@ -461,10 +555,10 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         fobj.spawnSequence = self.spawnSequence
         fobj.spawnTime = self.spawnTime
         fobj.shape = shapeEnumToNumber[self.shape]
-        fobj.width = self.width
-        fobj.length = self.length
-        fobj.top = self.top
-        fobj.bottom = self.bottom
+        fobj.shapeDims.width = self.width
+        fobj.shapeDims.length = self.length
+        fobj.shapeDims.top = self.top
+        fobj.shapeDims.bottom = self.bottom
 
 def getWidth(targetRegion):
   for region in bpy.context.area.regions:
@@ -535,12 +629,9 @@ def drawForgeObjectProperties(self, context, region):
 
     col = layout.column(align=True)
     col.prop(fprops, 'gtLabel')
-    
-    #layout.operator('render.render')
 def pollForgePanel(self, context):
     if context.object is None: return False
     return context.object.get('isForgeObject', False)
-    #return len(context.selected_objects) > 0
 class ForgeObjectPanel(bpy.types.Panel):
     bl_label = "Forge Properties"
     bl_idname = 'SCENE_PT_forge_object'
@@ -900,6 +991,7 @@ def register():
         print("ForgeBridge.dll Version %d" % forge.GetDllVersion())
         forge.TrySetConnect.restype = c_bool
         forge.GetLastError.restype = c_wchar_p
+        forge.GetGame.restype = c_ubyte
         forge.GetMapName.restype = c_wchar_p
         forge.GetGtLabel.restype = c_wchar_p
         forge.GetObjectPtr.restype = POINTER(ForgeObject)
@@ -907,10 +999,25 @@ def register():
         forge.ItemNameToType.argtypes = [c_wchar_p]
         forge.TryGetMonitorPosition.restype = c_bool
         forge.TryTeleportMonitor.restype = c_bool
+        #forge.GetH3_MVAR_Ptr.restype = POINTER(H3_MVAR)
+        forge.GetH3_MVAR.restype = H3_MVAR
+
+        if (forge.TrySetConnect(True)):
+            forge.ReadMemory()
+            #h3_mvar = forge.GetH3_MVAR().contents
+            h3_mvar = forge.GetH3_MVAR()
+            print(h3_mvar.data.display_name)
+            print(h3_mvar.data.description)
+            print(h3_mvar.data.author)
+            print(h3_mvar.data.byte_size)
+            print(h3_mvar.data.scenario_objects)
+            print(h3_mvar.data.bounds)
+            print(h3_mvar.data.original_map_signature_hash)
+            print(h3_mvar.objects[0])
+            print(h3_mvar.objects[1])
+            print(h3_mvar.objects[2])
+            print(h3_mvar.objects[3])
     except Exception as ex:
-        bpy.ops.forge.error('INVOKE_DEFAULT', 
-            message="Outdated ForgeBridge.dll in use!\nPlease download the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 
-            rl="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
         print(ex)
 
     persist_vars['forgeObjectsOverlay_handle'] = bpy.types.SpaceView3D.draw_handler_add(draw_forgeObjectOverlay, (), 'WINDOW', 'POST_PIXEL')

@@ -77,10 +77,13 @@ namespace ForgeLib {
         [ThreadStatic] static byte[] by4 = new byte[4];
         [ThreadStatic] static byte[] by16 = new byte[16];
 
-        public UIntPtr ModuleBaseAddress(string moduleName) {
-            unsafe {
-                return (UIntPtr)modules[moduleName].ToPointer();
+        public bool TryGetModuleBaseAddress(string moduleName, out UIntPtr address) {
+            if (modules.TryGetValue(moduleName, out IntPtr ptr)) {
+                unsafe { address = (UIntPtr)ptr.ToPointer(); }
+                return true;
             }
+            address = UIntPtr.Zero;
+            return false;
         }
 
         public bool TryReadBytes(UIntPtr ptr, byte[] bytes, int count) {

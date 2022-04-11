@@ -3,16 +3,16 @@ using System.Runtime.InteropServices;
 
 namespace ForgeLib {
     public class MccForgeObject {
-        static unsafe ForgeObject* objects;
+        static unsafe HR_ForgeObject* objects;
         static unsafe MccForgeObject() {
-            objects = (ForgeObject*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ForgeObject)) * ForgeBridge.maxObjects).ToPointer();
+            objects = (HR_ForgeObject*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(HR_ForgeObject)) * ForgeBridge.HR_maxObjects).ToPointer();
         }
 
-        public static unsafe ForgeObject* GetPointer(int i) => objects + (i % ForgeBridge.maxObjects);
+        public static unsafe HR_ForgeObject* GetPointer(int i) => objects + (i % ForgeBridge.HR_maxObjects);
 
 
         public UIntPtr mccPointer;
-        public unsafe ForgeObject* data;
+        public unsafe HR_ForgeObject* data;
 
         public MccForgeObject(UIntPtr mccPointer, int i) {
             this.mccPointer = mccPointer;
@@ -41,23 +41,8 @@ namespace ForgeLib {
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Transform {
-        public float3 position;
-        public float3 forward;
-        public float3 up;
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct ShapeData {
-        public float width;
-        public float length;
-        public float top;
-        public float bottom;
-    }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = size)]
-    public struct ForgeObject {
+    public struct HR_ForgeObject {
         public const int size = 76;
 
         public ushort show;
@@ -81,19 +66,15 @@ namespace ForgeLib {
         public Color color;
         public byte pad2;
 
-        public enum Shape : byte { None, Cylinder = 2, Box }
+        [Flags]
         public enum Flags : byte {
-            PhysicsNormal = 0b00000000,
-            PhysicsFixed  = 0b01000000,
-            PhysicsPhased = 0b11000000,
-            PhysicsMask   = 0b11000000,
-            GameSpecific  = 0b00100000,
-            Asymmetric    = 0b00001000,
+            HideAtStart   = 0b00000010,
             Symmetric     = 0b00000100,
-            SymmetryMask  = 0b00001100,
-            HideAtStart   = 0b00000010
+            Asymmetric    = 0b00001000,
+            GameSpecific  = 0b00100000,
+            PhysicsFixed  = 0b01000000,
+            PhysicsPhased = 0b10000000,
         }
-        public enum Color : byte { Red, Blue, Green, Orange, Purple, Yellow, Brown, Pink, Neutral, TeamColor = 255 }
 
         [StructLayout(LayoutKind.Explicit, Size = 2)]
         public struct TypeSpecificInfo {// based on cachedType
@@ -143,6 +124,6 @@ namespace ForgeLib {
             }
         }
 
-        public override string ToString() => $"{ItemName} {position}";
+        public override string ToString() => $"{ItemName} {transform.position}";
     }
 }

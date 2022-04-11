@@ -23,7 +23,7 @@ namespace ForgeConsole {
             unsafe {
                 int c = ForgeBridge.GetObjectCount();
                 for (int i = 0; i < c; i++) {
-                    ForgeObject fobj = *ForgeBridge.GetObjectPtr(i);
+                    HR_ForgeObject fobj = *ForgeBridge.GetObjectPtr(i);
                     Console.WriteLine(fobj);
                 }
             }
