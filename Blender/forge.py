@@ -1,18 +1,21 @@
-import bpy, enum, time, blf, textwrap
+import bpy, enum, time, blf, textwrap, urllib.request, webbrowser
 from bpy.types import Operator
 from bpy.props import *
+from mathutils import *
 from ctypes import *
 from os.path import exists
 from math import *
-from mathutils import *
+from threading import Thread
 
-print("Mjolnir v0.9.8")
+vMjolnir = "0.9.8.6"
+print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
 propSceneName = 'Props'
 shapesCollName = 'Shapes'
 mapPalette = 'Forge World Palette'
 dllPath = bpy.path.abspath("//") + "ForgeBridge.dll"
+githubURL = "https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases/latest"
 persist_vars = bpy.app.driver_namespace
 defaultGtLabel = ('NO_LABEL', "No Label", "Default")
 
@@ -866,6 +869,13 @@ def removeDrawEvents(event):
         try: event.remove(item)
         except: pass
 
+def tryGetLatestRelease():
+    with urllib.request.urlopen(githubURL) as req:
+        url = req.url
+        latestVersion = (url[url.rindex("tag/")+4:]).strip('/ ')
+
+        if (vMjolnir != latestVersion): webbrowser.open(url)
+
 def register():
     for cls in reg_classes: bpy.utils.register_class(cls)
     for item in reg_objMenus: registerDrawEvent(bpy.types.VIEW3D_MT_object_context_menu, item)
@@ -876,10 +886,13 @@ def register():
     bpy.types.Object.forge = bpy.props.PointerProperty(type=ForgeObjectProps)
     bpy.types.Collection.forge = bpy.props.PointerProperty(type=ForgeCollectionProps)
 
+    thread = Thread(target=tryGetLatestRelease)
+    thread.start()
+
     if not exists(dllPath):
         bpy.ops.forge.error('INVOKE_DEFAULT', 
-            message="ForgeBridge.dll not found!\nPlease download the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 
-            url="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
+            message="ForgeBridge.dll not found!\nPlease download the latest release from " + githubURL, 
+            url=githubURL)
         return
     global forge
     forge = cdll.LoadLibrary(dllPath)
