@@ -181,8 +181,6 @@ colorEnumToNumber = inverseDict(colorNumberToEnum)
 shapeEnumToNumber = inverseDict(shapeNumberToEnum)
 gtIndexToLabel = {}
 gtLabelToIndex = {}
-
-#teleporterTypes = ("Receiver Node","Sender Node","Two-Way Node")
 teleporterTypes = (12,13,14)
 
 def initGtLabels():
@@ -202,13 +200,31 @@ def wrapTextPanel(self, text, scale=0.75):
     layout = self.layout.column(align=True)
     layout.scale_y = scale
     for wrapped in wrapText(text): layout.label(text=wrapped)
+def executeAndReport(self, context, method):
+    error = False
+    try:
+        if method(context, self): return {'FINISHED'}
+        else: error = True
+    except:
+        error = True
+    finally:
+        if error:
+            msg = forge.GetLastError()
+            print(msg)
+            self.report({'ERROR'}, msg)
+            return {'CANCELLED'}
+def tryGetLatestRelease():
+    with urllib.request.urlopen(githubURL) as req:
+        url = req.url
+        latestVersion = (url[url.rindex("tag/")+4:]).strip('/ ')
+
+        if (vMjolnir != latestVersion): webbrowser.open(url)
 
 def lockObject(obj, scale=True, loc=False, rot=False):
     for i_ax in range(0,3):
         obj.lock_scale[i_ax] = scale
         obj.lock_location[i_ax] = loc
         obj.lock_rotation[i_ax] = rot
-
 def createForgeObject(context, itemName, i=None, data=None):
     blobj = bpy.data.objects.new(itemName if i is None else "%d - %s"%(i,itemName), data)
     context.collection.objects.link(blobj)
@@ -226,6 +242,14 @@ def createForgeObject(context, itemName, i=None, data=None):
         blobj.empty_display_size = 0.5
         #blobj.show_name = True
     return blobj
+def tryGetForgeObjectFromInstance(inst):
+    o = inst.object
+    if inst.is_instance:
+        if o.is_instancer: return o
+    elif o.get('isForgeObject',False):
+        p = o.parent
+        if p is None or p.instance_type == 'NONE' or p.instance_type == 'COLLECTION': return o
+    else: return None
 
 def importForgeObjects(context, self=None, createCollections=False):
     if context.scene.name == propSceneName: return False
@@ -234,8 +258,7 @@ def importForgeObjects(context, self=None, createCollections=False):
     t0 = time.time()
 
     forge.ReadMemory()
-    if forge.GetMapName() == "None":
-        print(forge.GetLastError())
+    if forge.GetMapName() == "None": print(forge.GetLastError())
     c = forge.GetObjectCount()
     gt_c = forge.GetGtLabelCount()
     print("Map: %s, %d Objects, %d Gametype Labels"%(forge.GetMapName(), c, gt_c))
@@ -299,21 +322,8 @@ def exportForgeObjects(context, self=None):
     if self is None: print(msg)
     else: self.report({'WARNING' if hitLimit else 'INFO'}, msg)
     return True
-
-def executeAndReport(self, context, method):
-    error = False
-    try:
-        if method(context, self): return {'FINISHED'}
-        else: error = True
-    except:
-        error = True
-    finally:
-        if error:
-            msg = forge.GetLastError()
-            print(msg)
-            self.report({'ERROR'}, msg)
-            return {'CANCELLED'}
-
+def importForgeMenu(self, context): self.layout.operator(ImportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
+def exportForgeMenu(self, context): self.layout.operator(ExportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
 class ImportForgeObjects(Operator):
     """Attempt to connect to MCC and import current forge objects"""
     bl_idname = 'forge.import'
@@ -357,45 +367,6 @@ class ExportForgeObjects(Operator):
         persist_vars['forge_show_warning'] = not self.neverAsk
 
         return executeAndReport(self, context, exportForgeObjects)
-
-def importForgeMenu(self, context): self.layout.operator(ImportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
-def exportForgeMenu(self, context): self.layout.operator(ExportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
-
-'''class TeleportPlayer(Operator):
-    """Teleport player monitor to current camera position"""
-    bl_idname = "forge.teleport"
-    bl_label = "Teleport Monitor to Camera Position"
-
-    def execute(self, context):
-        forge.TrySetConnect(True)
-        forge.ReadMemory()
-        print(forge.GetMapName())
-        
-        pos = float3()
-        res = forge.TryGetMonitorPosition(byref(pos))
-        pos.z += 10
-        if not forge.TryTeleportMonitor(pos):
-            self.report({'ERROR'}, "Failed to teleport")
-            return {'CANCELLED'}
-        
-        return {'FINISHED'}
-class TeleportPlayerToCursor(Operator):
-    """Teleport player monitor to cursor"""
-    bl_idname = "forge.teleport_cursor"
-    bl_label = "Teleport Monitor to Cursor"
-
-    def execute(self, context):
-        cursorPos = context.scene.cursor.location
-        pos = float3(cursorPos.x,cursorPos.y,cursorPos.z+1)
-
-        forge.TrySetConnect(True)
-        forge.ReadMemory()
-        
-        if not forge.TryTeleportMonitor(pos):
-            self.report({'ERROR'}, "Failed to teleport")
-            return {'CANCELLED'}
-        
-        return {'FINISHED'}'''
 
 class ForgeObjectProps(bpy.types.PropertyGroup):
     def GetLabelEnum(self, context):
@@ -448,17 +419,17 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         shObj.location = (0,0,(self.top-self.bottom)/2)
 
     teamEnum = [
-        ('RED', "Red", ""),
-        ('BLUE', "Blue", ""),
-        ('GREEN', "Green", ""),
-        ('ORANGE', "Orange", ""),
-        ('PURPLE', "Purple", ""),
-        ('YELLOW', "Yellow", ""),
-        ('BROWN', "Brown", ""),
-        ('PINK', "Pink", ""),
-        ('NEUTRAL', "Neutral", "")
+        ('RED', "Red", "", 'SEQUENCE_COLOR_01', 0),
+        ('BLUE', "Blue", "", 'SEQUENCE_COLOR_05', 1),
+        ('GREEN', "Green", "", 'SEQUENCE_COLOR_04', 2),
+        ('ORANGE', "Orange", "", 'SEQUENCE_COLOR_02', 3),
+        ('PURPLE', "Purple", "", 'SEQUENCE_COLOR_06', 4),
+        ('YELLOW', "Yellow", "", 'SEQUENCE_COLOR_03', 5),
+        ('BROWN', "Brown", "", 'SEQUENCE_COLOR_08', 6),
+        ('PINK', "Pink", "", 'SEQUENCE_COLOR_07', 7),
+        ('NEUTRAL', "Neutral", "", 'SEQUENCE_COLOR_09', 9)
     ]
-    colorEnum = teamEnum + [ ('TEAM_COLOR', "Team", "") ]
+    colorEnum = teamEnum + [ ('TEAM_COLOR', "Team", "", 'COMMUNITY', 10) ]
 
     object: StringProperty()
     shapeObject: StringProperty()
@@ -481,7 +452,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR', update=UpdateColor)
     colorIndex: IntProperty(default=8)
     spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100)
-    spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, soft_max=180, max=255)# 0 is never
+    spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, max=255)# 0 is never
     gameSpecific: BoolProperty(name="Game Specific", description="Should object exclusively spawn for current gamemode")
     placeAtStart: BoolProperty(name="Place At Start", description="Should object spawn at start", default=True)
     symmetry: EnumProperty(name="Symmetry", description="Gamemode symmetry",
@@ -560,14 +531,13 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         fobj.shapeDims.top = self.top
         fobj.shapeDims.bottom = self.bottom
 
-def getWidth(targetRegion):
+def getRegionWidth(targetRegion):
   for region in bpy.context.area.regions:
-    if region.type == targetRegion:
-      return region.width
+    if region.type == targetRegion: return region.width
   return 500
 def drawForgeObjectProperties(self, context, region):
     layout = self.layout
-    width = getWidth(region)
+    width = getRegionWidth(region)
     wide = width > 200
     layout.use_property_split = wide
     obj = context.object
@@ -585,7 +555,7 @@ def drawForgeObjectProperties(self, context, region):
         col.prop(obj, 'instance_collection', text="")
     
     col = layout.column(align=True)
-    col.use_property_split = width > 160
+    col.use_property_split = wide
     col.prop(fprops, 'physics')
     col.prop(fprops, 'team')
     col.prop(fprops, 'color')
@@ -615,15 +585,13 @@ def drawForgeObjectProperties(self, context, region):
     col.prop(fprops, 'gameSpecific')
     
     shape = fprops.shape
+    isBox = shape == 'BOX'
     col = layout.column(align=True)
     col.prop(fprops, 'shape')
     col2 = col.column(align=True)
     col2.enabled = shape != 'NONE'
-    col2.prop(fprops, 'width', text=('Width' if shape == 'BOX' else 'Radius'))
-    if shape == 'BOX': col2.prop(fprops, 'length')
-    '''lenRow = col2.row(align=True)
-    lenRow.enabled = shape == 'BOX'
-    lenRow.prop(fprops, 'length')'''
+    col2.prop(fprops, 'width', text=('Width' if isBox else 'Radius'))
+    if isBox: col2.prop(fprops, 'length')
     col2.prop(fprops, 'top')
     col2.prop(fprops, 'bottom')
 
@@ -641,7 +609,6 @@ class ForgeObjectPanel(bpy.types.Panel):
     
     @classmethod
     def poll(self, context): return pollForgePanel(self, context)
-    
     def draw(self, context): drawForgeObjectProperties(self, context, 'WINDOW')
 class ForgeObjectPanel_Sidebar(bpy.types.Panel):
     bl_label = "Forge Properties"
@@ -653,9 +620,70 @@ class ForgeObjectPanel_Sidebar(bpy.types.Panel):
     
     @classmethod
     def poll(self, context): return pollForgePanel(self, context)
-    
     def draw(self, context): drawForgeObjectProperties(self, context, 'UI')
+class ForgeCollectionProps(bpy.types.PropertyGroup):
+    def iconsEnum(self, context):
+        icons = bpy.types.UILayout.bl_rna.functions['prop'].parameters['icon'].enum_items.keys()
+        icoEnum = []
+        for i in range(0,len(icons)):
+            ico = icons[i]
+            icoEnum.append((ico,"",ico,ico,i))
+            #if ico == 'NONE': print(i)
+        return icoEnum
+    icon: EnumProperty(name="Icon",description="Icon used in menus", items=iconsEnum, default=0)
+class ForgeCollectionPanel(bpy.types.Panel):
+    bl_label = "Forge Collection"
+    bl_idname = 'SCENE_PT_forge_collection'
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'collection'
+    
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        collProps = context.collection.forge
+        layout.prop(collProps, 'icon')
+def draw_forgeObjectOverlay():
+    for area in bpy.context.screen.areas:
+        if area.type != 'VIEW_3D': continue
+        for space in area.spaces:
+            if space.type == 'VIEW_3D':
+                if not space.overlay.show_overlays: return
+                break
+    
+    objCount = 0
+    for inst in bpy.context.evaluated_depsgraph_get().object_instances:
+        if tryGetForgeObjectFromInstance(inst) != None: objCount += 1
+    
+    font_id = 0
+    blf.position(font_id, 15, 15, 0)
+    blf.size(font_id, 11, 72)
+    if objCount > maxObjectCount: blf.color(font_id, 1,0,0,1)
+    elif objCount > 500: blf.color(font_id, 1,0.5,0,1)
+    else: blf.color(font_id, 1,1,1,1)
+    blf.draw(font_id, "%d / %d" % (objCount,maxObjectCount))
 
+class ErrorMessage(Operator):
+    """Error message"""
+    bl_idname = 'forge.error'
+    bl_label = "Error"
+
+    message: bpy.props.StringProperty()
+    url: bpy.props.StringProperty()
+
+    def invoke(self, context, event):
+        print("Error: " + self.message + "\n")
+        return context.window_manager.invoke_props_dialog(self)
+    def draw(self, context):
+        wrapTextPanel(self, self.message)
+
+        if self.url != "":
+            layout = self.layout.column(align=True)
+            layout.operator_context = 'INVOKE_DEFAULT'
+            op = layout.operator('wm.url_open', text="Open Webpage")
+            op.url = self.url
+    def execute(self, context):
+        return {'CANCELLED'}
 class PasteOverload(Operator):
     """Duplicates selected objects (for forge compatibility)"""
     bl_idname = 'view3d.pastebuffer'
@@ -667,7 +695,6 @@ class PasteOverload(Operator):
     @classmethod
     def poll(cls, context): return context.active_object != None and context.active_object.get('isForgeObject',False)
     def execute(self, context): return bpy.ops.object.duplicate_move('INVOKE_DEFAULT')
-
 class ConvertForge(Operator):
     """Set if object is exported to MCC"""
     bl_idname = 'object.convert_forge'
@@ -765,7 +792,7 @@ def arrayModifier(context, type, count=3, offset=(1,0,0), rotation=(0,0,0), curv
     srcObj.display_type = 'BOUNDS'
     srcObj.select_set(True)
     if type != 'CONST': parentObj.select_set(True)
-
+def setupArrayMenuItem(self, context): self.layout.operator(SetupArray.bl_idname, icon='MOD_ARRAY')
 class SetupArray(Operator):
     """Setup array (repeated object duplication) for forge object"""
     bl_idname = 'object.setup_array'
@@ -800,36 +827,6 @@ class SetupArray(Operator):
         layout.prop(self, 'offset')
         if self.type == 'OBJECT': layout.prop(self, 'rotation')
         if self.type == 'CURVE': layout.prop(self, 'size')
-def setupArrayMenuItem(self, context): self.layout.operator(SetupArray.bl_idname, icon='MOD_ARRAY')
-
-def tryGetForgeObjectFromInstance(inst):
-    o = inst.object
-    if inst.is_instance:
-        if o.is_instancer: return o
-    elif o.get('isForgeObject',False):
-        p = o.parent
-        if p is None or p.instance_type == 'NONE' or p.instance_type == 'COLLECTION': return o
-    else: return None
-
-def draw_forgeObjectOverlay():
-    for area in bpy.context.screen.areas:
-        if area.type != 'VIEW_3D': continue
-        for space in area.spaces:
-            if space.type == 'VIEW_3D':
-                if not space.overlay.show_overlays: return
-                break
-    
-    objCount = 0
-    for inst in bpy.context.evaluated_depsgraph_get().object_instances:
-        if tryGetForgeObjectFromInstance(inst) != None: objCount += 1
-    
-    font_id = 0
-    blf.position(font_id, 15, 15, 0)
-    blf.size(font_id, 11, 72)
-    if objCount > maxObjectCount: blf.color(font_id, 1,0,0,1)
-    elif objCount > 500: blf.color(font_id, 1,0.5,0,1)
-    else: blf.color(font_id, 1,1,1,1)
-    blf.draw(font_id, "%d / %d" % (objCount,maxObjectCount))
 
 iconDict = {}
 def fillIconDict(collection):
@@ -838,7 +835,6 @@ def fillIconDict(collection):
         if len(coll.objects) > 0:
             if iconDict.get(coll, None) is None: iconDict[coll] = coll.forge.icon
         else: fillIconDict(coll)
-
 def getCollectionEnums(collection, list):
     global iconDict
     for coll in collection.children:
@@ -847,6 +843,13 @@ def getCollectionEnums(collection, list):
         else: getCollectionEnums(coll, list)
     return list
 def genObjectTypesEnum(self, context): return getCollectionEnums(bpy.data.collections[mapPalette], [])
+def addForgeObjectMenuItem(self, context):
+    layout = self.layout
+    layout.operator_context = 'INVOKE_DEFAULT'
+    layout.operator(AddForgeObject.bl_idname, icon='ADD')
+    
+    layout.context_pointer_set('forgeColl', bpy.data.collections[mapPalette])
+    layout.menu(AddForgeObjectMenu.bl_idname)
 class AddForgeObject(Operator):
     """Add forge object"""
     bl_idname = 'forge.add_object'
@@ -868,37 +871,6 @@ class AddForgeObject(Operator):
         
         bpy.ops.ed.undo_push()
         return {'FINISHED'}
-def addForgeObjectMenuItem(self, context):
-    layout = self.layout
-    layout.operator_context = 'INVOKE_DEFAULT'
-    layout.operator(AddForgeObject.bl_idname, icon='ADD')
-    
-    layout.context_pointer_set('forgeColl', bpy.data.collections[mapPalette])
-    layout.menu(AddForgeObjectMenu.bl_idname)
-
-class ForgeCollectionProps(bpy.types.PropertyGroup):
-    def iconsEnum(self, context):
-        icons = bpy.types.UILayout.bl_rna.functions['prop'].parameters['icon'].enum_items.keys()
-        icoEnum = []
-        for i in range(0,len(icons)):
-            ico = icons[i]
-            icoEnum.append((ico,"",ico,ico,i))
-            #if ico == 'NONE': print(i)
-        return icoEnum
-    icon: EnumProperty(name="Icon",description="Icon used in menus", items=iconsEnum, default=0)
-class ForgeCollectionPanel(bpy.types.Panel):
-    bl_label = "Forge Collection"
-    bl_idname = 'SCENE_PT_forge_collection'
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'collection'
-    
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        collProps = context.collection.forge
-        layout.prop(collProps, 'icon')
-
 class AddForgeObjectMenu(bpy.types.Menu):
     bl_label = "Forge Object"
     bl_idname = 'VIEW3D_MT_add_forge_object'
@@ -917,28 +889,6 @@ class AddForgeObjectMenu(bpy.types.Menu):
             elif len(coll.children) > 0:
                 self.layout.context_pointer_set('forgeColl',coll)
                 layout.menu(self.__class__.bl_idname, text=name, icon=coll.forge.icon)
-
-class ErrorMessage(Operator):
-    """Error message"""
-    bl_idname = 'forge.error'
-    bl_label = "Error"
-
-    message: bpy.props.StringProperty()
-    url: bpy.props.StringProperty()
-
-    def invoke(self, context, event):
-        print("Error: " + self.message + "\n")
-        return context.window_manager.invoke_props_dialog(self)
-    def draw(self, context):
-        wrapTextPanel(self, self.message)
-
-        if self.url != "":
-            layout = self.layout.column(align=True)
-            layout.operator_context = 'INVOKE_DEFAULT'
-            op = layout.operator('wm.url_open', text="Open Webpage")
-            op.url = self.url
-    def execute(self, context):
-        return {'CANCELLED'}
 
 reg_classes = [
     ForgeObjectProps, ForgeCollectionProps, 
@@ -959,13 +909,6 @@ def removeDrawEvents(event):
     for item in persist_vars.get(event.bl_rna.name,[]):
         try: event.remove(item)
         except: pass
-
-def tryGetLatestRelease():
-    with urllib.request.urlopen(githubURL) as req:
-        url = req.url
-        latestVersion = (url[url.rindex("tag/")+4:]).strip('/ ')
-
-        if (vMjolnir != latestVersion): webbrowser.open(url)
 
 def register():
     for cls in reg_classes: bpy.utils.register_class(cls)
@@ -999,13 +942,14 @@ def register():
         forge.ItemNameToType.argtypes = [c_wchar_p]
         forge.TryGetMonitorPosition.restype = c_bool
         forge.TryTeleportMonitor.restype = c_bool
-        #forge.GetH3_MVAR_Ptr.restype = POINTER(H3_MVAR)
+        forge.GetH3_MVAR_Ptr.restype = POINTER(H3_MVAR)
         forge.GetH3_MVAR.restype = H3_MVAR
 
         if (forge.TrySetConnect(True)):
             forge.ReadMemory()
-            #h3_mvar = forge.GetH3_MVAR().contents
-            h3_mvar = forge.GetH3_MVAR()
+            # TODO: if GetGame == Halo 3
+            h3_mvar = forge.GetH3_MVAR_Ptr().contents
+            #h3_mvar = forge.GetH3_MVAR()
             print(h3_mvar.data.display_name)
             print(h3_mvar.data.description)
             print(h3_mvar.data.author)
@@ -1034,7 +978,6 @@ def unregister():
     removeDrawEvents(bpy.types.TOPBAR_MT_file_import)
     removeDrawEvents(bpy.types.TOPBAR_MT_file_export)
     bpy.types.SpaceView3D.draw_handler_remove(persist_vars['forgeObjectsOverlay_handle'], 'WINDOW')
-
 
 try: unregister()
 except: pass
