@@ -3,17 +3,18 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ForgeLib.Halo3 {
+    [Flags]
     public enum PlacementFlags : ushort {
-        OCCUPIED_SLOT,
-        OBJECT_EDITED,
-        NEVER_CREATED_SCENARIO_OBJECT,
-        SCENARIO_OBJECT_BIT,
-        PLACEMENT_CREATE_AT_REST_BIT,
-        SCENARIO_OBJECT_REMOVED,
-        OBJECT_SUSPENDED,
-        OBJECT_CANDY_MONITORED,
-        SPAWNS_ATTACHED,
-        HARD_ATTACHMENT
+        OCCUPIED_SLOT = 1,
+        OBJECT_EDITED = 2,
+        NEVER_CREATED_SCENARIO_OBJECT = 4,
+        SCENARIO_OBJECT_BIT = 8,
+        PLACEMENT_CREATE_AT_REST_BIT = 16,
+        SCENARIO_OBJECT_REMOVED = 32,
+        OBJECT_SUSPENDED = 64,
+        OBJECT_CANDY_MONITORED = 128,
+        SPAWNS_ATTACHED = 256,
+        HARD_ATTACHMENT = 512
     }
 
     [Flags]
@@ -227,10 +228,10 @@ namespace ForgeLib.Halo3 {
     public unsafe struct H3_MapVariant {
         public SaveGame data;
         //public fixed H3_ForgeObject objects[640];
-        fixed byte objects[640 * H3_ForgeObject.size];
+        private fixed byte objects[640 * H3_ForgeObject.size];
         public fixed short object_type_start_index[14];
         //public fixed Quota quotas[256];
-        fixed byte quotas[256 * Quota.size];
+        private fixed byte quotas[256 * Quota.size];
         public fixed int gamestate_indices[80];
 
         public H3_ForgeObject* GetForgeObjects() {

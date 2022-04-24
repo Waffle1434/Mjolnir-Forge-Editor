@@ -32,6 +32,12 @@ class Transform(Structure):
         ('up', float3) 
     ]
     def __str__(self): return "%s %s %s"%(self.position, self.forward, self.up)
+    def toMatrix(self):
+        fwd = self.forward
+        up = self.up
+        right = fwd.cross(up)
+        pos = self.position
+        return Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
 class ShapeData(Structure):
     _fields_ = [
         ('width', c_float),
@@ -69,15 +75,30 @@ class ForgeObject(Structure):
         ('pad2', c_ubyte),
     ]
 class ForgeObjectFlags(enum.IntFlag):
-    PhysicsNormal = 0b00000000,
-    PhysicsFixed  = 0b01000000,
-    PhysicsPhased = 0b11000000,
-    PhysicsMask   = 0b11000000,
-    GameSpecific  = 0b00100000,
-    Asymmetric    = 0b00001000,
-    Symmetric     = 0b00000100,
-    SymmetryMask  = 0b00001100,
+    PhysicsNormal = 0b00000000
+    PhysicsFixed  = 0b01000000
+    PhysicsPhased = 0b11000000
+    PhysicsMask   = 0b11000000
+    GameSpecific  = 0b00100000
+    Asymmetric    = 0b00001000
+    Symmetric     = 0b00000100
+    SymmetryMask  = 0b00001100
     HideAtStart   = 0b00000010
+class MCC_Game(enum.Enum):
+    NoGame = 0
+    HaloReach = 1
+    Halo3 = 2
+class PlacementFlags(enum.IntFlag):
+    OCCUPIED_SLOT = 1
+    OBJECT_EDITED = 2
+    NEVER_CREATED_SCENARIO_OBJECT = 4
+    SCENARIO_OBJECT_BIT = 8
+    PLACEMENT_CREATE_AT_REST_BIT = 16
+    SCENARIO_OBJECT_REMOVED = 32
+    OBJECT_SUSPENDED = 64
+    OBJECT_CANDY_MONITORED = 128
+    SPAWNS_ATTACHED = 256
+    HARD_ATTACHMENT = 512
 
 class H3_SaveGame(Structure):
     _pack_ = 1
@@ -127,7 +148,7 @@ class H3_ForgeObject(Structure):
         ('attached_source', c_ubyte),
         ('game_engine_flags', c_ubyte),
         ('scenario', c_ubyte),
-        ('placement', c_ubyte),
+        ('mp_placement', c_ubyte),
         ('team', c_ubyte),
         ('shared_storage', c_ubyte),
         ('spawn_time_seconds', c_ubyte),
@@ -182,6 +203,137 @@ shapeEnumToNumber = inverseDict(shapeNumberToEnum)
 gtIndexToLabel = {}
 gtLabelToIndex = {}
 teleporterTypes = (12,13,14)
+
+h3_sandbox_itemDict = {
+    0:"Banshee",
+    1:"Chopper",
+    2:"Hornet",
+    3:"Ghost",
+    4:"Prowler",
+    5:"Mongoose",
+    6:"Scorpion",
+    7:"Warthog",
+    8:"Warthog, Gauss",
+    9:"Wraith",
+
+    16:"Assault Rifle",
+    17:"Battle Rifle",
+    18:"Shotgun",
+    19:"Sniper Rifle",
+    20:"SMG",
+    21:"Spiker",
+    22:"Magnum",
+    23:"Plasma Pistol",
+    24:"Plasma Rifle",
+    25:"Needler",
+    26:"Brute Shot",
+    27:"Rocket Launcher",
+    28:"Spartan Laser",
+    29:"Energy Sword",
+    30:"Plasma Cannon",
+    31:"Gravity Hammer",
+    32:"Covenant Carbine",
+    33:"Mauler",
+    34:"Fuel Rod Gun",
+    35:"Beam Rifle",
+    36:"Sentinel Beam",
+    37:"Machine Gun Turret",
+    38:"Flamethrower",
+    39:"Missile Pod",
+
+    43:"Frag Grenade",
+    44:"Plasma Grenade",
+    45:"Spike Grenade",
+    46:"Firebomb Grenade",
+    47:"Bubble Shield",
+    48:"Power Drain",
+    49:"Trip Mine",
+    50:"Grav Lift",
+    51:"Regenerator",
+    52:"Radar Jammer",
+    53:"Flare",
+    54:"Deployable Cover",
+    55:"Overshields",
+    56:"Active Camo",
+    57:"Custom Powerup",
+    58:"Auto-Turret",
+    59:"SPNKR Ammo",
+
+60:"Wall",
+    61:"Wall, Half",
+    62:"Wall, Quarter",
+    63:"Wall, Corner",
+    64:"Wall, Slit",
+    65:"Wall, T",
+    66:"Wall, Double",
+    67:"Wedge, Small",
+    68:"Wedge, Long",
+    69:"Block, Large",
+    70:"Block, Double",
+    71:"Block, Tall",
+    72:"Block, Huge",
+    73:"Wedge, Huge",
+    74:"Ramp, Large",
+    75:"Wedge, Large",
+    76:"Wedge, Corner",
+    77:"Tube Piece",
+    78:"Tube Y-Intersection",
+    79:"Tube Corner",
+    80:"Tube Ramp",
+    81:"Column, Stone Small",#
+    82:"Column, Damaged Small",
+    83:"Column, Blue Small",
+    84:"Column, Red Small",
+    85:"Column, Large",
+    86:"Column, Stone Large",
+    87:"Block, Tiny",
+    88:"Block, Small",
+    89:"Block, Flat",
+    90:"Block, Angled",
+    91:"Corner, Small",
+    92:"Corner, Large",
+    93:"Stone Bridge",
+    94:"Obelisk",
+    95:"Fin",#
+    96:"Ramp, Short",
+    97:"Ramp, Wide",
+    98:"Ramp, Thick",
+    99:"Stone Platform",
+    100:"Arch",
+    101:"Scaffolding",
+    102:"Wood Bridge, Large",
+    103:"Wood Bridge, Thin",
+    104:"Barricade",
+    155:"Radio Antennae",
+    106:"Fusion Coil",
+    107:"Pallet",
+    108:"Frav Lift",
+    109:"Cannon, Man",
+    101:"Weapon Holder",
+    110:"Shield Door, Large",
+    112:"FX, Nova",
+    113:"FX, Pen And Ink",
+    114:"FX, Old Timey",
+    115:"FX, Gloomy",
+    116:"FX, Colorblind",
+    117:"FX, Juicy",
+    118:"Blue Light",
+    119:"Red Light",
+    120:"Kill Ball",
+    121:"7-Wood",
+    122:"Tin Cup",
+    123:"Golf Ball",
+    124:"Wall, Corner, Short",
+    125:"Steel Ramp",
+    126:"Steel Wall",
+    127:"Steel Barrier",
+
+    148:"Respawn Point",
+
+    176:"Obelisk Eyeball",
+    177:"Skull",
+    180:"Sandbox Teleporter"
+}
 
 def initGtLabels():
     global gtIndexToLabel
@@ -258,41 +410,91 @@ def importForgeObjects(context, self=None, createCollections=False):
     t0 = time.time()
 
     forge.ReadMemory()
-    if forge.GetMapName() == "None": print(forge.GetLastError())
-    c = forge.GetObjectCount()
-    gt_c = forge.GetGtLabelCount()
-    print("Map: %s, %d Objects, %d Gametype Labels"%(forge.GetMapName(), c, gt_c))
+    game = MCC_Game(forge.GetGame())
+    map = forge.GetMapName()
+    print(game)
+    print("MAP: " + map)
+    
+    match game:
+        case MCC_Game.NoGame:
+            bpy.ops.forge.error('INVOKE_DEFAULT', message="No Supported MCC Game Detected")
+            return False
+        case MCC_Game.HaloReach:
+            if map == "None" or map == "Unknown": print(forge.GetLastError())
+            c = forge.GetObjectCount()
+            gt_c = forge.GetGtLabelCount()
+            print("Map: %s, %d Objects, %d Gametype Labels"%(map, c, gt_c))
 
-    initGtLabels()
-    for i in range(0,gt_c):
-        label = forge.GetGtLabel(i).upper()
-        gtIndexToLabel[i] = label
-    initInvGtLabels()
-    persist_vars['gtIndexToLabel'] = gtIndexToLabel
+            initGtLabels()
+            for i in range(0,gt_c):
+                label = forge.GetGtLabel(i).upper()
+                gtIndexToLabel[i] = label
+            initInvGtLabels()
+            persist_vars['gtIndexToLabel'] = gtIndexToLabel
 
-    for i in range(0,maxObjectCount):
-        fobj = forge.GetObjectPtr(i).contents
-        if fobj.show == 0: continue
-        itemName = forge.ForgeObject_GetItemName(i)
+            for i in range(0,maxObjectCount):
+                fobj = forge.GetObjectPtr(i).contents
+                if fobj.show == 0: continue
+                itemName = forge.ForgeObject_GetItemName(i)
 
-        if createCollections and itemName not in bpy.data.collections:
-            collection = bpy.data.collections.new(itemName)
-            bpy.data.scenes[propSceneName].collection.children.link(collection)
+                if createCollections and itemName not in bpy.data.collections:
+                    collection = bpy.data.collections.new(itemName)
+                    bpy.data.scenes[propSceneName].collection.children.link(collection)
 
-            blobj = bpy.data.objects.new(itemName, None)
-            collection.objects.link(blobj)
-            blobj.empty_display_type = 'ARROWS'
-            blobj.empty_display_size = 0.5
-        
-        blobj = createForgeObject(context, itemName, i)
-        blobj.forge.FromForgeObject(fobj, blobj)
+                    blobj = bpy.data.objects.new(itemName, None)
+                    collection.objects.link(blobj)
+                    blobj.empty_display_type = 'ARROWS'
+                    blobj.empty_display_size = 0.5
+                
+                blobj = createForgeObject(context, itemName, i)
+                blobj.forge.FromForgeObject(fobj, blobj)
 
-        if itemName == "Initial Loadout Camera":# TODO: put in collection instead
-            cam = bpy.data.objects.new("Initial Loadout Camera", bpy.data.cameras.new("Initial Loadout Camera"))
-            context.collection.objects.link(cam)
-            cam.parent = blobj
-            cam.rotation_euler = Euler((radians(90),0,0))
-            lockObject(cam, True, True, True)
+                if itemName == "Initial Loadout Camera":# TODO: put in collection instead
+                    cam = bpy.data.objects.new("Initial Loadout Camera", bpy.data.cameras.new("Initial Loadout Camera"))
+                    context.collection.objects.link(cam)
+                    cam.parent = blobj
+                    cam.rotation_euler = Euler((radians(90),0,0))
+                    lockObject(cam, True, True, True)
+        case MCC_Game.Halo3:
+            h3_mvar = forge.GetH3_MVAR_Ptr().contents
+            c = h3_mvar.data.variant_objects
+
+            print("Name: %s (by %s)" % (h3_mvar.data.display_name, h3_mvar.data.author.decode()))
+            print("Description: " + h3_mvar.data.description.decode())
+            print(h3_mvar.data.scenario_objects)
+            print(h3_mvar.data.variant_objects)
+
+            for i in range(0,c):
+                fobj = h3_mvar.objects[i]
+                #itemName = forge.ForgeObject_GetItemName(i)# TODO
+                itemName = "Unknown (%d, %d, %d)" % (fobj.definition_index,fobj.object_index,fobj.helper_index)
+                if fobj.definition_index in h3_sandbox_itemDict:
+                    itemName = h3_sandbox_itemDict[fobj.definition_index]
+
+                if createCollections and itemName not in bpy.data.collections:# TODO: same as HR
+                    collection = bpy.data.collections.new(itemName)
+                    bpy.data.scenes[propSceneName].collection.children.link(collection)
+
+                    blobj = bpy.data.objects.new(itemName, None)
+                    collection.objects.link(blobj)
+                    blobj.empty_display_type = 'ARROWS'
+                    blobj.empty_display_size = 0.5
+                
+                blobj = createForgeObject(context, itemName, i)
+                blobj.forge.FromH3ForgeObject(fobj, blobj)
+                blobj['placement'] = fobj.placement
+                blobj['placementStr'] = str(PlacementFlags(fobj.placement))
+                blobj['reuse_timeout'] = fobj.reuse_timeout
+                blobj['attached_id'] = fobj.attached_id
+                blobj['game_engine_flags'] = fobj.game_engine_flags
+                blobj['mp_placement'] = fobj.mp_placement
+                blobj['team'] = fobj.team
+                blobj['shared_storage'] = fobj.shared_storage
+                blobj['spawn_time_seconds'] = fobj.spawn_time_seconds
+                blobj['type'] = fobj.type
+                blobj['object_index'] = fobj.object_index
+                blobj['helper_index'] = fobj.helper_index
+                blobj['definition_index'] = fobj.definition_index
     
     msg = "Imported %d objects in %.3fs"%(c,time.time() - t0)
     if self is None: print(msg)
@@ -496,13 +698,11 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         self.top = shapeDims.top
         self.bottom = shapeDims.bottom
 
-        transform = fobj.transform
-        fwd = transform.forward
-        up = transform.up
-        right = fwd.cross(up)
-        pos = transform.position
-        blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
+        blobj.matrix_world = fobj.transform.toMatrix()
     
+    def FromH3ForgeObject(self, fobj, blobj):
+        blobj.matrix_world = fobj.transform.toMatrix()
+
     def ToForgeObject(self, fobj, blobj, inst=None):
         m = blobj.matrix_world if inst is None else inst.matrix_world
         fobj.transform.forward = float3.fromVector(m.col[1])
@@ -945,22 +1145,7 @@ def register():
         forge.GetH3_MVAR_Ptr.restype = POINTER(H3_MVAR)
         forge.GetH3_MVAR.restype = H3_MVAR
 
-        if (forge.TrySetConnect(True)):
-            forge.ReadMemory()
-            # TODO: if GetGame == Halo 3
-            h3_mvar = forge.GetH3_MVAR_Ptr().contents
-            #h3_mvar = forge.GetH3_MVAR()
-            print(h3_mvar.data.display_name)
-            print(h3_mvar.data.description)
-            print(h3_mvar.data.author)
-            print(h3_mvar.data.byte_size)
-            print(h3_mvar.data.scenario_objects)
-            print(h3_mvar.data.bounds)
-            print(h3_mvar.data.original_map_signature_hash)
-            print(h3_mvar.objects[0])
-            print(h3_mvar.objects[1])
-            print(h3_mvar.objects[2])
-            print(h3_mvar.objects[3])
+        importForgeObjects(bpy.context)
     except Exception as ex:
         print(ex)
 

@@ -14,6 +14,9 @@ namespace ForgeLib {
 
     public enum Map {
         None,
+
+        // Halo Reach
+        // TODO: Attribute strings
         Boardwalk,    //50_panopticon
         Boneyard,     //70_boneyard
         Countdown,    //45_launch_station
@@ -33,7 +36,33 @@ namespace ForgeLib {
         Solitary,     //cex_prisoner
         High_Noon,    //cex_hangemhigh
         Breakneck,    //cex_headlong
-        Forge_World   //forge_halo
+        Forge_World,   //forge_halo
+
+        // Halo 3
+        Construct,
+        Epitaph,
+        Guardian,
+        HighGround,
+        Isolation,
+        LastResort,
+        Narrows,
+        Sandtrap,
+        Snowbound,
+        ThePit,
+        Valhalla,
+        Foundry,
+        RatsNest,
+        Standoff,
+        Avalanche,
+        Blackout,
+        GhostTown,
+        ColdStorage,
+        Assembly,
+        Orbital,
+        Sandbox,
+        Citadel,
+        Heretic,
+        Longshore
     }
 
     public static class ForgeBridge {
@@ -112,6 +141,7 @@ namespace ForgeLib {
         }
 
         static void GetPointers() {
+            Console.WriteLine("GetPointers");
             if (memory.TryGetModuleBaseAddress("haloreach.dll", out reachBase)) {
                 currentGame = Game.HaloReach;
 
@@ -134,6 +164,7 @@ namespace ForgeLib {
                 unsafe {
                     fixed (H3_MapVariant* mvarPtr = &h3_mvar) {
                         if (memory.TryReadStruct(addr, mvarPtr)) {
+                            Console.WriteLine("Reading Halo 3 MVAR");
                             Console.WriteLine(h3_mvar.data.DisplayName);
                             Console.WriteLine(h3_mvar.data.Description);
                             Console.WriteLine(h3_mvar.data.Author);
@@ -150,6 +181,9 @@ namespace ForgeLib {
                     }
                 }
             }
+            else {
+                currentGame = Game.None;
+            }
         }
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
@@ -159,16 +193,27 @@ namespace ForgeLib {
             GetPointers();
 
             _CacheCurrentMap();
-            GetGtLabels();
+            if (currentGame == Game.HaloReach) {
+                GetGtLabels();
 
-            mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
+                mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
 
-            GetForgeObjects();
+                GetForgeObjects();
+            }
         }
 
         #region Map Name
         const int mapNameOffset = 0x2687753;
-        static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + mapNameOffset));
+        static Map GetCurrentMap() {
+            switch (currentGame) {
+                case Game.HaloReach:
+                    return MapUtil.FromIdString(memory.ReadString(reachBase + mapNameOffset));
+                case Game.Halo3:
+                    return MapUtil.FromH3_Enum(h3_mvar.data.e_map_id);// TODO: !!!
+                default:
+                    return Map.None;
+            }
+        }
 
         static void _CacheCurrentMap() {
             currentMap = GetCurrentMap();
