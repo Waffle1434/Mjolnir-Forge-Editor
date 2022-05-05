@@ -44,7 +44,7 @@ namespace ForgeLib {
         //static unsafe float3* playerMonitorPosition;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
-        public static int GetDllVersion() => 3;
+        public static int GetDllVersion() => 4;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static bool TrySetConnect(bool connect) {
@@ -126,7 +126,7 @@ namespace ForgeLib {
         }
 
         #region Map Name
-        const int mapNameOffset = 0x26849B3;
+        const int mapNameOffset = 0x2687753;
         static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + mapNameOffset));
 
         static void _CacheCurrentMap() {

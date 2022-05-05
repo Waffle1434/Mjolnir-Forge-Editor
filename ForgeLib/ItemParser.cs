@@ -1220,6 +1220,95 @@ namespace ForgeLib {
             breakneck.AddSubcategory(ref key, "Wall (MCC)", "Door (MCC)");
             #endregion
             #endregion
+
+            #region Highlands
+            TwoWayDictionary<int, string> highlands = new TwoWayDictionary<int, string>();
+            maps[Map.Highlands] = highlands;
+            key = 0x1F00;
+
+            #region Vehicles
+            highlands.AddNext(ref key, "Banshee");
+            highlands.AddNext(ref key, "Falcon");
+            highlands.AddNext(ref key, "Ghost");
+            highlands.AddNext(ref key, "Mongoose");
+            highlands.AddNext(ref key, "Revenant");
+            highlands.AddNext(ref key, "Scorpion");
+            highlands.AddNext(ref key, "Shade Turret");
+            highlands.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            highlands.AddNext(ref key, "Wraith");
+            #endregion
+            #region Gadgets
+            highlands.AddSubcategory(ref key, "Fusion Coil", "Landmine");
+            highlands.AddNext(ref key, "Health Station");
+            highlands.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            highlands.AddSubcategory(ref key, 
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            highlands.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            highlands.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
+            highlands.AddSubcategory(ref key, "Light, Red", "Light, Blue", "Light, Green", "Light, Orange");
+            #endregion
+            #region Spawning
+            highlands.AddNext(ref key, "Initial Spawn");
+            highlands.AddNext(ref key, "Respawn Point");
+            highlands.AddNext(ref key, "Initial Loadout Camera");
+            highlands.AddNext(ref key, "Respawn Zone");
+            highlands.AddNext(ref key, "Respawn Zone, Weak");
+            highlands.AddNext(ref key, "Respawn Zone, Anti");
+            highlands.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            highlands.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            highlands.AddNext(ref key, "Flag Stand");
+            highlands.AddNext(ref key, "Capture Plate");
+            highlands.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            highlands.AddSubcategory(ref key, 
+                "Barricade, Small",
+                "Barricade, Large",
+                "Jersey Barrier",
+                "Jersey Barrier, Short",
+                "Covenant Barrier",
+                "Portable Shield");
+            highlands.AddNext(ref key, "Camping Stool");
+            highlands.AddNext(ref key, "Folding Chair");
+            highlands.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open",
+                "Crate, Fully Open");
+            highlands.AddNext(ref key, "Dumpster, Tall");
+            highlands.AddSubcategory(ref key, 
+                "Sandbag Wall",
+                "Sandbag Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            highlands.AddNext(ref key, "Street Cone");
+            highlands.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            #endregion
+            #region Hidden Structure Blocks
+            highlands.AddNext(ref key, "Block, 2x2, Invisible");
+            highlands.AddNext(ref key, "Block, 1x1, Invisible");
+            highlands.AddNext(ref key, "Block, 2x2x2, Invisible");
+            highlands.AddNext(ref key, "Block, 4x4x2, Invisible");
+            highlands.AddNext(ref key, "Block, 4x4x4, Invisible");
+            highlands.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            highlands.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            highlands.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            highlands.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            highlands.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            highlands.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            #endregion
         }
 
         public static bool TryTypeToName(int type, Map map, out string name) {
