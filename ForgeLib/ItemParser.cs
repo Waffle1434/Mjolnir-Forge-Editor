@@ -1309,6 +1309,193 @@ namespace ForgeLib {
             highlands.AddNext(ref key, "Block, 4x4, Flat, Invisible");
             #endregion
             #endregion
+
+            #region Reflection
+            TwoWayDictionary<int, string> reflection = new TwoWayDictionary<int, string>();
+            maps[Map.Reflection] = reflection;
+            key = 0x1F00;
+
+            #region Gadgets
+            reflection.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            reflection.AddNext(ref key, "Health Station");
+            reflection.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            reflection.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            reflection.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink");
+            reflection.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            reflection.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball");
+            reflection.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            reflection.AddNext(ref key, "Initial Spawn");
+            reflection.AddNext(ref key, "Respawn Point");
+            reflection.AddNext(ref key, "Initial Loadout Camera");
+            reflection.AddNext(ref key, "Respawn Zone");
+            reflection.AddNext(ref key, "Respawn Zone, Weak");
+            reflection.AddNext(ref key, "Respawn Zone, Anti");
+            reflection.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            reflection.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            reflection.AddNext(ref key, "Flag Stand");
+            reflection.AddNext(ref key, "Capture Plate");
+            reflection.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            reflection.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Jersey Barrier",
+                "Jersey Barrier, Short",
+                "Covenant Barrier",
+                "Portable Shield");
+            reflection.AddNext(ref key, "Camping Stool");
+            reflection.AddNext(ref key, "Folding Chair");
+            reflection.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open",
+                "Crate, Fully Open");
+            reflection.AddNext(ref key, "Dumpster, Tall");
+            reflection.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            reflection.AddNext(ref key, "Street Cone");
+            reflection.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            #endregion
+            #region Hidden Structure Blocks
+            reflection.AddNext(ref key, "Block, 2x2, Invisible");
+            reflection.AddNext(ref key, "Block, 1x1, Invisible");
+            reflection.AddNext(ref key, "Block, 2x2x2, Invisible");
+            reflection.AddNext(ref key, "Block, 4x4x2, Invisible");
+            reflection.AddNext(ref key, "Block, 4x4x4, Invisible");
+            reflection.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            reflection.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            reflection.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            reflection.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            reflection.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            reflection.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            #endregion
+
+            #region Sword Base
+            TwoWayDictionary<int, string> sword_base = new TwoWayDictionary<int, string>();
+            maps[Map.Sword_Base] = sword_base;
+            key = 0x1F00;
+
+            #region Gadgets
+            sword_base.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            sword_base.AddNext(ref key, "Health Station");
+            sword_base.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            sword_base.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            sword_base.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink");
+            sword_base.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            sword_base.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball");
+            sword_base.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            sword_base.AddNext(ref key, "Initial Spawn");
+            sword_base.AddNext(ref key, "Respawn Point");
+            sword_base.AddNext(ref key, "Initial Loadout Camera");
+            sword_base.AddNext(ref key, "Respawn Zone");
+            sword_base.AddNext(ref key, "Respawn Zone, Weak");
+            sword_base.AddNext(ref key, "Respawn Zone, Anti");
+            sword_base.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            sword_base.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            sword_base.AddNext(ref key, "Flag Stand");
+            sword_base.AddNext(ref key, "Capture Plate");
+            sword_base.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            sword_base.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Jersey Barrier",
+                "Jersey Barrier, Short",
+                "Covenant Barrier",
+                "Portable Shield");
+            sword_base.AddNext(ref key, "Camping Stool");
+            sword_base.AddNext(ref key, "Folding Chair");
+            sword_base.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open",
+                "Crate, Fully Open");
+            sword_base.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            sword_base.AddNext(ref key, "Street Cone");
+            sword_base.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            #endregion
+            #region Hidden Structure Blocks
+            sword_base.AddNext(ref key, "Block, 2x2, Invisible");
+            sword_base.AddNext(ref key, "Block, 1x1, Invisible");
+            sword_base.AddNext(ref key, "Block, 2x2x2, Invisible");
+            sword_base.AddNext(ref key, "Block, 4x4x2, Invisible");
+            sword_base.AddNext(ref key, "Block, 4x4x4, Invisible");
+            sword_base.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            sword_base.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            sword_base.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            sword_base.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            sword_base.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            sword_base.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            #endregion
         }
 
         public static bool TryTypeToName(int type, Map map, out string name) {
