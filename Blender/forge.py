@@ -7,10 +7,11 @@ from os.path import exists
 from math import *
 from threading import Thread
 
-vMjolnir = "0.9.8.8"
+vMjolnir = "0.9.8.9"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
+anvilScaling = True
 propSceneName = 'Props'
 shapesCollName = 'Shapes'
 mapPalette = 'Forge World Palette'
@@ -100,6 +101,16 @@ def initGtLabels():
 def initInvGtLabels():
     global gtLabelToIndex
     gtLabelToIndex = inverseDict(gtIndexToLabel)
+def spawnSeqToScale(spawnSequence):
+    if spawnSequence == -10: scale = 0.01
+    else:
+        scale = 0.1 * spawnSequence
+        if spawnSequence < -10:
+            scale *= -2
+            if spawnSequence > -81: scale += 8
+        if spawnSequence < -80: scale = 2*scale - 8
+        scale += 1
+    return scale
 
 def wrapText(text):
     strList = []
@@ -354,6 +365,18 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         if shObj.instance_collection != coll: shObj.instance_collection = coll
         
         shObj.location = (0,0,(self.top-self.bottom)/2)
+    
+    def UpdateScale(self, blobj):
+        if anvilScaling and blobj.forge.gtLabel == "SCALE":
+            scale = spawnSeqToScale(blobj.forge.spawnSequence)
+            blobj.scale = (scale,scale,scale)
+    def UpdateSpawnSeq(self, context):
+        if anvilScaling:
+            if context.selected_objects:
+                for blobj in context.selected_objects: self.UpdateScale(blobj)
+            else:
+                blobj = bpy.data.objects[self.object]
+                self.UpdateScale(blobj)
 
     teamEnum = [
         ('RED', "Red", ""),
@@ -388,7 +411,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     team: EnumProperty(name="Team", description="Object team", items=teamEnum, default='NEUTRAL', update=UpdateColor)
     color: EnumProperty(name="Color", description="Object color", items=colorEnum, default='TEAM_COLOR', update=UpdateColor)
     colorIndex: IntProperty(default=8)
-    spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100)
+    spawnSequence: IntProperty(name="Spawn Sequence", description="Gamemode phase at which the object will spawn", min=-100, max=100, update=UpdateSpawnSeq)
     spawnTime: IntProperty(name="Spawn Time", description="Time in seconds before the object spawns or respawns", min=0, soft_max=180, max=255)# 0 is never
     gameSpecific: BoolProperty(name="Game Specific", description="Should object exclusively spawn for current gamemode")
     placeAtStart: BoolProperty(name="Place At Start", description="Should object spawn at start", default=True)
@@ -410,6 +433,12 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     bottom: FloatProperty(name="Bottom", description="Distance to bottom from center", unit='LENGTH', min=0,max=100.9, update=UpdateShape)
 
     def FromForgeObject(self, fobj, blobj):
+        fwd = fobj.forward
+        up = fobj.up
+        right = fwd.cross(up)
+        pos = fobj.position
+        blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
+
         flags = ForgeObjectFlags(fobj.flags)
         
         self.objectType = fobj.itemCategory << 8 | fobj.itemVariant
@@ -431,17 +460,11 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         self.length = fobj.length
         self.top = fobj.top
         self.bottom = fobj.bottom
-
-        fwd = fobj.forward
-        up = fobj.up
-        right = fwd.cross(up)
-        pos = fobj.position
-        blobj.matrix_world = Matrix(((right.x,fwd.x,up.x,pos.x),(right.y,fwd.y,up.y,pos.y),(right.z,fwd.z,up.z,pos.z),(0,0,0,1)))
     
     def ToForgeObject(self, fobj, blobj, inst=None):
         m = blobj.matrix_world if inst is None else inst.matrix_world
-        fobj.forward = float3.fromVector(m.col[1])
-        fobj.up = float3.fromVector(m.col[2])
+        fobj.forward = float3.fromVector(m.col[1].normalized())
+        fobj.up = float3.fromVector(m.col[2].normalized())
         fobj.position = float3.fromVector(m.col[3])
 
         coll = blobj.instance_collection
