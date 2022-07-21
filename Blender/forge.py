@@ -7,7 +7,7 @@ from os.path import exists
 from math import *
 from threading import Thread
 
-vMjolnir = "0.9.8.9"
+vMjolnir = "0.9.8.10"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
@@ -101,15 +101,37 @@ def initGtLabels():
 def initInvGtLabels():
     global gtLabelToIndex
     gtLabelToIndex = inverseDict(gtIndexToLabel)
-def spawnSeqToScale(spawnSequence):
-    if spawnSequence == -10: scale = 0.01
-    else:
-        scale = 0.1 * spawnSequence
-        if spawnSequence < -10:
-            scale *= -2
-            if spawnSequence > -81: scale += 8
-        if spawnSequence < -80: scale = 2*scale - 8
-        scale += 1
+def spawnSeqToScale(spawnSequence, convention='47X'):
+    if spawnSequence == -10: return 0.01
+
+    match convention:
+        case '33X':
+            scale = 0.1*spawnSequence
+            if spawnSequence < -10:
+                scale *= -2
+                if spawnSequence > -81: scale += 8
+                elif spawnSequence < -80: scale = 2*scale - 8
+            scale += 1
+        case '71X':
+            scale = 0.1*spawnSequence
+            if spawnSequence < -10:
+                scale *= -4
+                if spawnSequence > -81: scale += 6
+                elif spawnSequence < -80: scale = 4*scale - 90
+            scale += 1
+        case '47X':
+            scale = spawnSequence
+            lthn10 = spawnSequence < -10
+            gthn71 = spawnSequence > -71
+            gthn41 = spawnSequence > -41
+            if lthn10:
+                scale = 2*(scale + 101)
+                if gthn71: scale *= 3 if gthn41 else 2
+            scale = 10*scale + 100
+            if lthn10:
+                scale += 1000
+                if gthn71: scale -= 1800 if gthn41 else 600
+            scale *= 0.01
     return scale
 
 def wrapText(text):
@@ -280,42 +302,6 @@ class ExportForgeObjects(Operator):
 def importForgeMenu(self, context): self.layout.operator(ImportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
 def exportForgeMenu(self, context): self.layout.operator(ExportForgeObjects.bl_idname, text="Forge Objects", icon='ANTIALIASED')
 
-'''class TeleportPlayer(Operator):
-    """Teleport player monitor to current camera position"""
-    bl_idname = "forge.teleport"
-    bl_label = "Teleport Monitor to Camera Position"
-
-    def execute(self, context):
-        forge.TrySetConnect(True)
-        forge.ReadMemory()
-        print(forge.GetMapName())
-        
-        pos = float3()
-        res = forge.TryGetMonitorPosition(byref(pos))
-        pos.z += 10
-        if not forge.TryTeleportMonitor(pos):
-            self.report({'ERROR'}, "Failed to teleport")
-            return {'CANCELLED'}
-        
-        return {'FINISHED'}
-class TeleportPlayerToCursor(Operator):
-    """Teleport player monitor to cursor"""
-    bl_idname = "forge.teleport_cursor"
-    bl_label = "Teleport Monitor to Cursor"
-
-    def execute(self, context):
-        cursorPos = context.scene.cursor.location
-        pos = float3(cursorPos.x,cursorPos.y,cursorPos.z+1)
-
-        forge.TrySetConnect(True)
-        forge.ReadMemory()
-        
-        if not forge.TryTeleportMonitor(pos):
-            self.report({'ERROR'}, "Failed to teleport")
-            return {'CANCELLED'}
-        
-        return {'FINISHED'}'''
-
 class ForgeObjectProps(bpy.types.PropertyGroup):
     def GetLabelEnum(self, context):
         labelEnum = []
@@ -366,17 +352,18 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         
         shObj.location = (0,0,(self.top-self.bottom)/2)
     
+    def IsScaled(self, blobj): return anvilScaling and blobj.forge.gtLabel == "SCALE"
     def UpdateScale(self, blobj):
-        if anvilScaling and blobj.forge.gtLabel == "SCALE":
-            scale = spawnSeqToScale(blobj.forge.spawnSequence)
+        if self.IsScaled(blobj):
+            scale = spawnSeqToScale(blobj.forge.spawnSequence, bpy.context.scene.forge.scaleConvention)
             blobj.scale = (scale,scale,scale)
+        else: blobj.scale = (1,1,1)
     def UpdateSpawnSeq(self, context):
         if anvilScaling:
             if context.selected_objects:
                 for blobj in context.selected_objects: self.UpdateScale(blobj)
             else:
-                blobj = bpy.data.objects[self.object]
-                self.UpdateScale(blobj)
+                self.UpdateScale(bpy.data.objects[self.object])
 
     teamEnum = [
         ('RED', "Red", ""),
@@ -396,7 +383,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     
     objectType: IntProperty()
     cachedType: IntProperty()
-    gtLabel: EnumProperty(name="Game Type Label", description="How the gametype interprets this object", items=GetLabelEnum, default=0)
+    gtLabel: EnumProperty(name="Game Type Label", description="How the gametype interprets this object", items=GetLabelEnum, default=0, update=UpdateSpawnSeq)
     otherInfoA: IntProperty()
     otherInfoB: IntProperty()
 
@@ -499,7 +486,7 @@ def drawForgeObjectProperties(self, context, region):
     width = getWidth(region)
     wide = width > 200
     layout.use_property_split = wide
-    obj = context.object
+    obj = context.selected_objects[0]
     fprops = obj.forge
     
     locRotLay = layout if wide else layout.column(align=True)
@@ -558,12 +545,14 @@ def drawForgeObjectProperties(self, context, region):
 
     col = layout.column(align=True)
     col.prop(fprops, 'gtLabel')
+    if fprops.IsScaled(obj):
+        col.prop(context.scene.forge, 'scaleConvention')
     
     #layout.operator('render.render')
 def pollForgePanel(self, context):
-    if context.object is None: return False
-    return context.object.get('isForgeObject', False)
-    #return len(context.selected_objects) > 0
+    objs = context.selected_objects
+    if objs: return objs[0].get('isForgeObject', False)
+    else: return False
 class ForgeObjectPanel(bpy.types.Panel):
     bl_label = "Forge Properties"
     bl_idname = 'SCENE_PT_forge_object'
@@ -831,6 +820,24 @@ class ForgeCollectionPanel(bpy.types.Panel):
         collProps = context.collection.forge
         layout.prop(collProps, 'icon')
 
+class ForgeSceneProps(bpy.types.PropertyGroup):
+    def UpdateScaleConvention(self, context):
+        for blobj in context.scene.objects: blobj.forge.UpdateScale(blobj)
+    scaleConvention: EnumProperty(name="Scale Convention",description="Gametype object scaling convention, or how to interpret the spawn sequence number.",
+        items=( ('33X', "33X", "Trusty's Old"), ('71X', "71X", "Rabid MidgetMan's"), ('47X', "47X*", "Anvil Editor Default (Trusty's New)") ), default=2, update=UpdateScaleConvention)
+class ForgeScenePanel(bpy.types.Panel):
+    bl_label = "Forge Scene"
+    bl_idname = 'SCENE_PT_forge_scene'
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'scene'
+    
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        sceneProps = context.scene.forge
+        layout.prop(sceneProps, 'scaleConvention')
+
 class AddForgeObjectMenu(bpy.types.Menu):
     bl_label = "Forge Object"
     bl_idname = 'VIEW3D_MT_add_forge_object'
@@ -871,13 +878,30 @@ class ErrorMessage(Operator):
             op.url = self.url
     def execute(self, context):
         return {'CANCELLED'}
+class ScaleObjects(Operator):
+    """Scale multiple objects as one"""
+    bl_idname = 'forge.scale_objects'
+    bl_label = "Scale Forge Objects"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    seq: IntProperty(name="Spawn Sequence (Scale)", default=0, min=-100, max=100)
+
+    @classmethod
+    def poll(cls, context): return context.selected_objects and 'SCALE' in gtLabelToIndex
+    def execute(self, context):
+        scale = spawnSeqToScale(self.seq, context.scene.forge.scaleConvention)
+        for blobj in context.selected_objects:
+            fobj = blobj.forge
+            fobj.gtLabel = 'SCALE'
+            fobj.spawnSequence = self.seq
+        bpy.ops.transform.resize(value=(scale, scale, scale))
+        return {'FINISHED'}
 
 reg_classes = [
-    ForgeObjectProps, ForgeCollectionProps, 
-    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray, ErrorMessage,
-    ForgeObjectPanel, ForgeObjectPanel_Sidebar, ForgeCollectionPanel, AddForgeObjectMenu
+    ForgeObjectProps, ForgeCollectionProps, ForgeSceneProps,
+    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray, ErrorMessage, ScaleObjects,
+    ForgeObjectPanel, ForgeObjectPanel_Sidebar, AddForgeObjectMenu, ForgeCollectionPanel, ForgeScenePanel
 ]
-# TeleportPlayer, TeleportPlayerToCursor
 reg_objMenus = [convertForgeMenuItem, setupArrayMenuItem]
 reg_addMenus = [addForgeObjectMenuItem]
 
@@ -908,6 +932,11 @@ def register():
 
     bpy.types.Object.forge = bpy.props.PointerProperty(type=ForgeObjectProps)
     bpy.types.Collection.forge = bpy.props.PointerProperty(type=ForgeCollectionProps)
+    bpy.types.Scene.forge = bpy.props.PointerProperty(type=ForgeSceneProps)
+    
+    persist_vars['forgeObjectsOverlay_handle'] = bpy.types.SpaceView3D.draw_handler_add(draw_forgeObjectOverlay, (), 'WINDOW', 'POST_PIXEL')
+    if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()
+    initInvGtLabels()
 
     thread = Thread(target=tryGetLatestRelease)
     thread.start()
@@ -936,9 +965,6 @@ def register():
             rl="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
         print(ex)
 
-    persist_vars['forgeObjectsOverlay_handle'] = bpy.types.SpaceView3D.draw_handler_add(draw_forgeObjectOverlay, (), 'WINDOW', 'POST_PIXEL')
-    if persist_vars.get('gtIndexToLabel', None) == None: initGtLabels()
-    initInvGtLabels()
 def unregister():
     try: forge.TrySetConnect(False)
     except: pass
