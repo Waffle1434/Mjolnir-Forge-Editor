@@ -1,5 +1,5 @@
 # OwO, What's This?
-Mjolnir Forge Editor is a tool *(based off [Halo Reach Forge Assistant](https://github.com/Lookenpeepers/Halo-Reach-Forge-Assistant))*, for the popular free 3D software [Blender](https://www.blender.org/), which modifies Halo Reach's RAM to edit forge maps using a dll.
+Mjolnir Forge Editor is a tool *(based off [Halo Reach Forge Assistant](https://github.com/Lookenpeepers/Halo-Reach-Forge-Assistant))*, for the popular free 3D software [Blender](https://www.blender.org/), which modifies Halo Reach's RAM to do more advanced edits to map variants which would otherwise be very tedious or even impossible ingame (using a dll).
 The currently loaded forge map is imported into Blender, edited, and then exported back to Reach. After a round restart, changes take effect and can be saved back to the forge map variant.
 
 ![](https://raw.githubusercontent.com/Waffle1434/Mjolnir-Forge-Editor/master/Wiki/rotate.gif)
