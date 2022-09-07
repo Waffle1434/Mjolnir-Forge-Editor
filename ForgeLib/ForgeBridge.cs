@@ -101,7 +101,7 @@ namespace ForgeLib {
 
         static void GetPointers() {
             reachBase = memory.ModuleBaseAddress("haloreach.dll");
-            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x23CC688);
+            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x2514938);
             gtLabelsPointer = forgeBase + 0x7F4;
             forgeObjectArrayPointer = forgeBase + 0x19FC;
 
@@ -120,13 +120,13 @@ namespace ForgeLib {
             _CacheCurrentMap();
             GetGtLabels();
 
-            mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
+            //mapPlayerPositions.TryGetValue(currentMap, out mccPlayerMonitorPosition);
 
             GetForgeObjects();
         }
 
         #region Map Name
-        const int mapNameOffset = 0x2687753;
+        const int mapNameOffset = 0x2766710;
         static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + mapNameOffset));
 
         static void _CacheCurrentMap() {

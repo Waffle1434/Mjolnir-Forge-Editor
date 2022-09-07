@@ -7,7 +7,7 @@ from os.path import exists
 from math import *
 from threading import Thread
 
-vMjolnir = "0.9.8.10"
+vMjolnir = "0.9.8.11"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
