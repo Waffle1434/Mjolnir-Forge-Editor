@@ -44,7 +44,7 @@ namespace ForgeLib {
         //static unsafe float3* playerMonitorPosition;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
-        public static int GetDllVersion() => 4;
+        public static int GetDllVersion() => 5;
 
         [DllExport(CallingConvention = CallingConvention.Cdecl)]
         public static bool TrySetConnect(bool connect) {
@@ -101,9 +101,9 @@ namespace ForgeLib {
 
         static void GetPointers() {
             reachBase = memory.ModuleBaseAddress("haloreach.dll");
-            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x2514938);
-            gtLabelsPointer = forgeBase + 0x7F4;
-            forgeObjectArrayPointer = forgeBase + 0x19FC;
+            UIntPtr forgeBase = memory.ReadPointer(reachBase + 0x250B6B8);
+            gtLabelsPointer = forgeBase + 0x804;
+            forgeObjectArrayPointer = forgeBase + 0x1A0C;
 
             mapPlayerPositions[Map.Forge_World] = reachBase + 0x306ABC0;
             mapPlayerPositions[Map.Tempest] = reachBase + 0x30DD280;
@@ -126,7 +126,7 @@ namespace ForgeLib {
         }
 
         #region Map Name
-        const int mapNameOffset = 0x2766710;
+        const int mapNameOffset = 0x275DE10;
         static Map GetCurrentMap() => MapUtil.FromId(memory.ReadString(reachBase + mapNameOffset));
 
         static void _CacheCurrentMap() {
