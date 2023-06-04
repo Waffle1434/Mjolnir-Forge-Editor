@@ -8,26 +8,28 @@ using static ForgeLib.ProcessMemory;
 namespace ForgeLib {
     public enum Map {
         None,
-        Boardwalk,    //50_panopticon
-        Boneyard,     //70_boneyard
-        Countdown,    //45_launch_station
-        Powerhouse,   //30_settlement
-        Reflection,   //52_ivory_tower
-        Spire,        //35_island
-        Sword_Base,   //20_sword_slayer
-        Zealot,       //45_aftship
-        Anchor_9,     //dlc_slayer
-        Breakpoint,   //dlc_invasion
-        Tempest,      //dlc_medium
-        Condemned,    //condemned
-        Highlands,    //trainingpreserve
-        Battle_Canyon,//cex_beavercreek
-        Penance,      //cex_damnation
-        Ridgeline,    //cex_timberland
-        Solitary,     //cex_prisoner
-        High_Noon,    //cex_hangemhigh
-        Breakneck,    //cex_headlong
-        Forge_World   //forge_halo
+        Boardwalk,    // 50_panopticon
+        Boneyard,     // 70_boneyard
+        Countdown,    // 45_launch_station
+        Powerhouse,   // 30_settlement
+        Reflection,   // 52_ivory_tower
+        Spire,        // 35_island
+        Sword_Base,   // 20_sword_slayer
+        Zealot,       // 45_aftship
+        Anchor_9,     // dlc_slayer
+        Breakpoint,   // dlc_invasion
+        Tempest,      // dlc_medium
+        Condemned,    // condemned
+        Highlands,    // trainingpreserve
+        Battle_Canyon,// cex_beavercreek
+        Penance,      // cex_damnation
+        Ridgeline,    // cex_timberland
+        Solitary,     // cex_prisoner
+        High_Noon,    // cex_hangemhigh
+        Breakneck,    // cex_headlong
+        Forge_World,  // forge_halo
+        Creep_Forge_World,        // creep_forge_halo
+        Creep_Forge_World_Night   // creep_forge_halo_night
     }
 
     public static class ForgeBridge {

@@ -23,6 +23,11 @@
                 case "cex_headlong":      return Map.Breakneck;
                 case "forge_halo":        return Map.Forge_World;
                 default:                  return Map.None;
+
+                // Modded Maps
+                case "creep_forge_halo":       return Map.Creep_Forge_World;
+                case "creep_forge_halo_night": return Map.Creep_Forge_World_Night;
+
             }
         }
 
@@ -50,6 +55,10 @@
                 case Map.Breakneck:     return "Breakneck";
                 case Map.Forge_World:   return "Forge World";
                 default:                return "Unknown";
+
+                // Modded Maps
+                case Map.Creep_Forge_World:       return "Creep's Forge World";
+                case Map.Creep_Forge_World_Night: return "Creep's Forge World (Night)";
             }
         }
     }

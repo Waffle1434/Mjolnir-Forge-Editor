@@ -425,6 +425,710 @@ namespace ForgeLib {
             forgeWorld.AddNext(ref key, "Phantom, Hovering");
             #endregion
 
+            #region Creep World
+            TwoWayDictionary<int, string> creepWorld = new TwoWayDictionary<int, string>();
+            maps[Map.Creep_Forge_World] = creepWorld;
+            key = 0x1F00;
+            #region Vehicles
+            creepWorld.AddNext(ref key, "Banshee");
+            //creepWorld.AddNext(ref key, "Falcon");
+            creepWorld.AddSubcategory(ref key, "Falcon", "Falcon, Coaxial Gun / GL", "Falcon, MG", "Falcon, Rockets", "Falcon, Coaxial MG / GL", "Falcon, Cannon");
+            creepWorld.AddNext(ref key, "Ghost");
+            creepWorld.AddNext(ref key, "Mongoose");
+            creepWorld.AddNext(ref key, "Revenant");
+            //creepWorld.AddNext(ref key, "Scorpion");
+            creepWorld.AddSubcategory(ref key, "Scorpion", "Scorpion, Rockets");
+            creepWorld.AddNext(ref key, "Shade Turret");
+            creepWorld.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            creepWorld.AddNext(ref key, "Wraith");
+            creepWorld.AddSubcategory(ref key, "Pickup, Rockets", "Truck, Tank Turret");
+            #endregion
+            #region Gadgets
+            creepWorld.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            creepWorld.AddNext(ref key, "Health Station");
+            creepWorld.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            creepWorld.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            creepWorld.AddNext(ref key, "One Way Shield 2");
+            creepWorld.AddNext(ref key, "One Way Shield 3");
+            creepWorld.AddNext(ref key, "One Way Shield 4");
+            creepWorld.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink",
+                "FX:Purple",
+                "FX:Green",
+                "FX:Orange");
+            creepWorld.AddNext(ref key, "Shield Door, Small");
+            creepWorld.AddNext(ref key, "Shield Door, Medium");
+            creepWorld.AddNext(ref key, "Shield Door, Large");
+            creepWorld.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            creepWorld.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
+            creepWorld.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            creepWorld.AddNext(ref key, "Initial Spawn");
+            creepWorld.AddNext(ref key, "Respawn Point");
+            creepWorld.AddNext(ref key, "Initial Loadout Camera");
+            creepWorld.AddNext(ref key, "Respawn Zone");
+            creepWorld.AddNext(ref key, "Respawn Zone, Weak");
+            creepWorld.AddNext(ref key, "Respawn Zone, Anti");
+            creepWorld.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            creepWorld.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            creepWorld.AddNext(ref key, "Flag Stand");
+            creepWorld.AddNext(ref key, "Capture Plate");
+            creepWorld.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            creepWorld.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Covenant Barrier",
+                "Portable Shield");
+            creepWorld.AddNext(ref key, "Camping Stool");
+            creepWorld.AddSubcategory(ref key,
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open");
+            creepWorld.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag, Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            creepWorld.AddNext(ref key, "Street Cone");
+            #endregion
+            #region Structure
+            #region Building Blocks
+            creepWorld.AddSubcategory(ref key,
+                "Block, 1x1",
+                "Block, 1x1, Flat",
+                "Block, 1x1, Short",
+                "Block, 1x1, Tall",
+                "Block, 1x1, Tall And Thin",
+                "Block, 1x2",
+                "Block, 1x4",
+                "Block, 2x1, Flat",
+                "Block, 2x2",
+                "Block, 2x2, Flat",
+                "Block, 2x2, Short",
+                "Block, 2x2, Tall",
+                "Block, 2x3",
+                "Block, 2x4",
+                "Block, 3x1, Flat",
+                "Block, 3x3",
+                "Block, 3x3, Flat",
+                "Block, 3x3, Short",
+                "Block, 3x3, Tall",
+                "Block, 3x4",
+                "Block, 4x4",
+                "Block, 4x4, Flat",
+                "Block, 4x4, Short",
+                "Block, 4x4, Tall",
+                "Block, 5x1, Short",
+                "Block, 5x5, Flat");
+            #endregion
+            #region Bridges And Platforms
+            creepWorld.AddSubcategory(ref key,
+                "Bridge, Small",
+                "Bridge, Medium",
+                "Bridge, Large",
+                "Bridge, XLarge",
+                "Bridge, Diagonal",
+                "Bridge, Diag, Small",
+                "Dish",
+                "Dish, Open",
+                "Corner, 45 Degrees",
+                "Corner, 2x2",
+                "Corner, 4x4",
+                "Landing Pad",
+                "Platform, Ramped",
+                "Platform, Large",
+                "Platform, XL",
+                "Platform, XXL",
+                "Platform, Y",
+                "Platform, Y, Large",
+                "Sniper Nest",
+                "Staircase",
+                "Walkway, Large");
+            #endregion
+            #region Buildings
+            creepWorld.AddSubcategory(ref key,
+                "Bunker, Small",
+                "Bunker, Small, Covered",
+                "Bunker, Box",
+                "Bunker, Round",
+                "Bunker, Ramp",
+                "Pyramid",
+                "Tower, 2 Story",
+                "Tower, 3 Story",
+                "Tower, Tall",
+                "Room, Double",
+                "Room, Triple");
+            #endregion
+            #region Decorative
+            creepWorld.AddSubcategory(ref key,
+                "Antenna, Small",
+                "Antenna, Satellite",
+                "Brace",
+                "Brace, Large",
+                "Brace, Tunnel",
+                "Column",
+                "Cover",
+                "Cover, Crenellation",
+                "Cover, Glass",
+                "Glass Sail",
+                "Railing, Small",
+                "Railing, Medium",
+                "Railing, Long",
+                "Teleporter Frame",
+                "Strut",
+                "Large Walkway Cover");
+            #endregion
+            #region Doors, Windows, And Walls
+            creepWorld.AddSubcategory(ref key,
+                "Door",
+                "Door, Double",
+                "Window",
+                "Window, Double",
+                "Wall",
+                "Wall, Double",
+                "Wall, Corner",
+                "Wall, Curved",
+                "Wall, Coliseum",
+                "Window, Colesium",
+                "Tunnel, Short",
+                "Tunnel, Long");
+            #endregion
+            #region Inclines
+            creepWorld.AddSubcategory(ref key,
+                "Bank, 1x1",
+                "Bank, 1x2",
+                "Bank, 2x1",
+                "Bank, 2x2",
+                "Ramp, 1x2",
+                "Ramp, 1x2, Shallow",
+                "Ramp, 2x2",
+                "Ramp, 2x2, Steep",
+                "Ramp, Circular, Small",
+                "Ramp, Circular, Large",
+                "Ramp, Bridge, Small",
+                "Ramp, Bridge, Medium",
+                "Ramp, Bridge, Large",
+                "Ramp, XL",
+                "Ramp, Stunt");
+            #endregion
+            #region Natural
+            creepWorld.AddSubcategory(ref key,
+                "Rock, Small",
+                "Rock, Flat",
+                "Rock, Medium 1",
+                "Rock, Medium 2",
+                "Rock, Spire 1",
+                "Rock, Spire 2",
+                "Rock, Seastack",
+                "Rock, Arch");
+            #endregion
+            creepWorld.AddNext(ref key, "Grid");
+            #endregion
+            #region Hidden Structure Blocks
+            creepWorld.AddNext(ref key, "Block, 2x2, Invisible");
+            creepWorld.AddNext(ref key, "Block, 1x1, Invisible");
+            creepWorld.AddNext(ref key, "Block, 2x2x2, Invisible");
+            creepWorld.AddNext(ref key, "Block, 4x4x2, Invisible");
+            creepWorld.AddNext(ref key, "Block, 4x4x4, Invisible");
+            creepWorld.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            creepWorld.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            creepWorld.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            creepWorld.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            creepWorld.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            creepWorld.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            #region Vehicles (MCC)
+            creepWorld.AddSubcategory(ref key, "Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
+            creepWorld.AddNext(ref key, "Warthog, Transport");
+            creepWorld.AddNext(ref key, "Sabre");
+            creepWorld.AddNext(ref key, "Seraph");
+            creepWorld.AddNext(ref key, "Cart, Electric");
+            creepWorld.AddNext(ref key, "Forklift");
+            creepWorld.AddNext(ref key, "Pickup");
+            creepWorld.AddNext(ref key, "Truck Cab");
+            creepWorld.AddNext(ref key, "Van, Oni");
+            creepWorld.AddNext(ref key, "Shade, Fuel Rod");
+            #endregion
+            #region Gadgets (MCC)
+            creepWorld.AddSubcategory(ref key,
+                "Cannon, Man, Forerunner",
+                "Cannon, Man, Heavy, Forerunner",
+                "Cannon, Man, Light, Forerunner",
+                "Gravity Lift, Forerunner",
+                "Gravity Lift, Tall, Forerunner",
+                "Cannon, Man, Human");
+            creepWorld.AddNext(ref key, "One Way Shield 1");
+            creepWorld.AddNext(ref key, "One Way Shield 5");
+            creepWorld.AddNext(ref key, "Shield Wall, Small");
+            creepWorld.AddNext(ref key, "Shield Wall, Medium");
+            creepWorld.AddNext(ref key, "Shield Wall, Large");
+            creepWorld.AddNext(ref key, "Shield Wall, X-Large");
+            creepWorld.AddNext(ref key, "One Way Shield 2");
+            creepWorld.AddNext(ref key, "One Way Shield 3");
+            creepWorld.AddNext(ref key, "One Way Shield 4");
+            creepWorld.AddNext(ref key, "Shield Door, Small");
+            creepWorld.AddNext(ref key, "Shield Door, Small 1");
+            creepWorld.AddNext(ref key, "Shield Door, Large");
+            creepWorld.AddNext(ref key, "Shield Door, Large 1");
+            creepWorld.AddNext(ref key, "Ammo Cabinet");
+            creepWorld.AddNext(ref key, "Spnkr Ammo");
+            creepWorld.AddNext(ref key, "Sniper Ammo");
+            #endregion
+            #region Scenery (MCC)
+            creepWorld.AddSubcategory(ref key, "Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
+            creepWorld.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Fully Open",
+                "Crate, Forerunner, Small",
+                "Crate, Forerunner, Large");
+            creepWorld.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            creepWorld.AddSubcategory(ref key, "Driftwood 1", "Driftwood 2", "Driftwood 3");
+            creepWorld.AddSubcategory(ref key, "Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
+            creepWorld.AddSubcategory(ref key, "Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
+            creepWorld.AddNext(ref key, "Folding Chair");
+            creepWorld.AddNext(ref key, "Dumpster");
+            creepWorld.AddNext(ref key, "Dumpster, Tall");
+            creepWorld.AddNext(ref key, "Equipment Case");
+            creepWorld.AddNext(ref key, "Monitor");
+            creepWorld.AddNext(ref key, "Plasma Storage");
+            creepWorld.AddNext(ref key, "Camping Stool, Covenant");
+            creepWorld.AddNext(ref key, "Covenant Antenna");
+            creepWorld.AddNext(ref key, "Fuel Storage");
+            creepWorld.AddNext(ref key, "Engine Cart");
+            creepWorld.AddNext(ref key, "Missile Cart");
+            #endregion
+            #region Structure (MCC)
+            creepWorld.AddSubcategory(ref key,
+                "Bridge",
+                "Platform, Covenant",
+                "Catwalk, Straight",
+                "Catwalk, Short",
+                "Catwalk, Bend, Left",
+                "Catwalk, Bend, Right",
+                "Catwalk, Angled",
+                "Catwalk, Large");
+            creepWorld.AddSubcategory(ref key, "Bunker, Overlook", "Gunners Nest");
+            creepWorld.AddSubcategory(ref key,
+                "Cover, Small",
+                "Block, Large",
+                "Blocker, Hallway",
+                "Column, Stone",
+                "Tombstone",
+                "Cover, Large, Stone",
+                "Cover, Large",
+                "Walkway Cover",
+                "Walkway Cover, Short",
+                "Cover, Large, Human",
+                "I-Beam");
+            creepWorld.AddSubcategory(ref key,
+                "Wall (MCC)",
+                "Door (MCC)",
+                "Door, Human",
+                "Door A, Forerunner",
+                "Door B, Forerunner",
+                "Door C, Forerunner",
+                "Door D, Forerunner",
+                "Door E, Forerunner",
+                "Door F, Forerunner",
+                "Door G, Forerunner",
+                "Door H, Forerunner",
+                "Wall, Small, Forerunner",
+                "Wall, Large, Forerunner");
+            creepWorld.AddSubcategory(ref key, "Rock, Spire 3", "Tree, Dead");
+            #endregion
+            #region Hidden Misc
+            creepWorld.AddNext(ref key, "Generator");
+            creepWorld.AddNext(ref key, "Vending Machine");
+            creepWorld.AddNext(ref key, "Dinghy");
+            #endregion
+            #region Other (MCC)
+            creepWorld.AddNext(ref key, "Target Designator");// Other (MCC)
+            //creepWorld.AddNext(ref key, "Pelican, Hovering");
+            //creepWorld.AddNext(ref key, "Phantom, Hovering");
+            creepWorld.AddNext(ref key, "Location Name Marker");
+            #endregion
+            #endregion
+
+            #region Creep World Night
+            TwoWayDictionary<int, string> creepWorldNight = new TwoWayDictionary<int, string>();
+            maps[Map.Creep_Forge_World_Night] = creepWorldNight;
+            key = 0x1F00;
+            #region Vehicles
+            creepWorldNight.AddNext(ref key, "Banshee");
+            //creepWorldNight.AddNext(ref key, "Falcon");
+            creepWorldNight.AddSubcategory(ref key, "Falcon", "Falcon, Coaxial Gun / GL", "Falcon, MG", "Falcon, Rockets", "Falcon, Coaxial MG / GL", "Falcon, Cannon");
+            creepWorldNight.AddNext(ref key, "Ghost");
+            creepWorldNight.AddNext(ref key, "Mongoose");
+            creepWorldNight.AddNext(ref key, "Revenant");
+            //creepWorldNight.AddNext(ref key, "Scorpion");
+            creepWorldNight.AddSubcategory(ref key, "Scorpion", "Scorpion, Rockets");
+            creepWorldNight.AddNext(ref key, "Shade Turret");
+            creepWorldNight.AddSubcategory(ref key, "Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            creepWorldNight.AddNext(ref key, "Wraith");
+            creepWorldNight.AddSubcategory(ref key, "Pickup, Rockets", "Truck, Tank Turret");
+            #endregion
+            #region Gadgets
+            creepWorldNight.AddSubcategory(ref key, "Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
+            creepWorldNight.AddNext(ref key, "Health Station");
+            creepWorldNight.AddSubcategory(ref key, "Camo Powerup", "Overshield", "Custom Powerup");
+            creepWorldNight.AddSubcategory(ref key,
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            creepWorldNight.AddNext(ref key, "One Way Shield 2");
+            creepWorldNight.AddNext(ref key, "One Way Shield 3");
+            creepWorldNight.AddNext(ref key, "One Way Shield 4");
+            creepWorldNight.AddSubcategory(ref key,
+                "FX:Colorblind",
+                "FX:Next Gen",
+                "FX:Juicy",
+                "FX:Nova",
+                "FX:Olde Timey",
+                "FX:Pen And Ink",
+                "FX:Purple",
+                "FX:Green",
+                "FX:Orange");
+            creepWorldNight.AddNext(ref key, "Shield Door, Small");
+            creepWorldNight.AddNext(ref key, "Shield Door, Medium");
+            creepWorldNight.AddNext(ref key, "Shield Door, Large");
+            creepWorldNight.AddSubcategory(ref key, "Receiver Node", "Sender Node", "Two-Way Node");
+            creepWorldNight.AddSubcategory(ref key, "Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
+            creepWorldNight.AddSubcategory(ref key,
+                "Light, Red",
+                "Light, Blue",
+                "Light, Green",
+                "Light, Orange",
+                "Light, Purple",
+                "Light, Yellow",
+                "Light, White",
+                "Light, Red, Flashing",
+                "Light, Yellow, Flashing");
+            #endregion
+            #region Spawning
+            creepWorldNight.AddNext(ref key, "Initial Spawn");
+            creepWorldNight.AddNext(ref key, "Respawn Point");
+            creepWorldNight.AddNext(ref key, "Initial Loadout Camera");
+            creepWorldNight.AddNext(ref key, "Respawn Zone");
+            creepWorldNight.AddNext(ref key, "Respawn Zone, Weak");
+            creepWorldNight.AddNext(ref key, "Respawn Zone, Anti");
+            creepWorldNight.AddSubcategory(ref key, "Safe Boundary", "Soft Safe Boundary");
+            creepWorldNight.AddSubcategory(ref key, "Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            creepWorldNight.AddNext(ref key, "Flag Stand");
+            creepWorldNight.AddNext(ref key, "Capture Plate");
+            creepWorldNight.AddNext(ref key, "Hill Marker");
+            #endregion
+            #region Scenery
+            creepWorldNight.AddSubcategory(ref key,
+                "Barricade, Small",
+                "Barricade, Large",
+                "Covenant Barrier",
+                "Portable Shield");
+            creepWorldNight.AddNext(ref key, "Camping Stool");
+            creepWorldNight.AddSubcategory(ref key,
+                "Crate, Heavy Duty",
+                "Crate, Heavy, Small",
+                "Covenant Crate",
+                "Crate, Half Open");
+            creepWorldNight.AddSubcategory(ref key,
+                "Sandbag Wall",
+                "Sandbag, Turret Wall",
+                "Sandbag Corner, 45",
+                "Sandbag Corner, 90",
+                "Sandbag Endcap");
+            creepWorldNight.AddNext(ref key, "Street Cone");
+            #endregion
+            #region Structure
+            #region Building Blocks
+            creepWorldNight.AddSubcategory(ref key,
+                "Block, 1x1",
+                "Block, 1x1, Flat",
+                "Block, 1x1, Short",
+                "Block, 1x1, Tall",
+                "Block, 1x1, Tall And Thin",
+                "Block, 1x2",
+                "Block, 1x4",
+                "Block, 2x1, Flat",
+                "Block, 2x2",
+                "Block, 2x2, Flat",
+                "Block, 2x2, Short",
+                "Block, 2x2, Tall",
+                "Block, 2x3",
+                "Block, 2x4",
+                "Block, 3x1, Flat",
+                "Block, 3x3",
+                "Block, 3x3, Flat",
+                "Block, 3x3, Short",
+                "Block, 3x3, Tall",
+                "Block, 3x4",
+                "Block, 4x4",
+                "Block, 4x4, Flat",
+                "Block, 4x4, Short",
+                "Block, 4x4, Tall",
+                "Block, 5x1, Short",
+                "Block, 5x5, Flat");
+            #endregion
+            #region Bridges And Platforms
+            creepWorldNight.AddSubcategory(ref key,
+                "Bridge, Small",
+                "Bridge, Medium",
+                "Bridge, Large",
+                "Bridge, XLarge",
+                "Bridge, Diagonal",
+                "Bridge, Diag, Small",
+                "Dish",
+                "Dish, Open",
+                "Corner, 45 Degrees",
+                "Corner, 2x2",
+                "Corner, 4x4",
+                "Landing Pad",
+                "Platform, Ramped",
+                "Platform, Large",
+                "Platform, XL",
+                "Platform, XXL",
+                "Platform, Y",
+                "Platform, Y, Large",
+                "Sniper Nest",
+                "Staircase",
+                "Walkway, Large");
+            #endregion
+            #region Buildings
+            creepWorldNight.AddSubcategory(ref key,
+                "Bunker, Small",
+                "Bunker, Small, Covered",
+                "Bunker, Box",
+                "Bunker, Round",
+                "Bunker, Ramp",
+                "Pyramid",
+                "Tower, 2 Story",
+                "Tower, 3 Story",
+                "Tower, Tall",
+                "Room, Double",
+                "Room, Triple");
+            #endregion
+            #region Decorative
+            creepWorldNight.AddSubcategory(ref key,
+                "Antenna, Small",
+                "Antenna, Satellite",
+                "Brace",
+                "Brace, Large",
+                "Brace, Tunnel",
+                "Column",
+                "Cover",
+                "Cover, Crenellation",
+                "Cover, Glass",
+                "Glass Sail",
+                "Railing, Small",
+                "Railing, Medium",
+                "Railing, Long",
+                "Teleporter Frame",
+                "Strut",
+                "Large Walkway Cover");
+            #endregion
+            #region Doors, Windows, And Walls
+            creepWorldNight.AddSubcategory(ref key,
+                "Door",
+                "Door, Double",
+                "Window",
+                "Window, Double",
+                "Wall",
+                "Wall, Double",
+                "Wall, Corner",
+                "Wall, Curved",
+                "Wall, Coliseum",
+                "Window, Colesium",
+                "Tunnel, Short",
+                "Tunnel, Long");
+            #endregion
+            #region Inclines
+            creepWorldNight.AddSubcategory(ref key,
+                "Bank, 1x1",
+                "Bank, 1x2",
+                "Bank, 2x1",
+                "Bank, 2x2",
+                "Ramp, 1x2",
+                "Ramp, 1x2, Shallow",
+                "Ramp, 2x2",
+                "Ramp, 2x2, Steep",
+                "Ramp, Circular, Small",
+                "Ramp, Circular, Large",
+                "Ramp, Bridge, Small",
+                "Ramp, Bridge, Medium",
+                "Ramp, Bridge, Large",
+                "Ramp, XL",
+                "Ramp, Stunt");
+            #endregion
+            #region Natural
+            creepWorldNight.AddSubcategory(ref key,
+                "Rock, Small",
+                "Rock, Flat",
+                "Rock, Medium 1",
+                "Rock, Medium 2",
+                "Rock, Spire 1",
+                "Rock, Spire 2",
+                "Rock, Seastack",
+                "Rock, Arch");
+            #endregion
+            creepWorldNight.AddNext(ref key, "Grid");
+            #endregion
+            #region Hidden Structure Blocks
+            creepWorldNight.AddNext(ref key, "Block, 2x2, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 1x1, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 2x2x2, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 4x4x2, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 4x4x4, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 2x1, Flat, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 1x1, Flat, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 1x1, Small, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 2x2, Flat, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 4x2, Flat, Invisible");
+            creepWorldNight.AddNext(ref key, "Block, 4x4, Flat, Invisible");
+            #endregion
+            #region Vehicles (MCC)
+            creepWorldNight.AddSubcategory(ref key, "Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
+            creepWorldNight.AddNext(ref key, "Warthog, Transport");
+            creepWorldNight.AddNext(ref key, "Sabre");
+            creepWorldNight.AddNext(ref key, "Seraph");
+            creepWorldNight.AddNext(ref key, "Cart, Electric");
+            creepWorldNight.AddNext(ref key, "Forklift");
+            creepWorldNight.AddNext(ref key, "Pickup");
+            creepWorldNight.AddNext(ref key, "Truck Cab");
+            creepWorldNight.AddNext(ref key, "Van, Oni");
+            creepWorldNight.AddNext(ref key, "Shade, Fuel Rod");
+            #endregion
+            #region Gadgets (MCC)
+            creepWorldNight.AddSubcategory(ref key,
+                "Cannon, Man, Forerunner",
+                "Cannon, Man, Heavy, Forerunner",
+                "Cannon, Man, Light, Forerunner",
+                "Gravity Lift, Forerunner",
+                "Gravity Lift, Tall, Forerunner",
+                "Cannon, Man, Human");
+            creepWorldNight.AddNext(ref key, "One Way Shield 1");
+            creepWorldNight.AddNext(ref key, "One Way Shield 5");
+            creepWorldNight.AddNext(ref key, "Shield Wall, Small");
+            creepWorldNight.AddNext(ref key, "Shield Wall, Medium");
+            creepWorldNight.AddNext(ref key, "Shield Wall, Large");
+            creepWorldNight.AddNext(ref key, "Shield Wall, X-Large");
+            creepWorldNight.AddNext(ref key, "One Way Shield 2");
+            creepWorldNight.AddNext(ref key, "One Way Shield 3");
+            creepWorldNight.AddNext(ref key, "One Way Shield 4");
+            creepWorldNight.AddNext(ref key, "Shield Door, Small");
+            creepWorldNight.AddNext(ref key, "Shield Door, Small 1");
+            creepWorldNight.AddNext(ref key, "Shield Door, Large");
+            creepWorldNight.AddNext(ref key, "Shield Door, Large 1");
+            creepWorldNight.AddNext(ref key, "Ammo Cabinet");
+            creepWorldNight.AddNext(ref key, "Spnkr Ammo");
+            creepWorldNight.AddNext(ref key, "Sniper Ammo");
+            #endregion
+            #region Scenery (MCC)
+            creepWorldNight.AddSubcategory(ref key, "Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
+            creepWorldNight.AddSubcategory(ref key,
+                "Crate, Small, Closed",
+                "Crate, Metal, Multi",
+                "Crate, Metal, Single",
+                "Crate, Fully Open",
+                "Crate, Forerunner, Small",
+                "Crate, Forerunner, Large");
+            creepWorldNight.AddSubcategory(ref key, "Pallet", "Pallet, Large", "Pallet, Metal");
+            creepWorldNight.AddSubcategory(ref key, "Driftwood 1", "Driftwood 2", "Driftwood 3");
+            creepWorldNight.AddSubcategory(ref key, "Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
+            creepWorldNight.AddSubcategory(ref key, "Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
+            creepWorldNight.AddNext(ref key, "Folding Chair");
+            creepWorldNight.AddNext(ref key, "Dumpster");
+            creepWorldNight.AddNext(ref key, "Dumpster, Tall");
+            creepWorldNight.AddNext(ref key, "Equipment Case");
+            creepWorldNight.AddNext(ref key, "Monitor");
+            creepWorldNight.AddNext(ref key, "Plasma Storage");
+            creepWorldNight.AddNext(ref key, "Camping Stool, Covenant");
+            creepWorldNight.AddNext(ref key, "Covenant Antenna");
+            creepWorldNight.AddNext(ref key, "Fuel Storage");
+            creepWorldNight.AddNext(ref key, "Engine Cart");
+            creepWorldNight.AddNext(ref key, "Missile Cart");
+            #endregion
+            #region Structure (MCC)
+            creepWorldNight.AddSubcategory(ref key,
+                "Bridge",
+                "Platform, Covenant",
+                "Catwalk, Straight",
+                "Catwalk, Short",
+                "Catwalk, Bend, Left",
+                "Catwalk, Bend, Right",
+                "Catwalk, Angled",
+                "Catwalk, Large");
+            creepWorldNight.AddSubcategory(ref key, "Bunker, Overlook", "Gunners Nest");
+            creepWorldNight.AddSubcategory(ref key,
+                "Cover, Small",
+                "Block, Large",
+                "Blocker, Hallway",
+                "Column, Stone",
+                "Tombstone",
+                "Cover, Large, Stone",
+                "Cover, Large",
+                "Walkway Cover",
+                "Walkway Cover, Short",
+                "Cover, Large, Human",
+                "I-Beam");
+            creepWorldNight.AddSubcategory(ref key,
+                "Wall (MCC)",
+                "Door (MCC)",
+                "Door, Human",
+                "Door A, Forerunner",
+                "Door B, Forerunner",
+                "Door C, Forerunner",
+                "Door D, Forerunner",
+                "Door E, Forerunner",
+                "Door F, Forerunner",
+                "Door G, Forerunner",
+                "Door H, Forerunner",
+                "Wall, Small, Forerunner",
+                "Wall, Large, Forerunner");
+            creepWorldNight.AddSubcategory(ref key, "Rock, Spire 3", "Tree, Dead");
+            #endregion
+            #region Hidden Misc
+            creepWorldNight.AddNext(ref key, "Generator");
+            creepWorldNight.AddNext(ref key, "Vending Machine");
+            creepWorldNight.AddNext(ref key, "Dinghy");
+            #endregion
+            #region Other (MCC)
+            creepWorldNight.AddNext(ref key, "Target Designator");// Other (MCC)
+            //creepWorldNight.AddNext(ref key, "Pelican, Hovering");
+            //creepWorldNight.AddNext(ref key, "Phantom, Hovering");
+            creepWorldNight.AddNext(ref key, "Location Name Marker");
+            #endregion
+            #endregion
+
             #region Tempest
             TwoWayDictionary<int, string> tempest = new TwoWayDictionary<int, string>();
             maps[Map.Tempest] = tempest;
