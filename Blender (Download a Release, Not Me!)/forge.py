@@ -7,7 +7,7 @@ from os.path import exists
 from math import *
 from threading import Thread
 
-vMjolnir = "0.9.8.12"
+vMjolnir = "0.9.8.13"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
@@ -746,7 +746,7 @@ def draw_forgeObjectOverlay():
     
     font_id = 0
     blf.position(font_id, 15, 15, 0)
-    blf.size(font_id, 11, 72)
+    blf.size(font_id, 11)
     if objCount > maxObjectCount: blf.color(font_id, 1,0,0,1)
     elif objCount > 500: blf.color(font_id, 1,0.5,0,1)
     else: blf.color(font_id, 1,1,1,1)
@@ -957,8 +957,6 @@ def register():
         forge.GetObjectPtr.restype = POINTER(ForgeObject)
         forge.ForgeObject_GetItemName.restype = c_wchar_p
         forge.ItemNameToType.argtypes = [c_wchar_p]
-        forge.TryGetMonitorPosition.restype = c_bool
-        forge.TryTeleportMonitor.restype = c_bool
     except Exception as ex:
         bpy.ops.forge.error('INVOKE_DEFAULT', 
             message="Outdated ForgeBridge.dll in use!\nPlease download the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 

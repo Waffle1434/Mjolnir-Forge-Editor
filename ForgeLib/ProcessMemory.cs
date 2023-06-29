@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -83,21 +82,21 @@ namespace ForgeLib {
             }
         }
 
-        public bool TryReadBytes(UIntPtr ptr, byte[] bytes, int count) {
+        public bool TryReadBytes(UIntPtr ptr, byte[] bytes, uint count) {
 #if KERNEL32
             if (ReadProcessMemory(pHandle, ptr, bytes, (UIntPtr)checked((ulong)count), IntPtr.Zero))
                 return true;
 #elif NTDLL
-            if (NtReadVirtualMemory(pHandle, ptr, bytes, (uint)count, UIntPtr.Zero) < NtStatus.Error) return true;
+            if (NtReadVirtualMemory(pHandle, ptr, bytes, count, UIntPtr.Zero) < NtStatus.Error) return true;
 #endif
             return false;
         }
-        public unsafe bool TryReadBytes(UIntPtr ptr, void* bytes, int count) {
+        public unsafe bool TryReadBytes(UIntPtr ptr, void* bytes, uint count) {
 #if KERNEL32
             if (ReadProcessMemory(pHandle, ptr, bytes, (UIntPtr)checked((ulong)count), IntPtr.Zero))
                 return true;
 #elif NTDLL
-            if (NtReadVirtualMemory(pHandle, ptr, bytes, (uint)count, UIntPtr.Zero) < NtStatus.Error) return true;
+            if (NtReadVirtualMemory(pHandle, ptr, bytes, count, UIntPtr.Zero) < NtStatus.Error) return true;
 #endif
             return false;
         }
@@ -127,7 +126,7 @@ namespace ForgeLib {
 
         public UIntPtr ReadPointer(UIntPtr ptr) => (UIntPtr)ReadLong(ptr);
 
-        public string ReadString(UIntPtr ptr, int length = 32, bool zeroTerminated = true) {
+        public string ReadString(UIntPtr ptr, uint length = 32, bool zeroTerminated = true) {
             byte[] array = new byte[length];
             if (TryReadBytes(ptr, array, length))
                 return zeroTerminated ? Encoding.UTF8.GetString(array).Split('\0')[0] : Encoding.UTF8.GetString(array);
@@ -153,7 +152,7 @@ namespace ForgeLib {
 
 
         public unsafe bool TryReadStruct<T>(UIntPtr source, T* destination) where T : unmanaged {
-            return TryReadBytes(source, destination, Marshal.SizeOf(typeof(T)));
+            return TryReadBytes(source, destination, (uint)Marshal.SizeOf(typeof(T)));
         }
 
         public unsafe bool TryWriteStruct<T>(UIntPtr destination, T* source) where T : unmanaged {
@@ -172,6 +171,7 @@ namespace ForgeLib {
         [DllImport("kernel32.dll")]
         public static extern int CloseHandle(IntPtr hObject);
 
+#if KERNEL32
         [DllImport("kernel32.dll")]
         static extern bool ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, [Out] byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
         [DllImport("kernel32.dll")]
@@ -181,8 +181,9 @@ namespace ForgeLib {
         static extern bool WriteProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesWritten);
         [DllImport("kernel32.dll")]
         static extern unsafe bool WriteProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, void* lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesWritten);
+#endif
 
-
+#if NTDLL
         [DllImport("ntdll.dll", SetLastError = true)]
         static extern NtStatus NtWriteVirtualMemory(IntPtr hProcess, UIntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, UIntPtr lpNumberOfBytesWritten);//ref uint
         [DllImport("ntdll.dll", SetLastError = true)]
@@ -537,5 +538,64 @@ namespace ForgeLib {
         #endregion
 
         static bool IsNtStatusSucess(NtStatus status) => status < NtStatus.Error;
+#endif
+
+
+        public struct BytePair {
+            public byte match;
+            public byte mask;
+
+            public override string ToString() => mask == 1 ? match.ToString("X2") : "??";
+        }
+
+        public struct AOB {
+            public BytePair[] pairs;
+
+            public AOB(string AOB) {
+                int byte_count = (AOB.Length + 1) / 3; // TODO: error check size?
+                pairs = new BytePair[byte_count];
+
+                for (int i = 0, i_pair = 0; i < AOB.Length; i += 3, i_pair++) {
+                    string by_str = AOB.Substring(i, 2);
+
+                    if (by_str == "??")
+                        pairs[i_pair] = new BytePair { match = 0, mask = 0 };
+                    else {
+                        byte by = byte.Parse(by_str, System.Globalization.NumberStyles.HexNumber);
+                        pairs[i_pair] = new BytePair { match = by, mask = 1 };
+                    }
+                }
+            }
+        }
+
+        //public bool FindArrayOfBytes(AOB AOB, UIntPtr start_address, UIntPtr end_address)
+        public bool FindArrayOfBytes(AOB AOB, UIntPtr start_address, uint count, /*out UIntPtr address,*/ out byte[] bytes, out int i_bytes) {
+            bytes = new byte[count]; // TODO: will this stay in cache?
+            if (TryReadBytes(start_address, bytes, count)) {
+                BytePair[] pairs = AOB.pairs;
+
+                for (i_bytes = 0; i_bytes < count; i_bytes++) {
+                    for (uint i_aob = 0; i_aob < pairs.Length; i_aob++) {
+                        BytePair pair = pairs[i_aob];
+                        if (pair.mask == 0) continue;
+
+                        byte by = bytes[i_bytes + i_aob];
+
+                        if (pair.match == by) continue;
+                        else goto StartAtNextByte;
+                    }
+
+                    //address = start_address + (int)i_bytes;
+                    return true;
+
+                StartAtNextByte:
+                    int _ = 0;
+                }
+            }
+
+            //address = UIntPtr.Zero;
+            i_bytes = 0;
+            return false;
+        }
     }
 }
