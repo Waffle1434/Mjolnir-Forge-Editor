@@ -941,7 +941,9 @@ def tryGetLatestRelease():
         if (vMjolnir != latestVersion): webbrowser.open(url)
 
 def register():
-    for cls in reg_classes: bpy.utils.register_class(cls)
+    for cls in reg_classes:
+        try: bpy.utils.register_class(cls)
+        except Exception as e: print(e)
     for item in reg_objMenus: registerDrawEvent(bpy.types.VIEW3D_MT_object_context_menu, item)
     for item in reg_addMenus: registerDrawEvent(bpy.types.VIEW3D_MT_add, item)
     registerDrawEvent(bpy.types.TOPBAR_MT_file_import, importForgeMenu)
