@@ -32,7 +32,7 @@ namespace ForgeLib {
 
             void IncrementKey() => key = (key + (1 << 8)) & 0xFF00;
 
-            public void AddNext(string name) {
+            public void AddItem(string name) {
                 base[key] = name;
                 IncrementKey();
             }
@@ -50,41 +50,41 @@ namespace ForgeLib {
         static ItemParser() {
             #region Universal
             #region Weapons Human
-            universalTypes.AddNext("Assault Rifle");
-            universalTypes.AddNext("DMR");
-            universalTypes.AddNext("Grenade Launcher");
-            universalTypes.AddNext("Magnum");
-            universalTypes.AddNext("Rocket Launcher");
-            universalTypes.AddNext("Shotgun");
-            universalTypes.AddNext("Sniper Rifle");
-            universalTypes.AddNext("Spartan Laser");
-            universalTypes.AddNext("Frag Grenade");
-            universalTypes.AddNext("Mounted Machinegun");
+            universalTypes.AddItem("Assault Rifle");
+            universalTypes.AddItem("DMR");
+            universalTypes.AddItem("Grenade Launcher");
+            universalTypes.AddItem("Magnum");
+            universalTypes.AddItem("Rocket Launcher");
+            universalTypes.AddItem("Shotgun");
+            universalTypes.AddItem("Sniper Rifle");
+            universalTypes.AddItem("Spartan Laser");
+            universalTypes.AddItem("Frag Grenade");
+            universalTypes.AddItem("Mounted Machinegun");
             #endregion
             #region Weapons Covenant
-            universalTypes.AddNext("Concussion Rifle");
-            universalTypes.AddNext("Energy Sword");
-            universalTypes.AddNext("Fuel Rod Gun");
-            universalTypes.AddNext("Gravity Hammer");
-            universalTypes.AddNext("Focus Rifle");
-            universalTypes.AddNext("Needle Rifle");
-            universalTypes.AddNext("Needler");
-            universalTypes.AddNext("Plasma Launcher");
-            universalTypes.AddNext("Plasma Pistol");
-            universalTypes.AddNext("Plasma Repeater");
-            universalTypes.AddNext("Plasma Rifle");
-            universalTypes.AddNext("Spiker");
-            universalTypes.AddNext("Plasma Grenade");
-            universalTypes.AddNext("Plasma Turret");
+            universalTypes.AddItem("Concussion Rifle");
+            universalTypes.AddItem("Energy Sword");
+            universalTypes.AddItem("Fuel Rod Gun");
+            universalTypes.AddItem("Gravity Hammer");
+            universalTypes.AddItem("Focus Rifle");
+            universalTypes.AddItem("Needle Rifle");
+            universalTypes.AddItem("Needler");
+            universalTypes.AddItem("Plasma Launcher");
+            universalTypes.AddItem("Plasma Pistol");
+            universalTypes.AddItem("Plasma Repeater");
+            universalTypes.AddItem("Plasma Rifle");
+            universalTypes.AddItem("Spiker");
+            universalTypes.AddItem("Plasma Grenade");
+            universalTypes.AddItem("Plasma Turret");
             #endregion
             #region Armor Abilities
-            universalTypes.AddNext("Active Camouflage");
-            universalTypes.AddNext("Armor Lock");
-            universalTypes.AddNext("Drop Shield");
-            universalTypes.AddNext("Evade");
-            universalTypes.AddNext("Hologram");
-            universalTypes.AddNext("Jet Pack");
-            universalTypes.AddNext("Sprint");
+            universalTypes.AddItem("Active Camouflage");
+            universalTypes.AddItem("Armor Lock");
+            universalTypes.AddItem("Drop Shield");
+            universalTypes.AddItem("Evade");
+            universalTypes.AddItem("Hologram");
+            universalTypes.AddItem("Jet Pack");
+            universalTypes.AddItem("Sprint");
             #endregion
             #endregion
 
@@ -92,19 +92,19 @@ namespace ForgeLib {
             MapPalette forgeWorld = new MapPalette(universalTypes.key);
             maps[Map.Forge_World] = forgeWorld;
             #region Vehicles
-            forgeWorld.AddNext("Banshee");
-            forgeWorld.AddNext("Falcon");
-            forgeWorld.AddNext("Ghost");
-            forgeWorld.AddNext("Mongoose");
-            forgeWorld.AddNext("Revenant");
-            forgeWorld.AddNext("Scorpion");
-            forgeWorld.AddNext("Shade Turret");
+            forgeWorld.AddItem("Banshee");
+            forgeWorld.AddItem("Falcon");
+            forgeWorld.AddItem("Ghost");
+            forgeWorld.AddItem("Mongoose");
+            forgeWorld.AddItem("Revenant");
+            forgeWorld.AddItem("Scorpion");
+            forgeWorld.AddItem("Shade Turret");
             forgeWorld.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            forgeWorld.AddNext("Wraith");
+            forgeWorld.AddItem("Wraith");
             #endregion
             #region Gadgets
             forgeWorld.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            forgeWorld.AddNext("Health Station");
+            forgeWorld.AddItem("Health Station");
             forgeWorld.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             forgeWorld.AddSubcategory(
                 "Cannon, Man",
@@ -112,9 +112,9 @@ namespace ForgeLib {
                 "Cannon, Man, Light",
                 "Cannon, Vehicle",
                 "Gravity Lift");
-            forgeWorld.AddNext("One Way Shield 2");
-            forgeWorld.AddNext("One Way Shield 3");
-            forgeWorld.AddNext("One Way Shield 4");
+            forgeWorld.AddItem("One Way Shield 2");
+            forgeWorld.AddItem("One Way Shield 3");
+            forgeWorld.AddItem("One Way Shield 4");
             forgeWorld.AddSubcategory(
                 "FX:Colorblind",
                 "FX:Next Gen",
@@ -125,9 +125,9 @@ namespace ForgeLib {
                 "FX:Purple",
                 "FX:Green",
                 "FX:Orange");
-            forgeWorld.AddNext("Shield Door, Small");
-            forgeWorld.AddNext("Shield Door, Medium");
-            forgeWorld.AddNext("Shield Door, Large");
+            forgeWorld.AddItem("Shield Door, Small");
+            forgeWorld.AddItem("Shield Door, Medium");
+            forgeWorld.AddItem("Shield Door, Large");
             forgeWorld.AddSubcategory("Receiver Node", "Sender Node", "Two-Way Node");
             forgeWorld.AddSubcategory("Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
             forgeWorld.AddSubcategory(
@@ -142,19 +142,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            forgeWorld.AddNext("Initial Spawn");
-            forgeWorld.AddNext("Respawn Point");
-            forgeWorld.AddNext("Initial Loadout Camera");
-            forgeWorld.AddNext("Respawn Zone");
-            forgeWorld.AddNext("Respawn Zone, Weak");
-            forgeWorld.AddNext("Respawn Zone, Anti");
+            forgeWorld.AddItem("Initial Spawn");
+            forgeWorld.AddItem("Respawn Point");
+            forgeWorld.AddItem("Initial Loadout Camera");
+            forgeWorld.AddItem("Respawn Zone");
+            forgeWorld.AddItem("Respawn Zone, Weak");
+            forgeWorld.AddItem("Respawn Zone, Anti");
             forgeWorld.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             forgeWorld.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            forgeWorld.AddNext("Flag Stand");
-            forgeWorld.AddNext("Capture Plate");
-            forgeWorld.AddNext("Hill Marker");
+            forgeWorld.AddItem("Flag Stand");
+            forgeWorld.AddItem("Capture Plate");
+            forgeWorld.AddItem("Hill Marker");
             #endregion
             #region Scenery
             forgeWorld.AddSubcategory(
@@ -162,7 +162,7 @@ namespace ForgeLib {
                 "Barricade, Large",
                 "Covenant Barrier",
                 "Portable Shield");
-            forgeWorld.AddNext("Camping Stool");
+            forgeWorld.AddItem("Camping Stool");
             forgeWorld.AddSubcategory(
                 "Crate, Heavy Duty",
                 "Crate, Heavy, Small",
@@ -174,7 +174,7 @@ namespace ForgeLib {
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            forgeWorld.AddNext("Street Cone");
+            forgeWorld.AddItem("Street Cone");
             #endregion
             #region Structure
             #region Building Blocks
@@ -307,32 +307,32 @@ namespace ForgeLib {
                 "Rock, Seastack",
                 "Rock, Arch");
             #endregion
-            forgeWorld.AddNext("Grid");
+            forgeWorld.AddItem("Grid");
             #endregion
             #region Hidden Structure Blocks
-            forgeWorld.AddNext("Block, 2x2, Invisible");
-            forgeWorld.AddNext("Block, 1x1, Invisible");
-            forgeWorld.AddNext("Block, 2x2x2, Invisible");
-            forgeWorld.AddNext("Block, 4x4x2, Invisible");
-            forgeWorld.AddNext("Block, 4x4x4, Invisible");
-            forgeWorld.AddNext("Block, 2x1, Flat, Invisible");
-            forgeWorld.AddNext("Block, 1x1, Flat, Invisible");
-            forgeWorld.AddNext("Block, 1x1, Small, Invisible");
-            forgeWorld.AddNext("Block, 2x2, Flat, Invisible");
-            forgeWorld.AddNext("Block, 4x2, Flat, Invisible");
-            forgeWorld.AddNext("Block, 4x4, Flat, Invisible");
+            forgeWorld.AddItem("Block, 2x2, Invisible");
+            forgeWorld.AddItem("Block, 1x1, Invisible");
+            forgeWorld.AddItem("Block, 2x2x2, Invisible");
+            forgeWorld.AddItem("Block, 4x4x2, Invisible");
+            forgeWorld.AddItem("Block, 4x4x4, Invisible");
+            forgeWorld.AddItem("Block, 2x1, Flat, Invisible");
+            forgeWorld.AddItem("Block, 1x1, Flat, Invisible");
+            forgeWorld.AddItem("Block, 1x1, Small, Invisible");
+            forgeWorld.AddItem("Block, 2x2, Flat, Invisible");
+            forgeWorld.AddItem("Block, 4x2, Flat, Invisible");
+            forgeWorld.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
             #region Vehicles (MCC)
             forgeWorld.AddSubcategory("Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
-            forgeWorld.AddNext("Warthog, Transport");
-            forgeWorld.AddNext("Sabre");
-            forgeWorld.AddNext("Seraph");
-            forgeWorld.AddNext("Cart, Electric");
-            forgeWorld.AddNext("Forklift");
-            forgeWorld.AddNext("Pickup");
-            forgeWorld.AddNext("Truck Cab");
-            forgeWorld.AddNext("Van, Oni");
-            forgeWorld.AddNext("Shade, Fuel Rod");
+            forgeWorld.AddItem("Warthog, Transport");
+            forgeWorld.AddItem("Sabre");
+            forgeWorld.AddItem("Seraph");
+            forgeWorld.AddItem("Cart, Electric");
+            forgeWorld.AddItem("Forklift");
+            forgeWorld.AddItem("Pickup");
+            forgeWorld.AddItem("Truck Cab");
+            forgeWorld.AddItem("Van, Oni");
+            forgeWorld.AddItem("Shade, Fuel Rod");
             #endregion
             #region Gadgets (MCC)
             forgeWorld.AddSubcategory(
@@ -342,22 +342,22 @@ namespace ForgeLib {
                 "Gravity Lift, Forerunner",
                 "Gravity Lift, Tall, Forerunner",
                 "Cannon, Man, Human");
-            forgeWorld.AddNext("One Way Shield 1");
-            forgeWorld.AddNext("One Way Shield 5");
-            forgeWorld.AddNext("Shield Wall, Small");
-            forgeWorld.AddNext("Shield Wall, Medium");
-            forgeWorld.AddNext("Shield Wall, Large");
-            forgeWorld.AddNext("Shield Wall, X-Large");
-            forgeWorld.AddNext("One Way Shield 2");
-            forgeWorld.AddNext("One Way Shield 3");
-            forgeWorld.AddNext("One Way Shield 4");
-            forgeWorld.AddNext("Shield Door, Small");
-            forgeWorld.AddNext("Shield Door, Small 1");
-            forgeWorld.AddNext("Shield Door, Large");
-            forgeWorld.AddNext("Shield Door, Large 1");
-            forgeWorld.AddNext("Ammo Cabinet");
-            forgeWorld.AddNext("Spnkr Ammo");
-            forgeWorld.AddNext("Sniper Ammo");
+            forgeWorld.AddItem("One Way Shield 1");
+            forgeWorld.AddItem("One Way Shield 5");
+            forgeWorld.AddItem("Shield Wall, Small");
+            forgeWorld.AddItem("Shield Wall, Medium");
+            forgeWorld.AddItem("Shield Wall, Large");
+            forgeWorld.AddItem("Shield Wall, X-Large");
+            forgeWorld.AddItem("One Way Shield 2");
+            forgeWorld.AddItem("One Way Shield 3");
+            forgeWorld.AddItem("One Way Shield 4");
+            forgeWorld.AddItem("Shield Door, Small");
+            forgeWorld.AddItem("Shield Door, Small 1");
+            forgeWorld.AddItem("Shield Door, Large");
+            forgeWorld.AddItem("Shield Door, Large 1");
+            forgeWorld.AddItem("Ammo Cabinet");
+            forgeWorld.AddItem("Spnkr Ammo");
+            forgeWorld.AddItem("Sniper Ammo");
             #endregion
             #region Scenery (MCC)
             forgeWorld.AddSubcategory("Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
@@ -372,17 +372,17 @@ namespace ForgeLib {
             forgeWorld.AddSubcategory("Driftwood 1", "Driftwood 2", "Driftwood 3");
             forgeWorld.AddSubcategory("Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
             forgeWorld.AddSubcategory("Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
-            forgeWorld.AddNext("Folding Chair");
-            forgeWorld.AddNext("Dumpster");
-            forgeWorld.AddNext("Dumpster, Tall");
-            forgeWorld.AddNext("Equipment Case");
-            forgeWorld.AddNext("Monitor");
-            forgeWorld.AddNext("Plasma Storage");
-            forgeWorld.AddNext("Camping Stool, Covenant");
-            forgeWorld.AddNext("Covenant Antenna");
-            forgeWorld.AddNext("Fuel Storage");
-            forgeWorld.AddNext("Engine Cart");
-            forgeWorld.AddNext("Missile Cart");
+            forgeWorld.AddItem("Folding Chair");
+            forgeWorld.AddItem("Dumpster");
+            forgeWorld.AddItem("Dumpster, Tall");
+            forgeWorld.AddItem("Equipment Case");
+            forgeWorld.AddItem("Monitor");
+            forgeWorld.AddItem("Plasma Storage");
+            forgeWorld.AddItem("Camping Stool, Covenant");
+            forgeWorld.AddItem("Covenant Antenna");
+            forgeWorld.AddItem("Fuel Storage");
+            forgeWorld.AddItem("Engine Cart");
+            forgeWorld.AddItem("Missile Cart");
             #endregion
             #region Structure (MCC)
             forgeWorld.AddSubcategory(
@@ -424,35 +424,35 @@ namespace ForgeLib {
             forgeWorld.AddSubcategory("Rock, Spire 3", "Tree, Dead");
             #endregion
             #region Hidden Misc
-            forgeWorld.AddNext("Generator");
-            forgeWorld.AddNext("Vending Machine");
-            forgeWorld.AddNext("Dinghy");
+            forgeWorld.AddItem("Generator");
+            forgeWorld.AddItem("Vending Machine");
+            forgeWorld.AddItem("Dinghy");
             #endregion
-            forgeWorld.AddNext("Target Designator");// Other (MCC)
-            forgeWorld.AddNext("Pelican, Hovering");
-            forgeWorld.AddNext("Phantom, Hovering");
+            forgeWorld.AddItem("Target Designator");// Other (MCC)
+            forgeWorld.AddItem("Pelican, Hovering");
+            forgeWorld.AddItem("Phantom, Hovering");
             #endregion
 
             #region Creep World
             MapPalette creepWorld = new MapPalette(universalTypes.key);
             maps[Map.Creep_Forge_World] = creepWorld;
             #region Vehicles
-            creepWorld.AddNext("Banshee");
+            creepWorld.AddItem("Banshee");
             //creepWorld.AddNext("Falcon");
             creepWorld.AddSubcategory("Falcon", "Falcon, Coaxial Gun / GL", "Falcon, MG", "Falcon, Rockets", "Falcon, Coaxial MG / GL", "Falcon, Cannon");
-            creepWorld.AddNext("Ghost");
-            creepWorld.AddNext("Mongoose");
-            creepWorld.AddNext("Revenant");
+            creepWorld.AddItem("Ghost");
+            creepWorld.AddItem("Mongoose");
+            creepWorld.AddItem("Revenant");
             //creepWorld.AddNext("Scorpion");
             creepWorld.AddSubcategory("Scorpion", "Scorpion, Rockets");
-            creepWorld.AddNext("Shade Turret");
+            creepWorld.AddItem("Shade Turret");
             creepWorld.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            creepWorld.AddNext("Wraith");
+            creepWorld.AddItem("Wraith");
             creepWorld.AddSubcategory("Pickup, Rockets", "Truck, Tank Turret");
             #endregion
             #region Gadgets
             creepWorld.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            creepWorld.AddNext("Health Station");
+            creepWorld.AddItem("Health Station");
             creepWorld.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             creepWorld.AddSubcategory(
                 "Cannon, Man",
@@ -460,9 +460,9 @@ namespace ForgeLib {
                 "Cannon, Man, Light",
                 "Cannon, Vehicle",
                 "Gravity Lift");
-            creepWorld.AddNext("One Way Shield 2");
-            creepWorld.AddNext("One Way Shield 3");
-            creepWorld.AddNext("One Way Shield 4");
+            creepWorld.AddItem("One Way Shield 2");
+            creepWorld.AddItem("One Way Shield 3");
+            creepWorld.AddItem("One Way Shield 4");
             creepWorld.AddSubcategory(
                 "FX:Colorblind",
                 "FX:Next Gen",
@@ -473,9 +473,9 @@ namespace ForgeLib {
                 "FX:Purple",
                 "FX:Green",
                 "FX:Orange");
-            creepWorld.AddNext("Shield Door, Small");
-            creepWorld.AddNext("Shield Door, Medium");
-            creepWorld.AddNext("Shield Door, Large");
+            creepWorld.AddItem("Shield Door, Small");
+            creepWorld.AddItem("Shield Door, Medium");
+            creepWorld.AddItem("Shield Door, Large");
             creepWorld.AddSubcategory("Receiver Node", "Sender Node", "Two-Way Node");
             creepWorld.AddSubcategory("Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
             creepWorld.AddSubcategory(
@@ -490,19 +490,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            creepWorld.AddNext("Initial Spawn");
-            creepWorld.AddNext("Respawn Point");
-            creepWorld.AddNext("Initial Loadout Camera");
-            creepWorld.AddNext("Respawn Zone");
-            creepWorld.AddNext("Respawn Zone, Weak");
-            creepWorld.AddNext("Respawn Zone, Anti");
+            creepWorld.AddItem("Initial Spawn");
+            creepWorld.AddItem("Respawn Point");
+            creepWorld.AddItem("Initial Loadout Camera");
+            creepWorld.AddItem("Respawn Zone");
+            creepWorld.AddItem("Respawn Zone, Weak");
+            creepWorld.AddItem("Respawn Zone, Anti");
             creepWorld.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             creepWorld.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            creepWorld.AddNext("Flag Stand");
-            creepWorld.AddNext("Capture Plate");
-            creepWorld.AddNext("Hill Marker");
+            creepWorld.AddItem("Flag Stand");
+            creepWorld.AddItem("Capture Plate");
+            creepWorld.AddItem("Hill Marker");
             #endregion
             #region Scenery
             creepWorld.AddSubcategory(
@@ -510,7 +510,7 @@ namespace ForgeLib {
                 "Barricade, Large",
                 "Covenant Barrier",
                 "Portable Shield");
-            creepWorld.AddNext("Camping Stool");
+            creepWorld.AddItem("Camping Stool");
             creepWorld.AddSubcategory(
                 "Crate, Heavy Duty",
                 "Crate, Heavy, Small",
@@ -522,7 +522,7 @@ namespace ForgeLib {
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            creepWorld.AddNext("Street Cone");
+            creepWorld.AddItem("Street Cone");
             #endregion
             #region Structure
             #region Building Blocks
@@ -655,32 +655,32 @@ namespace ForgeLib {
                 "Rock, Seastack",
                 "Rock, Arch");
             #endregion
-            creepWorld.AddNext("Grid");
+            creepWorld.AddItem("Grid");
             #endregion
             #region Hidden Structure Blocks
-            creepWorld.AddNext("Block, 2x2, Invisible");
-            creepWorld.AddNext("Block, 1x1, Invisible");
-            creepWorld.AddNext("Block, 2x2x2, Invisible");
-            creepWorld.AddNext("Block, 4x4x2, Invisible");
-            creepWorld.AddNext("Block, 4x4x4, Invisible");
-            creepWorld.AddNext("Block, 2x1, Flat, Invisible");
-            creepWorld.AddNext("Block, 1x1, Flat, Invisible");
-            creepWorld.AddNext("Block, 1x1, Small, Invisible");
-            creepWorld.AddNext("Block, 2x2, Flat, Invisible");
-            creepWorld.AddNext("Block, 4x2, Flat, Invisible");
-            creepWorld.AddNext("Block, 4x4, Flat, Invisible");
+            creepWorld.AddItem("Block, 2x2, Invisible");
+            creepWorld.AddItem("Block, 1x1, Invisible");
+            creepWorld.AddItem("Block, 2x2x2, Invisible");
+            creepWorld.AddItem("Block, 4x4x2, Invisible");
+            creepWorld.AddItem("Block, 4x4x4, Invisible");
+            creepWorld.AddItem("Block, 2x1, Flat, Invisible");
+            creepWorld.AddItem("Block, 1x1, Flat, Invisible");
+            creepWorld.AddItem("Block, 1x1, Small, Invisible");
+            creepWorld.AddItem("Block, 2x2, Flat, Invisible");
+            creepWorld.AddItem("Block, 4x2, Flat, Invisible");
+            creepWorld.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
             #region Vehicles (MCC)
             creepWorld.AddSubcategory("Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
-            creepWorld.AddNext("Warthog, Transport");
-            creepWorld.AddNext("Sabre");
-            creepWorld.AddNext("Seraph");
-            creepWorld.AddNext("Cart, Electric");
-            creepWorld.AddNext("Forklift");
-            creepWorld.AddNext("Pickup");
-            creepWorld.AddNext("Truck Cab");
-            creepWorld.AddNext("Van, Oni");
-            creepWorld.AddNext("Shade, Fuel Rod");
+            creepWorld.AddItem("Warthog, Transport");
+            creepWorld.AddItem("Sabre");
+            creepWorld.AddItem("Seraph");
+            creepWorld.AddItem("Cart, Electric");
+            creepWorld.AddItem("Forklift");
+            creepWorld.AddItem("Pickup");
+            creepWorld.AddItem("Truck Cab");
+            creepWorld.AddItem("Van, Oni");
+            creepWorld.AddItem("Shade, Fuel Rod");
             #endregion
             #region Gadgets (MCC)
             creepWorld.AddSubcategory(
@@ -690,22 +690,22 @@ namespace ForgeLib {
                 "Gravity Lift, Forerunner",
                 "Gravity Lift, Tall, Forerunner",
                 "Cannon, Man, Human");
-            creepWorld.AddNext("One Way Shield 1");
-            creepWorld.AddNext("One Way Shield 5");
-            creepWorld.AddNext("Shield Wall, Small");
-            creepWorld.AddNext("Shield Wall, Medium");
-            creepWorld.AddNext("Shield Wall, Large");
-            creepWorld.AddNext("Shield Wall, X-Large");
-            creepWorld.AddNext("One Way Shield 2");
-            creepWorld.AddNext("One Way Shield 3");
-            creepWorld.AddNext("One Way Shield 4");
-            creepWorld.AddNext("Shield Door, Small");
-            creepWorld.AddNext("Shield Door, Small 1");
-            creepWorld.AddNext("Shield Door, Large");
-            creepWorld.AddNext("Shield Door, Large 1");
-            creepWorld.AddNext("Ammo Cabinet");
-            creepWorld.AddNext("Spnkr Ammo");
-            creepWorld.AddNext("Sniper Ammo");
+            creepWorld.AddItem("One Way Shield 1");
+            creepWorld.AddItem("One Way Shield 5");
+            creepWorld.AddItem("Shield Wall, Small");
+            creepWorld.AddItem("Shield Wall, Medium");
+            creepWorld.AddItem("Shield Wall, Large");
+            creepWorld.AddItem("Shield Wall, X-Large");
+            creepWorld.AddItem("One Way Shield 2");
+            creepWorld.AddItem("One Way Shield 3");
+            creepWorld.AddItem("One Way Shield 4");
+            creepWorld.AddItem("Shield Door, Small");
+            creepWorld.AddItem("Shield Door, Small 1");
+            creepWorld.AddItem("Shield Door, Large");
+            creepWorld.AddItem("Shield Door, Large 1");
+            creepWorld.AddItem("Ammo Cabinet");
+            creepWorld.AddItem("Spnkr Ammo");
+            creepWorld.AddItem("Sniper Ammo");
             #endregion
             #region Scenery (MCC)
             creepWorld.AddSubcategory("Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
@@ -720,17 +720,17 @@ namespace ForgeLib {
             creepWorld.AddSubcategory("Driftwood 1", "Driftwood 2", "Driftwood 3");
             creepWorld.AddSubcategory("Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
             creepWorld.AddSubcategory("Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
-            creepWorld.AddNext("Folding Chair");
-            creepWorld.AddNext("Dumpster");
-            creepWorld.AddNext("Dumpster, Tall");
-            creepWorld.AddNext("Equipment Case");
-            creepWorld.AddNext("Monitor");
-            creepWorld.AddNext("Plasma Storage");
-            creepWorld.AddNext("Camping Stool, Covenant");
-            creepWorld.AddNext("Covenant Antenna");
-            creepWorld.AddNext("Fuel Storage");
-            creepWorld.AddNext("Engine Cart");
-            creepWorld.AddNext("Missile Cart");
+            creepWorld.AddItem("Folding Chair");
+            creepWorld.AddItem("Dumpster");
+            creepWorld.AddItem("Dumpster, Tall");
+            creepWorld.AddItem("Equipment Case");
+            creepWorld.AddItem("Monitor");
+            creepWorld.AddItem("Plasma Storage");
+            creepWorld.AddItem("Camping Stool, Covenant");
+            creepWorld.AddItem("Covenant Antenna");
+            creepWorld.AddItem("Fuel Storage");
+            creepWorld.AddItem("Engine Cart");
+            creepWorld.AddItem("Missile Cart");
             #endregion
             #region Structure (MCC)
             creepWorld.AddSubcategory(
@@ -772,15 +772,15 @@ namespace ForgeLib {
             creepWorld.AddSubcategory("Rock, Spire 3", "Tree, Dead");
             #endregion
             #region Hidden Misc
-            creepWorld.AddNext("Generator");
-            creepWorld.AddNext("Vending Machine");
-            creepWorld.AddNext("Dinghy");
+            creepWorld.AddItem("Generator");
+            creepWorld.AddItem("Vending Machine");
+            creepWorld.AddItem("Dinghy");
             #endregion
             #region Other (MCC)
-            creepWorld.AddNext("Target Designator");// Other (MCC)
+            creepWorld.AddItem("Target Designator");// Other (MCC)
             //creepWorld.AddNext("Pelican, Hovering");
             //creepWorld.AddNext("Phantom, Hovering");
-            creepWorld.AddNext("Location Name Marker");
+            creepWorld.AddItem("Location Name Marker");
             #endregion
             #endregion
 
@@ -788,22 +788,22 @@ namespace ForgeLib {
             MapPalette creepWorldNight = new MapPalette(universalTypes.key);
             maps[Map.Creep_Forge_World_Night] = creepWorldNight;
             #region Vehicles
-            creepWorldNight.AddNext("Banshee");
+            creepWorldNight.AddItem("Banshee");
             //creepWorldNight.AddNext("Falcon");
             creepWorldNight.AddSubcategory("Falcon", "Falcon, Coaxial Gun / GL", "Falcon, MG", "Falcon, Rockets", "Falcon, Coaxial MG / GL", "Falcon, Cannon");
-            creepWorldNight.AddNext("Ghost");
-            creepWorldNight.AddNext("Mongoose");
-            creepWorldNight.AddNext("Revenant");
+            creepWorldNight.AddItem("Ghost");
+            creepWorldNight.AddItem("Mongoose");
+            creepWorldNight.AddItem("Revenant");
             //creepWorldNight.AddNext("Scorpion");
             creepWorldNight.AddSubcategory("Scorpion", "Scorpion, Rockets");
-            creepWorldNight.AddNext("Shade Turret");
+            creepWorldNight.AddItem("Shade Turret");
             creepWorldNight.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            creepWorldNight.AddNext("Wraith");
+            creepWorldNight.AddItem("Wraith");
             creepWorldNight.AddSubcategory("Pickup, Rockets", "Truck, Tank Turret");
             #endregion
             #region Gadgets
             creepWorldNight.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            creepWorldNight.AddNext("Health Station");
+            creepWorldNight.AddItem("Health Station");
             creepWorldNight.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             creepWorldNight.AddSubcategory(
                 "Cannon, Man",
@@ -811,9 +811,9 @@ namespace ForgeLib {
                 "Cannon, Man, Light",
                 "Cannon, Vehicle",
                 "Gravity Lift");
-            creepWorldNight.AddNext("One Way Shield 2");
-            creepWorldNight.AddNext("One Way Shield 3");
-            creepWorldNight.AddNext("One Way Shield 4");
+            creepWorldNight.AddItem("One Way Shield 2");
+            creepWorldNight.AddItem("One Way Shield 3");
+            creepWorldNight.AddItem("One Way Shield 4");
             creepWorldNight.AddSubcategory(
                 "FX:Colorblind",
                 "FX:Next Gen",
@@ -824,9 +824,9 @@ namespace ForgeLib {
                 "FX:Purple",
                 "FX:Green",
                 "FX:Orange");
-            creepWorldNight.AddNext("Shield Door, Small");
-            creepWorldNight.AddNext("Shield Door, Medium");
-            creepWorldNight.AddNext("Shield Door, Large");
+            creepWorldNight.AddItem("Shield Door, Small");
+            creepWorldNight.AddItem("Shield Door, Medium");
+            creepWorldNight.AddItem("Shield Door, Large");
             creepWorldNight.AddSubcategory("Receiver Node", "Sender Node", "Two-Way Node");
             creepWorldNight.AddSubcategory("Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
             creepWorldNight.AddSubcategory(
@@ -841,19 +841,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            creepWorldNight.AddNext("Initial Spawn");
-            creepWorldNight.AddNext("Respawn Point");
-            creepWorldNight.AddNext("Initial Loadout Camera");
-            creepWorldNight.AddNext("Respawn Zone");
-            creepWorldNight.AddNext("Respawn Zone, Weak");
-            creepWorldNight.AddNext("Respawn Zone, Anti");
+            creepWorldNight.AddItem("Initial Spawn");
+            creepWorldNight.AddItem("Respawn Point");
+            creepWorldNight.AddItem("Initial Loadout Camera");
+            creepWorldNight.AddItem("Respawn Zone");
+            creepWorldNight.AddItem("Respawn Zone, Weak");
+            creepWorldNight.AddItem("Respawn Zone, Anti");
             creepWorldNight.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             creepWorldNight.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            creepWorldNight.AddNext("Flag Stand");
-            creepWorldNight.AddNext("Capture Plate");
-            creepWorldNight.AddNext("Hill Marker");
+            creepWorldNight.AddItem("Flag Stand");
+            creepWorldNight.AddItem("Capture Plate");
+            creepWorldNight.AddItem("Hill Marker");
             #endregion
             #region Scenery
             creepWorldNight.AddSubcategory(
@@ -861,7 +861,7 @@ namespace ForgeLib {
                 "Barricade, Large",
                 "Covenant Barrier",
                 "Portable Shield");
-            creepWorldNight.AddNext("Camping Stool");
+            creepWorldNight.AddItem("Camping Stool");
             creepWorldNight.AddSubcategory(
                 "Crate, Heavy Duty",
                 "Crate, Heavy, Small",
@@ -873,7 +873,7 @@ namespace ForgeLib {
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            creepWorldNight.AddNext("Street Cone");
+            creepWorldNight.AddItem("Street Cone");
             #endregion
             #region Structure
             #region Building Blocks
@@ -1006,32 +1006,32 @@ namespace ForgeLib {
                 "Rock, Seastack",
                 "Rock, Arch");
             #endregion
-            creepWorldNight.AddNext("Grid");
+            creepWorldNight.AddItem("Grid");
             #endregion
             #region Hidden Structure Blocks
-            creepWorldNight.AddNext("Block, 2x2, Invisible");
-            creepWorldNight.AddNext("Block, 1x1, Invisible");
-            creepWorldNight.AddNext("Block, 2x2x2, Invisible");
-            creepWorldNight.AddNext("Block, 4x4x2, Invisible");
-            creepWorldNight.AddNext("Block, 4x4x4, Invisible");
-            creepWorldNight.AddNext("Block, 2x1, Flat, Invisible");
-            creepWorldNight.AddNext("Block, 1x1, Flat, Invisible");
-            creepWorldNight.AddNext("Block, 1x1, Small, Invisible");
-            creepWorldNight.AddNext("Block, 2x2, Flat, Invisible");
-            creepWorldNight.AddNext("Block, 4x2, Flat, Invisible");
-            creepWorldNight.AddNext("Block, 4x4, Flat, Invisible");
+            creepWorldNight.AddItem("Block, 2x2, Invisible");
+            creepWorldNight.AddItem("Block, 1x1, Invisible");
+            creepWorldNight.AddItem("Block, 2x2x2, Invisible");
+            creepWorldNight.AddItem("Block, 4x4x2, Invisible");
+            creepWorldNight.AddItem("Block, 4x4x4, Invisible");
+            creepWorldNight.AddItem("Block, 2x1, Flat, Invisible");
+            creepWorldNight.AddItem("Block, 1x1, Flat, Invisible");
+            creepWorldNight.AddItem("Block, 1x1, Small, Invisible");
+            creepWorldNight.AddItem("Block, 2x2, Flat, Invisible");
+            creepWorldNight.AddItem("Block, 4x2, Flat, Invisible");
+            creepWorldNight.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
             #region Vehicles (MCC)
             creepWorldNight.AddSubcategory("Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
-            creepWorldNight.AddNext("Warthog, Transport");
-            creepWorldNight.AddNext("Sabre");
-            creepWorldNight.AddNext("Seraph");
-            creepWorldNight.AddNext("Cart, Electric");
-            creepWorldNight.AddNext("Forklift");
-            creepWorldNight.AddNext("Pickup");
-            creepWorldNight.AddNext("Truck Cab");
-            creepWorldNight.AddNext("Van, Oni");
-            creepWorldNight.AddNext("Shade, Fuel Rod");
+            creepWorldNight.AddItem("Warthog, Transport");
+            creepWorldNight.AddItem("Sabre");
+            creepWorldNight.AddItem("Seraph");
+            creepWorldNight.AddItem("Cart, Electric");
+            creepWorldNight.AddItem("Forklift");
+            creepWorldNight.AddItem("Pickup");
+            creepWorldNight.AddItem("Truck Cab");
+            creepWorldNight.AddItem("Van, Oni");
+            creepWorldNight.AddItem("Shade, Fuel Rod");
             #endregion
             #region Gadgets (MCC)
             creepWorldNight.AddSubcategory(
@@ -1041,22 +1041,22 @@ namespace ForgeLib {
                 "Gravity Lift, Forerunner",
                 "Gravity Lift, Tall, Forerunner",
                 "Cannon, Man, Human");
-            creepWorldNight.AddNext("One Way Shield 1");
-            creepWorldNight.AddNext("One Way Shield 5");
-            creepWorldNight.AddNext("Shield Wall, Small");
-            creepWorldNight.AddNext("Shield Wall, Medium");
-            creepWorldNight.AddNext("Shield Wall, Large");
-            creepWorldNight.AddNext("Shield Wall, X-Large");
-            creepWorldNight.AddNext("One Way Shield 2");
-            creepWorldNight.AddNext("One Way Shield 3");
-            creepWorldNight.AddNext("One Way Shield 4");
-            creepWorldNight.AddNext("Shield Door, Small");
-            creepWorldNight.AddNext("Shield Door, Small 1");
-            creepWorldNight.AddNext("Shield Door, Large");
-            creepWorldNight.AddNext("Shield Door, Large 1");
-            creepWorldNight.AddNext("Ammo Cabinet");
-            creepWorldNight.AddNext("Spnkr Ammo");
-            creepWorldNight.AddNext("Sniper Ammo");
+            creepWorldNight.AddItem("One Way Shield 1");
+            creepWorldNight.AddItem("One Way Shield 5");
+            creepWorldNight.AddItem("Shield Wall, Small");
+            creepWorldNight.AddItem("Shield Wall, Medium");
+            creepWorldNight.AddItem("Shield Wall, Large");
+            creepWorldNight.AddItem("Shield Wall, X-Large");
+            creepWorldNight.AddItem("One Way Shield 2");
+            creepWorldNight.AddItem("One Way Shield 3");
+            creepWorldNight.AddItem("One Way Shield 4");
+            creepWorldNight.AddItem("Shield Door, Small");
+            creepWorldNight.AddItem("Shield Door, Small 1");
+            creepWorldNight.AddItem("Shield Door, Large");
+            creepWorldNight.AddItem("Shield Door, Large 1");
+            creepWorldNight.AddItem("Ammo Cabinet");
+            creepWorldNight.AddItem("Spnkr Ammo");
+            creepWorldNight.AddItem("Sniper Ammo");
             #endregion
             #region Scenery (MCC)
             creepWorldNight.AddSubcategory("Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
@@ -1071,17 +1071,17 @@ namespace ForgeLib {
             creepWorldNight.AddSubcategory("Driftwood 1", "Driftwood 2", "Driftwood 3");
             creepWorldNight.AddSubcategory("Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
             creepWorldNight.AddSubcategory("Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
-            creepWorldNight.AddNext("Folding Chair");
-            creepWorldNight.AddNext("Dumpster");
-            creepWorldNight.AddNext("Dumpster, Tall");
-            creepWorldNight.AddNext("Equipment Case");
-            creepWorldNight.AddNext("Monitor");
-            creepWorldNight.AddNext("Plasma Storage");
-            creepWorldNight.AddNext("Camping Stool, Covenant");
-            creepWorldNight.AddNext("Covenant Antenna");
-            creepWorldNight.AddNext("Fuel Storage");
-            creepWorldNight.AddNext("Engine Cart");
-            creepWorldNight.AddNext("Missile Cart");
+            creepWorldNight.AddItem("Folding Chair");
+            creepWorldNight.AddItem("Dumpster");
+            creepWorldNight.AddItem("Dumpster, Tall");
+            creepWorldNight.AddItem("Equipment Case");
+            creepWorldNight.AddItem("Monitor");
+            creepWorldNight.AddItem("Plasma Storage");
+            creepWorldNight.AddItem("Camping Stool, Covenant");
+            creepWorldNight.AddItem("Covenant Antenna");
+            creepWorldNight.AddItem("Fuel Storage");
+            creepWorldNight.AddItem("Engine Cart");
+            creepWorldNight.AddItem("Missile Cart");
             #endregion
             #region Structure (MCC)
             creepWorldNight.AddSubcategory(
@@ -1123,15 +1123,15 @@ namespace ForgeLib {
             creepWorldNight.AddSubcategory("Rock, Spire 3", "Tree, Dead");
             #endregion
             #region Hidden Misc
-            creepWorldNight.AddNext("Generator");
-            creepWorldNight.AddNext("Vending Machine");
-            creepWorldNight.AddNext("Dinghy");
+            creepWorldNight.AddItem("Generator");
+            creepWorldNight.AddItem("Vending Machine");
+            creepWorldNight.AddItem("Dinghy");
             #endregion
             #region Other (MCC)
-            creepWorldNight.AddNext("Target Designator");// Other (MCC)
+            creepWorldNight.AddItem("Target Designator");// Other (MCC)
             //creepWorldNight.AddNext("Pelican, Hovering");
             //creepWorldNight.AddNext("Phantom, Hovering");
-            creepWorldNight.AddNext("Location Name Marker");
+            creepWorldNight.AddItem("Location Name Marker");
             #endregion
             #endregion
 
@@ -1139,17 +1139,17 @@ namespace ForgeLib {
             MapPalette tempest = new MapPalette(universalTypes.key);
             maps[Map.Tempest] = tempest;
             #region Vehicles
-            tempest.AddNext("Banshee");
-            tempest.AddNext("Ghost");
-            tempest.AddNext("Mongoose");
+            tempest.AddItem("Banshee");
+            tempest.AddItem("Ghost");
+            tempest.AddItem("Mongoose");
             tempest.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            tempest.AddNext("Wraith");
-            tempest.AddNext("Scorpion");
+            tempest.AddItem("Wraith");
+            tempest.AddItem("Scorpion");
             #endregion
             #region Gadgets
             // exact same as FW?!
             tempest.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            tempest.AddNext("Health Station");
+            tempest.AddItem("Health Station");
             tempest.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             tempest.AddSubcategory(
                 "Cannon, Man, Forerunner",
@@ -1157,9 +1157,9 @@ namespace ForgeLib {
                 "Cannon, Man, Light, Forerunner",
                 "Cannon, Vehicle",
                 "Gravity Lift");
-            tempest.AddNext("One Way Shield 2");
-            tempest.AddNext("One Way Shield 3");
-            tempest.AddNext("One Way Shield 4");
+            tempest.AddItem("One Way Shield 2");
+            tempest.AddItem("One Way Shield 3");
+            tempest.AddItem("One Way Shield 4");
             tempest.AddSubcategory(
                 "FX:Colorblind",
                 "FX:Next Gen",
@@ -1170,9 +1170,9 @@ namespace ForgeLib {
                 "FX:Purple",
                 "FX:Green",
                 "FX:Orange");
-            tempest.AddNext("Shield Door, Small");
-            tempest.AddNext("Shield Door, Medium");
-            tempest.AddNext("Shield Door, Large");
+            tempest.AddItem("Shield Door, Small");
+            tempest.AddItem("Shield Door, Medium");
+            tempest.AddItem("Shield Door, Large");
             tempest.AddSubcategory("Receiver Node", "Sender Node", "Two-Way Node");
             tempest.AddSubcategory("Die", "Golf Ball", "Golf Club", "Kill Ball", "Soccer Ball", "Tin Cup");
             tempest.AddSubcategory(
@@ -1188,20 +1188,20 @@ namespace ForgeLib {
             #endregion
             #region Spawning
             // same as FW
-            tempest.AddNext("Initial Spawn");
-            tempest.AddNext("Respawn Point");
-            tempest.AddNext("Initial Loadout Camera");
-            tempest.AddNext("Respawn Zone");
-            tempest.AddNext("Respawn Zone, Weak");
-            tempest.AddNext("Respawn Zone, Anti");
+            tempest.AddItem("Initial Spawn");
+            tempest.AddItem("Respawn Point");
+            tempest.AddItem("Initial Loadout Camera");
+            tempest.AddItem("Respawn Zone");
+            tempest.AddItem("Respawn Zone, Weak");
+            tempest.AddItem("Respawn Zone, Anti");
             tempest.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             tempest.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
             // same as FW
-            tempest.AddNext("Flag Stand");
-            tempest.AddNext("Capture Plate");
-            tempest.AddNext("Hill Marker");
+            tempest.AddItem("Flag Stand");
+            tempest.AddItem("Capture Plate");
+            tempest.AddItem("Hill Marker");
             #endregion
             #region Scenery
             tempest.AddSubcategory(
@@ -1219,7 +1219,7 @@ namespace ForgeLib {
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            tempest.AddNext("Street Cone");
+            tempest.AddItem("Street Cone");
             tempest.AddSubcategory("Driftwood 1", "Driftwood 2", "Driftwood 3");
             #endregion
             #region Structure
@@ -1360,34 +1360,34 @@ namespace ForgeLib {
                 "Rock, Small 1",
                 "Rock, Spire 3");
             #endregion
-            tempest.AddNext("Grid");
+            tempest.AddItem("Grid");
             #endregion
             #region Hidden Structure Blocks
-            tempest.AddNext("Block, 2x2, Invisible");
-            tempest.AddNext("Block, 1x1, Invisible");
-            tempest.AddNext("Block, 2x2x2, Invisible");
-            tempest.AddNext("Block, 4x4x2, Invisible");
-            tempest.AddNext("Block, 4x4x4, Invisible");
-            tempest.AddNext("Block, 2x1, Flat, Invisible");
-            tempest.AddNext("Block, 1x1, Flat, Invisible");
-            tempest.AddNext("Block, 1x1, Small, Invisible");
-            tempest.AddNext("Block, 2x2, Flat, Invisible");
-            tempest.AddNext("Block, 4x2, Flat, Invisible");
-            tempest.AddNext("Block, 4x4, Flat, Invisible");
-            tempest.AddNext("Destination Delta(?!)");
+            tempest.AddItem("Block, 2x2, Invisible");
+            tempest.AddItem("Block, 1x1, Invisible");
+            tempest.AddItem("Block, 2x2x2, Invisible");
+            tempest.AddItem("Block, 4x4x2, Invisible");
+            tempest.AddItem("Block, 4x4x4, Invisible");
+            tempest.AddItem("Block, 2x1, Flat, Invisible");
+            tempest.AddItem("Block, 1x1, Flat, Invisible");
+            tempest.AddItem("Block, 1x1, Small, Invisible");
+            tempest.AddItem("Block, 2x2, Flat, Invisible");
+            tempest.AddItem("Block, 4x2, Flat, Invisible");
+            tempest.AddItem("Block, 4x4, Flat, Invisible");
+            tempest.AddItem("Destination Delta(?!)");
             #endregion
             #region Vehicles (MCC)
             //FW
             tempest.AddSubcategory("Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
-            tempest.AddNext("Warthog, Transport");
-            tempest.AddNext("Sabre");
-            tempest.AddNext("Seraph");
-            tempest.AddNext("Cart, Electric");
-            tempest.AddNext("Forklift");
-            tempest.AddNext("Pickup");
-            tempest.AddNext("Truck Cab");
-            tempest.AddNext("Van, Oni");
-            tempest.AddNext("Shade, Fuel Rod");
+            tempest.AddItem("Warthog, Transport");
+            tempest.AddItem("Sabre");
+            tempest.AddItem("Seraph");
+            tempest.AddItem("Cart, Electric");
+            tempest.AddItem("Forklift");
+            tempest.AddItem("Pickup");
+            tempest.AddItem("Truck Cab");
+            tempest.AddItem("Van, Oni");
+            tempest.AddItem("Shade, Fuel Rod");
             #endregion
             #region Gadgets (MCC)
             tempest.AddSubcategory(
@@ -1397,22 +1397,22 @@ namespace ForgeLib {
                 "Gravity Lift, Forerunner",
                 "Gravity Lift, Tall, Forerunner",
                 "Cannon, Man, Human");
-            tempest.AddNext("One Way Shield 1");
-            tempest.AddNext("One Way Shield 5");
-            tempest.AddNext("Shield Wall, Small");
-            tempest.AddNext("Shield Wall, Medium");
-            tempest.AddNext("Shield Wall, Large");
-            tempest.AddNext("Shield Wall, X-Large");
-            tempest.AddNext("One Way Shield 2");
-            tempest.AddNext("One Way Shield 3");
-            tempest.AddNext("One Way Shield 4");
-            tempest.AddNext("Shield Door, Small");
-            tempest.AddNext("Shield Door, Small 1");
-            tempest.AddNext("Shield Door, Large");
-            tempest.AddNext("Shield Door, Large 1");
-            tempest.AddNext("Ammo Cabinet");
-            tempest.AddNext("Spnkr Ammo");
-            tempest.AddNext("Sniper Ammo");
+            tempest.AddItem("One Way Shield 1");
+            tempest.AddItem("One Way Shield 5");
+            tempest.AddItem("Shield Wall, Small");
+            tempest.AddItem("Shield Wall, Medium");
+            tempest.AddItem("Shield Wall, Large");
+            tempest.AddItem("Shield Wall, X-Large");
+            tempest.AddItem("One Way Shield 2");
+            tempest.AddItem("One Way Shield 3");
+            tempest.AddItem("One Way Shield 4");
+            tempest.AddItem("Shield Door, Small");
+            tempest.AddItem("Shield Door, Small 1");
+            tempest.AddItem("Shield Door, Large");
+            tempest.AddItem("Shield Door, Large 1");
+            tempest.AddItem("Ammo Cabinet");
+            tempest.AddItem("Spnkr Ammo");
+            tempest.AddItem("Sniper Ammo");
             #endregion
             #region Scenery (MCC)
             tempest.AddSubcategory("Jersey Barrier", "Jersey Barrier, Short", "Heavy Barrier");
@@ -1426,17 +1426,17 @@ namespace ForgeLib {
             tempest.AddSubcategory("Pallet", "Pallet, Large", "Pallet, Metal");
             tempest.AddSubcategory("Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
             tempest.AddSubcategory("Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
-            tempest.AddNext("Folding Chair");
-            tempest.AddNext("Dumpster");
-            tempest.AddNext("Dumpster, Tall");
-            tempest.AddNext("Equipment Case");
-            tempest.AddNext("Monitor");
-            tempest.AddNext("Plasma Storage");
-            tempest.AddNext("Camping Stool, Covenant");
-            tempest.AddNext("Covenant Antenna");
-            tempest.AddNext("Fuel Storage");
-            tempest.AddNext("Engine Cart");
-            tempest.AddNext("Missile Cart");
+            tempest.AddItem("Folding Chair");
+            tempest.AddItem("Dumpster");
+            tempest.AddItem("Dumpster, Tall");
+            tempest.AddItem("Equipment Case");
+            tempest.AddItem("Monitor");
+            tempest.AddItem("Plasma Storage");
+            tempest.AddItem("Camping Stool, Covenant");
+            tempest.AddItem("Covenant Antenna");
+            tempest.AddItem("Fuel Storage");
+            tempest.AddItem("Engine Cart");
+            tempest.AddItem("Missile Cart");
             #endregion
             #region Structure (MCC)
             tempest.AddSubcategory(
@@ -1475,16 +1475,16 @@ namespace ForgeLib {
                 "Door H, Forerunner",
                 "Wall, Small, Forerunner",
                 "Wall, Large, Forerunner");
-            tempest.AddNext("Tree, Dead");
+            tempest.AddItem("Tree, Dead");
             #endregion
             #region Hidden Misc
-            tempest.AddNext("Generator");
-            tempest.AddNext("Vending Machine");
-            tempest.AddNext("Dinghy");
+            tempest.AddItem("Generator");
+            tempest.AddItem("Vending Machine");
+            tempest.AddItem("Dinghy");
             #endregion
-            tempest.AddNext("Target Designator");// Other (MCC)
-            tempest.AddNext("Pelican, Hovering");
-            tempest.AddNext("Phantom, Hovering");
+            tempest.AddItem("Target Designator");// Other (MCC)
+            tempest.AddItem("Pelican, Hovering");
+            tempest.AddItem("Phantom, Hovering");
             #endregion
 
             #region Ridgeline
@@ -1492,7 +1492,7 @@ namespace ForgeLib {
             maps[Map.Ridgeline] = ridgeline;
             #region Gadgets
             ridgeline.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            ridgeline.AddNext("Health Station");
+            ridgeline.AddItem("Health Station");
             ridgeline.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             ridgeline.AddSubcategory(
                 "Cannon, Man",
@@ -1527,19 +1527,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            ridgeline.AddNext("Initial Spawn");
-            ridgeline.AddNext("Respawn Point");
-            ridgeline.AddNext("Initial Loadout Camera");
-            ridgeline.AddNext("Respawn Zone");
-            ridgeline.AddNext("Respawn Zone, Weak");
-            ridgeline.AddNext("Respawn Zone, Anti");
+            ridgeline.AddItem("Initial Spawn");
+            ridgeline.AddItem("Respawn Point");
+            ridgeline.AddItem("Initial Loadout Camera");
+            ridgeline.AddItem("Respawn Zone");
+            ridgeline.AddItem("Respawn Zone, Weak");
+            ridgeline.AddItem("Respawn Zone, Anti");
             ridgeline.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             ridgeline.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            ridgeline.AddNext("Flag Stand");
-            ridgeline.AddNext("Capture Plate");
-            ridgeline.AddNext("Hill Marker");
+            ridgeline.AddItem("Flag Stand");
+            ridgeline.AddItem("Capture Plate");
+            ridgeline.AddItem("Hill Marker");
             #endregion
             #region Scenery
             ridgeline.AddSubcategory(
@@ -1567,15 +1567,15 @@ namespace ForgeLib {
                 "Sandbag Endcap");
             #endregion
             #region Vehicles
-            ridgeline.AddNext("Banshee");
-            ridgeline.AddNext("Falcon");
-            ridgeline.AddNext("Ghost");
-            ridgeline.AddNext("Mongoose");
-            ridgeline.AddNext("Revenant");
-            ridgeline.AddNext("Scorpion");
+            ridgeline.AddItem("Banshee");
+            ridgeline.AddItem("Falcon");
+            ridgeline.AddItem("Ghost");
+            ridgeline.AddItem("Mongoose");
+            ridgeline.AddItem("Revenant");
+            ridgeline.AddItem("Scorpion");
             ridgeline.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            ridgeline.AddNext("Wraith");
-            ridgeline.AddNext("Shade Turret");
+            ridgeline.AddItem("Wraith");
+            ridgeline.AddItem("Shade Turret");
             #endregion
             #region Structure
             #region Building Blocks
@@ -1691,23 +1691,23 @@ namespace ForgeLib {
                 "Rock, Seastack",
                 "Rock, Arch");
             #endregion
-            ridgeline.AddNext("Grid");
-            ridgeline.AddNext("Tree, Dead");
+            ridgeline.AddItem("Grid");
+            ridgeline.AddItem("Tree, Dead");
             #endregion
             #region Hidden Structure Blocks
-            ridgeline.AddNext("Block, 2x2, Invisible");
-            ridgeline.AddNext("Block, 1x1, Invisible");
-            ridgeline.AddNext("Block, 2x2x2, Invisible");
-            ridgeline.AddNext("Block, 4x4x2, Invisible");
-            ridgeline.AddNext("Block, 4x4x4, Invisible");
-            ridgeline.AddNext("Block, 2x1, Flat, Invisible");
-            ridgeline.AddNext("Block, 1x1, Flat, Invisible");
-            ridgeline.AddNext("Block, 1x1, Small, Invisible");
-            ridgeline.AddNext("Block, 2x2, Flat, Invisible");
-            ridgeline.AddNext("Block, 4x2, Flat, Invisible");
-            ridgeline.AddNext("Block, 4x4, Flat, Invisible");
+            ridgeline.AddItem("Block, 2x2, Invisible");
+            ridgeline.AddItem("Block, 1x1, Invisible");
+            ridgeline.AddItem("Block, 2x2x2, Invisible");
+            ridgeline.AddItem("Block, 4x4x2, Invisible");
+            ridgeline.AddItem("Block, 4x4x4, Invisible");
+            ridgeline.AddItem("Block, 2x1, Flat, Invisible");
+            ridgeline.AddItem("Block, 1x1, Flat, Invisible");
+            ridgeline.AddItem("Block, 1x1, Small, Invisible");
+            ridgeline.AddItem("Block, 2x2, Flat, Invisible");
+            ridgeline.AddItem("Block, 4x2, Flat, Invisible");
+            ridgeline.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
-            ridgeline.AddNext("Health Cabinet");
+            ridgeline.AddItem("Health Cabinet");
             #endregion
 
             #region Breakneck
@@ -1716,7 +1716,7 @@ namespace ForgeLib {
 
             #region Gadgets
             breakneck.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            breakneck.AddNext("Health Station");
+            breakneck.AddItem("Health Station");
             breakneck.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             breakneck.AddSubcategory(
                 "Cannon, Man",
@@ -1752,19 +1752,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            breakneck.AddNext("Initial Spawn");
-            breakneck.AddNext("Respawn Point");
-            breakneck.AddNext("Initial Loadout Camera");
-            breakneck.AddNext("Respawn Zone");
-            breakneck.AddNext("Respawn Zone, Weak");
-            breakneck.AddNext("Respawn Zone, Anti");
+            breakneck.AddItem("Initial Spawn");
+            breakneck.AddItem("Respawn Point");
+            breakneck.AddItem("Initial Loadout Camera");
+            breakneck.AddItem("Respawn Zone");
+            breakneck.AddItem("Respawn Zone, Weak");
+            breakneck.AddItem("Respawn Zone, Anti");
             breakneck.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             breakneck.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            breakneck.AddNext("Flag Stand");
-            breakneck.AddNext("Capture Plate");
-            breakneck.AddNext("Hill Marker");
+            breakneck.AddItem("Flag Stand");
+            breakneck.AddItem("Capture Plate");
+            breakneck.AddItem("Hill Marker");
             #endregion
             #region Scenery
             breakneck.AddSubcategory(
@@ -1789,18 +1789,18 @@ namespace ForgeLib {
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            breakneck.AddNext("Street Cone");
+            breakneck.AddItem("Street Cone");
             breakneck.AddSubcategory("Pallet", "Pallet, Large", "Pallet, Metal");
             #endregion
             #region Vehicles
-            breakneck.AddNext("Banshee");
-            breakneck.AddNext("Ghost");
-            breakneck.AddNext("Mongoose");
-            breakneck.AddNext("Revenant");
+            breakneck.AddItem("Banshee");
+            breakneck.AddItem("Ghost");
+            breakneck.AddItem("Mongoose");
+            breakneck.AddItem("Revenant");
             breakneck.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            breakneck.AddNext("Wraith");
-            breakneck.AddNext("Falcon");
-            breakneck.AddNext("Scorpion");
+            breakneck.AddItem("Wraith");
+            breakneck.AddItem("Falcon");
+            breakneck.AddItem("Scorpion");
             #endregion
             #region Structure
             #region Building Blocks
@@ -1867,61 +1867,61 @@ namespace ForgeLib {
                 "Ramp, Bridge, Medium",
                 "Ramp, Bridge, Large");
             #endregion
-            breakneck.AddNext("Grid");
+            breakneck.AddItem("Grid");
             #endregion
             #region Hidden Structure Blocks
-            breakneck.AddNext("Block, 2x2, Invisible");
-            breakneck.AddNext("Block, 1x1, Invisible");
-            breakneck.AddNext("Block, 2x2x2, Invisible");
-            breakneck.AddNext("Block, 4x4x2, Invisible");
-            breakneck.AddNext("Block, 4x4x4, Invisible");
-            breakneck.AddNext("Block, 2x1, Flat, Invisible");
-            breakneck.AddNext("Block, 1x1, Flat, Invisible");
-            breakneck.AddNext("Block, 1x1, Small, Invisible");
-            breakneck.AddNext("Block, 2x2, Flat, Invisible");
-            breakneck.AddNext("Block, 4x2, Flat, Invisible");
-            breakneck.AddNext("Block, 4x4, Flat, Invisible");
+            breakneck.AddItem("Block, 2x2, Invisible");
+            breakneck.AddItem("Block, 1x1, Invisible");
+            breakneck.AddItem("Block, 2x2x2, Invisible");
+            breakneck.AddItem("Block, 4x4x2, Invisible");
+            breakneck.AddItem("Block, 4x4x4, Invisible");
+            breakneck.AddItem("Block, 2x1, Flat, Invisible");
+            breakneck.AddItem("Block, 1x1, Flat, Invisible");
+            breakneck.AddItem("Block, 1x1, Small, Invisible");
+            breakneck.AddItem("Block, 2x2, Flat, Invisible");
+            breakneck.AddItem("Block, 4x2, Flat, Invisible");
+            breakneck.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
-            breakneck.AddNext("Health Cabinet");
+            breakneck.AddItem("Health Cabinet");
             #region Vehicles (MCC)
             breakneck.AddSubcategory("Falcon, Nose Gun", "Falcon, Grenadier", "Falcon, Transport");
-            breakneck.AddNext("Warthog, Transport");
-            breakneck.AddNext("Cart, Electric");
-            breakneck.AddNext("Forklift");
-            breakneck.AddNext("Pickup");
-            breakneck.AddNext("Truck Cab");
-            breakneck.AddNext("Van, Oni");
-            breakneck.AddNext("Shade, Fuel Rod");
+            breakneck.AddItem("Warthog, Transport");
+            breakneck.AddItem("Cart, Electric");
+            breakneck.AddItem("Forklift");
+            breakneck.AddItem("Pickup");
+            breakneck.AddItem("Truck Cab");
+            breakneck.AddItem("Van, Oni");
+            breakneck.AddItem("Shade, Fuel Rod");
             #endregion
             #region Gadgets (MCC)
-            breakneck.AddNext("One Way Shield 1");
-            breakneck.AddNext("One Way Shield 2");
-            breakneck.AddNext("One Way Shield 3");
-            breakneck.AddNext("One Way Shield 4");
-            breakneck.AddNext("One Way Shield 5");
-            breakneck.AddNext("Shield Wall, Small");
-            breakneck.AddNext("Shield Wall, Medium");
-            breakneck.AddNext("Shield Wall, Large");
-            breakneck.AddNext("Shield Wall, X-Large");
-            breakneck.AddNext("Ammo Cabinet");
-            breakneck.AddNext("Spnkr Ammo");
-            breakneck.AddNext("Sniper Ammo");
+            breakneck.AddItem("One Way Shield 1");
+            breakneck.AddItem("One Way Shield 2");
+            breakneck.AddItem("One Way Shield 3");
+            breakneck.AddItem("One Way Shield 4");
+            breakneck.AddItem("One Way Shield 5");
+            breakneck.AddItem("Shield Wall, Small");
+            breakneck.AddItem("Shield Wall, Medium");
+            breakneck.AddItem("Shield Wall, Large");
+            breakneck.AddItem("Shield Wall, X-Large");
+            breakneck.AddItem("Ammo Cabinet");
+            breakneck.AddItem("Spnkr Ammo");
+            breakneck.AddItem("Sniper Ammo");
             #endregion
             #region Scenery (MCC)
-            breakneck.AddNext("Heavy Barrier");
+            breakneck.AddItem("Heavy Barrier");
             breakneck.AddSubcategory("Phantom", "Spirit", "Pelican", "Drop Pod, Elite", "Anti Air Gun");
             breakneck.AddSubcategory("Cargo Truck, Destroyed", "Falcon, Destroyed", "Warthog, Destroyed");
-            breakneck.AddNext("Folding Chair");
-            breakneck.AddNext("Dumpster");
-            breakneck.AddNext("Dumpster, Tall");
-            breakneck.AddNext("Equipment Case");
-            breakneck.AddNext("Monitor");
-            breakneck.AddNext("Plasma Storage");
-            breakneck.AddNext("Camping Stool, Covenant");
-            breakneck.AddNext("Covenant Antenna");
-            breakneck.AddNext("Fuel Storage");
-            breakneck.AddNext("Engine Cart");
-            breakneck.AddNext("Missile Cart");
+            breakneck.AddItem("Folding Chair");
+            breakneck.AddItem("Dumpster");
+            breakneck.AddItem("Dumpster, Tall");
+            breakneck.AddItem("Equipment Case");
+            breakneck.AddItem("Monitor");
+            breakneck.AddItem("Plasma Storage");
+            breakneck.AddItem("Camping Stool, Covenant");
+            breakneck.AddItem("Covenant Antenna");
+            breakneck.AddItem("Fuel Storage");
+            breakneck.AddItem("Engine Cart");
+            breakneck.AddItem("Missile Cart");
             #endregion
             #region Structure (MCC)
             breakneck.AddSubcategory("Wall (MCC)", "Door (MCC)");
@@ -1933,19 +1933,19 @@ namespace ForgeLib {
             maps[Map.Highlands] = highlands;
 
             #region Vehicles
-            highlands.AddNext("Banshee");
-            highlands.AddNext("Falcon");
-            highlands.AddNext("Ghost");
-            highlands.AddNext("Mongoose");
-            highlands.AddNext("Revenant");
-            highlands.AddNext("Scorpion");
-            highlands.AddNext("Shade Turret");
+            highlands.AddItem("Banshee");
+            highlands.AddItem("Falcon");
+            highlands.AddItem("Ghost");
+            highlands.AddItem("Mongoose");
+            highlands.AddItem("Revenant");
+            highlands.AddItem("Scorpion");
+            highlands.AddItem("Shade Turret");
             highlands.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
-            highlands.AddNext("Wraith");
+            highlands.AddItem("Wraith");
             #endregion
             #region Gadgets
             highlands.AddSubcategory("Fusion Coil", "Landmine");
-            highlands.AddNext("Health Station");
+            highlands.AddItem("Health Station");
             highlands.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             highlands.AddSubcategory(
                 "Cannon, Man",
@@ -1958,19 +1958,19 @@ namespace ForgeLib {
             highlands.AddSubcategory("Light, Red", "Light, Blue", "Light, Green", "Light, Orange");
             #endregion
             #region Spawning
-            highlands.AddNext("Initial Spawn");
-            highlands.AddNext("Respawn Point");
-            highlands.AddNext("Initial Loadout Camera");
-            highlands.AddNext("Respawn Zone");
-            highlands.AddNext("Respawn Zone, Weak");
-            highlands.AddNext("Respawn Zone, Anti");
+            highlands.AddItem("Initial Spawn");
+            highlands.AddItem("Respawn Point");
+            highlands.AddItem("Initial Loadout Camera");
+            highlands.AddItem("Respawn Zone");
+            highlands.AddItem("Respawn Zone, Weak");
+            highlands.AddItem("Respawn Zone, Anti");
             highlands.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             highlands.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            highlands.AddNext("Flag Stand");
-            highlands.AddNext("Capture Plate");
-            highlands.AddNext("Hill Marker");
+            highlands.AddItem("Flag Stand");
+            highlands.AddItem("Capture Plate");
+            highlands.AddItem("Hill Marker");
             #endregion
             #region Scenery
             highlands.AddSubcategory(
@@ -1980,8 +1980,8 @@ namespace ForgeLib {
                 "Jersey Barrier, Short",
                 "Covenant Barrier",
                 "Portable Shield");
-            highlands.AddNext("Camping Stool");
-            highlands.AddNext("Folding Chair");
+            highlands.AddItem("Camping Stool");
+            highlands.AddItem("Folding Chair");
             highlands.AddSubcategory(
                 "Crate, Small, Closed",
                 "Crate, Metal, Multi",
@@ -1991,28 +1991,28 @@ namespace ForgeLib {
                 "Covenant Crate",
                 "Crate, Half Open",
                 "Crate, Fully Open");
-            highlands.AddNext("Dumpster, Tall");
+            highlands.AddItem("Dumpster, Tall");
             highlands.AddSubcategory(
                 "Sandbag Wall",
                 "Sandbag Turret Wall",
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            highlands.AddNext("Street Cone");
+            highlands.AddItem("Street Cone");
             highlands.AddSubcategory("Pallet", "Pallet, Large", "Pallet, Metal");
             #endregion
             #region Hidden Structure Blocks
-            highlands.AddNext("Block, 2x2, Invisible");
-            highlands.AddNext("Block, 1x1, Invisible");
-            highlands.AddNext("Block, 2x2x2, Invisible");
-            highlands.AddNext("Block, 4x4x2, Invisible");
-            highlands.AddNext("Block, 4x4x4, Invisible");
-            highlands.AddNext("Block, 2x1, Flat, Invisible");
-            highlands.AddNext("Block, 1x1, Flat, Invisible");
-            highlands.AddNext("Block, 1x1, Small, Invisible");
-            highlands.AddNext("Block, 2x2, Flat, Invisible");
-            highlands.AddNext("Block, 4x2, Flat, Invisible");
-            highlands.AddNext("Block, 4x4, Flat, Invisible");
+            highlands.AddItem("Block, 2x2, Invisible");
+            highlands.AddItem("Block, 1x1, Invisible");
+            highlands.AddItem("Block, 2x2x2, Invisible");
+            highlands.AddItem("Block, 4x4x2, Invisible");
+            highlands.AddItem("Block, 4x4x4, Invisible");
+            highlands.AddItem("Block, 2x1, Flat, Invisible");
+            highlands.AddItem("Block, 1x1, Flat, Invisible");
+            highlands.AddItem("Block, 1x1, Small, Invisible");
+            highlands.AddItem("Block, 2x2, Flat, Invisible");
+            highlands.AddItem("Block, 4x2, Flat, Invisible");
+            highlands.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
             #endregion
 
@@ -2022,7 +2022,7 @@ namespace ForgeLib {
 
             #region Gadgets
             reflection.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            reflection.AddNext("Health Station");
+            reflection.AddItem("Health Station");
             reflection.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             reflection.AddSubcategory(
                 "Cannon, Man",
@@ -2051,19 +2051,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            reflection.AddNext("Initial Spawn");
-            reflection.AddNext("Respawn Point");
-            reflection.AddNext("Initial Loadout Camera");
-            reflection.AddNext("Respawn Zone");
-            reflection.AddNext("Respawn Zone, Weak");
-            reflection.AddNext("Respawn Zone, Anti");
+            reflection.AddItem("Initial Spawn");
+            reflection.AddItem("Respawn Point");
+            reflection.AddItem("Initial Loadout Camera");
+            reflection.AddItem("Respawn Zone");
+            reflection.AddItem("Respawn Zone, Weak");
+            reflection.AddItem("Respawn Zone, Anti");
             reflection.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             reflection.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            reflection.AddNext("Flag Stand");
-            reflection.AddNext("Capture Plate");
-            reflection.AddNext("Hill Marker");
+            reflection.AddItem("Flag Stand");
+            reflection.AddItem("Capture Plate");
+            reflection.AddItem("Hill Marker");
             #endregion
             #region Scenery
             reflection.AddSubcategory(
@@ -2073,8 +2073,8 @@ namespace ForgeLib {
                 "Jersey Barrier, Short",
                 "Covenant Barrier",
                 "Portable Shield");
-            reflection.AddNext("Camping Stool");
-            reflection.AddNext("Folding Chair");
+            reflection.AddItem("Camping Stool");
+            reflection.AddItem("Folding Chair");
             reflection.AddSubcategory(
                 "Crate, Small, Closed",
                 "Crate, Metal, Multi",
@@ -2084,28 +2084,28 @@ namespace ForgeLib {
                 "Covenant Crate",
                 "Crate, Half Open",
                 "Crate, Fully Open");
-            reflection.AddNext("Dumpster, Tall");
+            reflection.AddItem("Dumpster, Tall");
             reflection.AddSubcategory(
                 "Sandbag Wall",
                 "Sandbag Turret Wall",
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            reflection.AddNext("Street Cone");
+            reflection.AddItem("Street Cone");
             reflection.AddSubcategory("Pallet", "Pallet, Large", "Pallet, Metal");
             #endregion
             #region Hidden Structure Blocks
-            reflection.AddNext("Block, 2x2, Invisible");
-            reflection.AddNext("Block, 1x1, Invisible");
-            reflection.AddNext("Block, 2x2x2, Invisible");
-            reflection.AddNext("Block, 4x4x2, Invisible");
-            reflection.AddNext("Block, 4x4x4, Invisible");
-            reflection.AddNext("Block, 2x1, Flat, Invisible");
-            reflection.AddNext("Block, 1x1, Flat, Invisible");
-            reflection.AddNext("Block, 1x1, Small, Invisible");
-            reflection.AddNext("Block, 2x2, Flat, Invisible");
-            reflection.AddNext("Block, 4x2, Flat, Invisible");
-            reflection.AddNext("Block, 4x4, Flat, Invisible");
+            reflection.AddItem("Block, 2x2, Invisible");
+            reflection.AddItem("Block, 1x1, Invisible");
+            reflection.AddItem("Block, 2x2x2, Invisible");
+            reflection.AddItem("Block, 4x4x2, Invisible");
+            reflection.AddItem("Block, 4x4x4, Invisible");
+            reflection.AddItem("Block, 2x1, Flat, Invisible");
+            reflection.AddItem("Block, 1x1, Flat, Invisible");
+            reflection.AddItem("Block, 1x1, Small, Invisible");
+            reflection.AddItem("Block, 2x2, Flat, Invisible");
+            reflection.AddItem("Block, 4x2, Flat, Invisible");
+            reflection.AddItem("Block, 4x4, Flat, Invisible");
             #endregion
             #endregion
 
@@ -2115,7 +2115,7 @@ namespace ForgeLib {
 
             #region Gadgets
             sword_base.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery", "Propane Tank");
-            sword_base.AddNext("Health Station");
+            sword_base.AddItem("Health Station");
             sword_base.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
             sword_base.AddSubcategory(
                 "Cannon, Man",
@@ -2144,19 +2144,19 @@ namespace ForgeLib {
                 "Light, Yellow, Flashing");
             #endregion
             #region Spawning
-            sword_base.AddNext("Initial Spawn");
-            sword_base.AddNext("Respawn Point");
-            sword_base.AddNext("Initial Loadout Camera");
-            sword_base.AddNext("Respawn Zone");
-            sword_base.AddNext("Respawn Zone, Weak");
-            sword_base.AddNext("Respawn Zone, Anti");
+            sword_base.AddItem("Initial Spawn");
+            sword_base.AddItem("Respawn Point");
+            sword_base.AddItem("Initial Loadout Camera");
+            sword_base.AddItem("Respawn Zone");
+            sword_base.AddItem("Respawn Zone, Weak");
+            sword_base.AddItem("Respawn Zone, Anti");
             sword_base.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
             sword_base.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
             #endregion
             #region Objectives
-            sword_base.AddNext("Flag Stand");
-            sword_base.AddNext("Capture Plate");
-            sword_base.AddNext("Hill Marker");
+            sword_base.AddItem("Flag Stand");
+            sword_base.AddItem("Capture Plate");
+            sword_base.AddItem("Hill Marker");
             #endregion
             #region Scenery
             sword_base.AddSubcategory(
@@ -2166,8 +2166,8 @@ namespace ForgeLib {
                 "Jersey Barrier, Short",
                 "Covenant Barrier",
                 "Portable Shield");
-            sword_base.AddNext("Camping Stool");
-            sword_base.AddNext("Folding Chair");
+            sword_base.AddItem("Camping Stool");
+            sword_base.AddItem("Folding Chair");
             sword_base.AddSubcategory(
                 "Crate, Small, Closed",
                 "Crate, Metal, Multi",
@@ -2183,21 +2183,98 @@ namespace ForgeLib {
                 "Sandbag Corner, 45",
                 "Sandbag Corner, 90",
                 "Sandbag Endcap");
-            sword_base.AddNext("Street Cone");
+            sword_base.AddItem("Street Cone");
             sword_base.AddSubcategory("Pallet", "Pallet, Large", "Pallet, Metal");
             #endregion
             #region Hidden Structure Blocks
-            sword_base.AddNext("Block, 2x2, Invisible");
-            sword_base.AddNext("Block, 1x1, Invisible");
-            sword_base.AddNext("Block, 2x2x2, Invisible");
-            sword_base.AddNext("Block, 4x4x2, Invisible");
-            sword_base.AddNext("Block, 4x4x4, Invisible");
-            sword_base.AddNext("Block, 2x1, Flat, Invisible");
-            sword_base.AddNext("Block, 1x1, Flat, Invisible");
-            sword_base.AddNext("Block, 1x1, Small, Invisible");
-            sword_base.AddNext("Block, 2x2, Flat, Invisible");
-            sword_base.AddNext("Block, 4x2, Flat, Invisible");
-            sword_base.AddNext("Block, 4x4, Flat, Invisible");
+            sword_base.AddItem("Block, 2x2, Invisible");
+            sword_base.AddItem("Block, 1x1, Invisible");
+            sword_base.AddItem("Block, 2x2x2, Invisible");
+            sword_base.AddItem("Block, 4x4x2, Invisible");
+            sword_base.AddItem("Block, 4x4x4, Invisible");
+            sword_base.AddItem("Block, 2x1, Flat, Invisible");
+            sword_base.AddItem("Block, 1x1, Flat, Invisible");
+            sword_base.AddItem("Block, 1x1, Small, Invisible");
+            sword_base.AddItem("Block, 2x2, Flat, Invisible");
+            sword_base.AddItem("Block, 4x2, Flat, Invisible");
+            sword_base.AddItem("Block, 4x4, Flat, Invisible");
+            #endregion
+            #endregion
+
+            #region Spire
+            MapPalette spire = new MapPalette(universalTypes.key);
+            maps[Map.Spire] = spire;
+
+            #region Vehicles
+            spire.AddItem("Banshee");
+            spire.AddItem("Falcon");
+            spire.AddItem("Ghost");
+            spire.AddItem("Mongoose");
+            spire.AddItem("Revenant");
+            spire.AddItem("Scorpion");
+            spire.AddSubcategory("Warthog, Default", "Warthog, Gauss", "Warthog, Rocket");
+            spire.AddItem("Wraith");
+            #endregion
+            #region Gadgets
+            spire.AddSubcategory("Fusion Coil", "Landmine", "Plasma Battery");
+            spire.AddItem("Health Station");
+            spire.AddSubcategory("Camo Powerup", "Overshield", "Custom Powerup");
+            spire.AddSubcategory(
+                "Cannon, Man",
+                "Cannon, Man, Heavy",
+                "Cannon, Man, Light",
+                "Cannon, Vehicle",
+                "Gravity Lift");
+            spire.AddSubcategory("Receiver Node", "Sender Node", "Two-Way Node");
+            spire.AddItem("Golf Club");
+            spire.AddSubcategory("Light, Red", "Light, Blue", "Light, Green", "Light, Orange");
+            #endregion
+            #region Spawning
+            spire.AddItem("Initial Spawn");
+            spire.AddItem("Respawn Point");
+            spire.AddItem("Initial Loadout Camera");
+            spire.AddItem("Respawn Zone");
+            spire.AddItem("Respawn Zone, Weak");
+            spire.AddItem("Respawn Zone, Anti");
+            spire.AddSubcategory("Safe Boundary", "Soft Safe Boundary");
+            spire.AddSubcategory("Kill Boundary", "Soft Kill Boundary");
+            #endregion
+            #region Objectives
+            spire.AddItem("Flag Stand");
+            spire.AddItem("Capture Plate");
+            spire.AddItem("Hill Marker");
+            #endregion
+            #region Scenery
+            spire.AddItem("Ramp, Stunt");
+            spire.AddItem("Covenant Barrier");
+            spire.AddItem("Shield Door, Small");
+            spire.AddItem("Shield Door, Medium");
+            spire.AddItem("Shield Door, Large");
+            spire.AddItem("One Way Shield 2");
+            spire.AddItem("One Way Shield 3");
+            spire.AddItem("One Way Shield 4");
+            spire.AddItem("Shield Wall, Small");
+            spire.AddItem("Shield Wall, Medium");
+            spire.AddItem("Shield Wall, Large");
+            spire.AddItem("Shield Wall, X-Large");
+            #endregion
+            #region Hidden Structure Blocks
+            spire.AddItem("Block, 2x2, Invisible");
+            spire.AddItem("Block, 1x1, Invisible");
+            spire.AddItem("Block, 2x2x2, Invisible");
+            spire.AddItem("Block, 4x4x2, Invisible");
+            spire.AddItem("Block, 4x4x4, Invisible");
+            spire.AddItem("Block, 2x1, Flat, Invisible");
+            spire.AddItem("Block, 1x1, Flat, Invisible");
+            spire.AddItem("Block, 1x1, Small, Invisible");
+            spire.AddItem("Block, 2x2, Flat, Invisible");
+            spire.AddItem("Block, 4x2, Flat, Invisible");
+            spire.AddItem("Block, 4x4, Flat, Invisible");
+            #endregion
+            #region Hidden Structure Blocks
+            spire.AddItem("Spire Cannon, Base");
+            spire.AddItem("Spire Cannon, Cliff");
+            spire.AddItem("Spire Cannon, Gun");
             #endregion
             #endregion
         }
