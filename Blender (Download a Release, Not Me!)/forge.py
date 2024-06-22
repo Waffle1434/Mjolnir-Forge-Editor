@@ -8,7 +8,7 @@ from math import *
 from threading import Thread
 
 check_update = True
-vMjolnir = "0.9.9.0"
+vMjolnir = "0.9.9.1"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
@@ -528,10 +528,13 @@ def initInvGtLabels():
 def recursive_330x(i, scale):
     if i > 0: return recursive_330x(i-1, scale=scale + scale // 33 + scale // 228)
     return scale
-def spawnSeqToScale(spawnSequence, convention='47X'):
-    if spawnSequence == -10: return 0.01
+def spawnSeqToScale(spawnSequence, convention='47X', team = 'NONE'):
+    one_percent_seq = -20 if convention == '330X' else -10
+    if spawnSequence == one_percent_seq: return 0.01
 
     match convention:
+        case '1X':
+            scale = 1
         case '33X':
             scale = 0.1*spawnSequence
             if spawnSequence < -10:
@@ -570,7 +573,10 @@ def spawnSeqToScale(spawnSequence, convention='47X'):
                     if spawnSequence == -20: scale = 1
             
             if spawnSequence < -20 or spawnSequence > 0:
-                scale = recursive_330x(i, scale=100)
+                if team == 'RED': # for cosmic scaling
+                    scale = recursive_330x(i, scale=32732)
+                else:
+                    scale = recursive_330x(i, scale=100)
             
             scale *= 0.01 # Convert Halo Reach 100 based scale to 1 based scale
     return scale
@@ -799,7 +805,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
     def IsScaled(self, blobj): return anvilScaling and blobj.forge.gtLabel == "SCALE"
     def UpdateScale(self, blobj):
         if self.IsScaled(blobj):
-            scale = spawnSeqToScale(blobj.forge.spawnSequence, bpy.context.scene.forge.scaleConvention)
+            scale = spawnSeqToScale(blobj.forge.spawnSequence, bpy.context.scene.forge.scaleConvention, blobj.forge.team)
             blobj.scale = (scale,scale,scale)
         else: blobj.scale = (1,1,1)
     def UpdateSpawnSeq(self, context):
@@ -1268,7 +1274,7 @@ class ForgeSceneProps(bpy.types.PropertyGroup):
     def UpdateScaleConvention(self, context):
         for blobj in context.scene.objects: blobj.forge.UpdateScale(blobj)
     scaleConvention: EnumProperty(name="Scale Convention",description="Gametype object scaling convention, or how to interpret the spawn sequence number.",
-        items=( ('33X', "33X", "Trusty's Old"), ('71X', "71X", "Rabid MidgetMan's"), ('47X', "47X*", "Anvil Editor Default (Trusty's New)"), ('330X', "330X", "Tx Titan Scale. Max scale of 327.34") ), default=2, update=UpdateScaleConvention)
+        items=( ('1X', "1X", "Disable scaling"), ('33X', "33X", "Trusty's Old"), ('71X', "71X", "Rabid MidgetMan's"), ('47X', "47X*", "Anvil Editor Default (Trusty's New)"), ('330X', "330X", "Tx Titan Scale. Max scale of 327.34") ), default=2, update=UpdateScaleConvention)
 class ForgeScenePanel(bpy.types.Panel):
     bl_label = "Forge Scene"
     bl_idname = 'SCENE_PT_forge_scene'
