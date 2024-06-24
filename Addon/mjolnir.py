@@ -1,4 +1,4 @@
-import bpy, os, enum, time, blf, pathlib, textwrap, urllib.request, webbrowser
+import bpy, os, enum, time, blf, pathlib, textwrap, urllib.request, traceback, webbrowser
 from bpy.types import Operator
 from bpy.props import *
 from mathutils import *
@@ -6,6 +6,7 @@ from ctypes import *
 from os.path import exists
 from math import *
 from threading import Thread
+import objects
 
 vMjolnir = "1.0.0"
 print("Mjolnir v" + vMjolnir)
@@ -204,11 +205,12 @@ def importForgeObjects(context, self=None, createCollections=False):
     TryLinkBlendData()
 
     forge.ReadMemory()
-    if forge.GetMapName() == "None":
+    map_name = forge.GetMapName()
+    if map_name == "None":
         print(forge.GetLastError())
     c = forge.GetObjectCount()
     gt_c = forge.GetGtLabelCount()
-    print("Map: %s, %d Objects, %d Gametype Labels"%(forge.GetMapName(), c, gt_c))
+    print("Map: %s, %d Objects, %d Gametype Labels" % (map_name, c, gt_c))
 
     initGtLabels()
     for i in range(0,gt_c):
@@ -220,7 +222,7 @@ def importForgeObjects(context, self=None, createCollections=False):
     for i in range(0,maxObjectCount):
         fobj = forge.GetObjectPtr(i).contents
         if fobj.show == 0: continue
-        itemName = forge.ForgeObject_GetItemName(i)
+        itemName = objects.GetObjectTypeName(map_name, fobj.itemCategory << 8 | fobj.itemVariant) # forge.ForgeObject_GetItemName(i)
 
         if createCollections and itemName not in bpy.data.collections:
             collection = bpy.data.collections.new(itemName)
@@ -252,6 +254,8 @@ def exportForgeObjects(context, self=None):
     t0 = time.time()
     forge.CacheCurrentMap()
     forge.ClearObjectList()
+    map_name = forge.GetMapName()
+
     i = 0
     for inst in bpy.context.evaluated_depsgraph_get().object_instances:
         blobj = tryGetForgeObjectFromInstance(inst)
@@ -260,7 +264,7 @@ def exportForgeObjects(context, self=None):
                 hitLimit = True
                 continue
             fobj = forge.GetObjectPtr(i).contents
-            blobj.forge.ToForgeObject(fobj, blobj, inst)
+            blobj.forge.ToForgeObject(fobj, blobj, map_name, inst)
             forge.AddObject(i)
             i += 1
     
@@ -275,7 +279,8 @@ def executeAndReport(self, context, method):
     try:
         if method(context, self): return {'FINISHED'}
         else: error = True
-    except:
+    except Exception:
+        traceback.print_exc()
         error = True
     finally:
         if error:
@@ -477,14 +482,14 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         self.top = fobj.top
         self.bottom = fobj.bottom
     
-    def ToForgeObject(self, fobj, blobj, inst=None):
+    def ToForgeObject(self, fobj, blobj, map_name, inst=None):
         m = blobj.matrix_world if inst is None else inst.matrix_world
         fobj.forward = float3.fromVector(m.col[1].normalized())
         fobj.up = float3.fromVector(m.col[2].normalized())
         fobj.position = float3.fromVector(m.col[3])
 
         coll = blobj.instance_collection
-        ty = forge.ItemNameToType(coll.name_full) if coll != None else self.objectType
+        ty = objects.GetObjectTypeId(map_name, coll.name_full) if coll != None else self.objectType # TODO: replace
         fobj.itemCategory = ty >> 8
         fobj.itemVariant = ty & 0x00FF
 
