@@ -6,8 +6,6 @@ The currently loaded forge map is imported into Blender, edited, and then export
 ![image](https://user-images.githubusercontent.com/8021358/131237927-73a4cc06-10fc-4464-b3f6-7fe21c5d5c1c.png)
 ![image](https://user-images.githubusercontent.com/8021358/131237982-65f77671-6130-4ad8-9697-92793bd5b101.png)
 
-*Currently only Forge World, Tempest, Ridgeline, Breakneck, & Highlands are supported.*
-
 *Halo: The Master Chief Collection © Microsoft Corporation. Mjolnir Forge Editor was created under Microsoft's ["Game Content Usage Rules"](https://www.xbox.com/en-US/developers/rules) using assets from Halo: Reach, and it is not endorsed by or affiliated with Microsoft.*
 
 # Installation & Setup
@@ -15,6 +13,6 @@ Please follow the [Wiki Guide](https://github.com/Waffle1434/Mjolnir-Forge-Edito
 
 
 # Compilation [Optional]
-1. Open the `ForgeAssistant.sln` file with [Visual Studio](https://visualstudio.microsoft.com/).
+1. Open the `Mjolnir.sln` file with [Visual Studio](https://visualstudio.microsoft.com/).
 2. Hit the "Start" button, or `Debug -> Start With Debugging`.
 3. Install the [Microsoft Build Tools 2015](https://www.microsoft.com/en-us/download/details.aspx?id=48159)
