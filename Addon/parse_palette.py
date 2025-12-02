@@ -87,12 +87,12 @@ def add_map_to_forge_py(forge_py_path, map_name, twowaydict_str):
         last_content = content[dict_start:insert_pos].rstrip()
         if last_content and not last_content.endswith(','):
             # Add comma after the last entry
-            new_entry = f',\n    "{map_name}"       : {twowaydict_str},'
+            new_entry = f',\n    "{map_name}"\t\t\t: {twowaydict_str},'
         else:
-            new_entry = f'\n    "{map_name}"       : {twowaydict_str},'
+            new_entry = f'    "{map_name}"\t\t\t: {twowaydict_str},\n'
         
         # Create the new content
-        new_content = content[:insert_pos] + new_entry + '\n' + content[insert_pos:]
+        new_content = content[:insert_pos] + new_entry + content[insert_pos:]
         
         # Create backup
         backup_path = forge_py_path.with_suffix('.py.backup')
