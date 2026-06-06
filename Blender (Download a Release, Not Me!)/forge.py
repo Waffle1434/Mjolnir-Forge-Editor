@@ -490,9 +490,20 @@ def GetObjectTypeName(map_name, i_type):
 
     return type_to_name.AtoB.get(obj_type, obj_type)
 def GetObjectTypeId(map_name, name):
-    obj_type = type_to_name.BtoA[name]
+    import re
+    # Strip Blender's duplicate suffixes (e.g., "Assault Rifle.001" -> "Assault Rifle")
+    clean_name = re.sub(r'\.\d+$', '', name)
+    obj_type = type_to_name.BtoA.get(clean_name)
+    if not obj_type:
+        raise KeyError(f"Object type '{clean_name}' (from '{name}') is not recognized by the addon.")
     map_dict = map_object_types.get(map_name)
-    return map_dict.BtoA[obj_type]
+    if not map_dict:
+        raise ValueError(f"Map '{map_name}' is not supported or recognized.")
+    obj_id = map_dict.BtoA.get(obj_type)
+    if obj_id is None:
+        raise KeyError(f"Object type '{clean_name}' is not supported on the map '{map_name}'.")
+    return obj_id
+
 
 flagToPhysEnum = {
     ForgeObjectFlags.PhysicsNormal: 'NORMAL',
@@ -523,7 +534,9 @@ def initGtLabels():
     gtIndexToLabel = {65535: 'NO_LABEL'}
     persist_vars['gtIndexToLabel'] = gtIndexToLabel
 def initInvGtLabels():
-    global gtLabelToIndex
+    global gtLabelToIndex, gtIndexToLabel
+    if 'gtIndexToLabel' in persist_vars:
+        gtIndexToLabel = persist_vars['gtIndexToLabel']
     gtLabelToIndex = InverseDict(gtIndexToLabel)
 def recursive_330x(i, scale):
     if i > 0: return recursive_330x(i-1, scale=scale + scale // 33 + scale // 228)
@@ -692,18 +705,21 @@ def exportForgeObjects(context, self=None):
     return True
 
 def executeAndReport(self, context, method):
-    error = False
+    import traceback
     try:
-        if method(context, self): return {'FINISHED'}
-        else: error = True
-    except:
-        error = True
-    finally:
-        if error:
+        if method(context, self):
+            return {'FINISHED'}
+        else:
             msg = forge.GetLastError()
-            print(msg)
+            print("DLL Error: " + msg)
             self.report({'ERROR'}, msg)
             return {'CANCELLED'}
+    except Exception as e:
+        traceback.print_exc()
+        msg = f"Python Error: {str(e)}"
+        print(msg)
+        self.report({'ERROR'}, msg)
+        return {'CANCELLED'}
 
 class ImportForgeObjects(Operator):
     """Attempt to connect to MCC and import current forge objects"""
@@ -910,7 +926,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         fobj.itemVariant = ty & 0x00FF
 
         fobj.cachedType = self.cachedType
-        fobj.gtLabelIndex = gtLabelToIndex[self.gtLabel]
+        fobj.gtLabelIndex = gtLabelToIndex.get(self.gtLabel, 65535)
         fobj.otherInfoA = self.otherInfoA
         fobj.otherInfoB = self.otherInfoB
 
