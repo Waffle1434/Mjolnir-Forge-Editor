@@ -8,7 +8,7 @@ from math import *
 from threading import Thread
 
 check_update = True
-vMjolnir = "0.9.9.1"
+vMjolnir = "0.9.9.2"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
@@ -1043,18 +1043,6 @@ class ForgeObjectPanel_Sidebar(bpy.types.Panel):
     
     def draw(self, context): drawForgeObjectProperties(self, context, 'UI')
 
-class PasteOverload(Operator):
-    """Duplicates selected objects (for forge compatibility)"""
-    bl_idname = 'view3d.pastebuffer'
-    bl_label = "Paste Forge Objects"
-    
-    autoselect: BoolProperty(default=True)
-    active: BoolProperty(default=True)
-
-    @classmethod
-    def poll(cls, context): return context.active_object != None and context.active_object.get('isForgeObject',False)
-    def execute(self, context): return bpy.ops.object.duplicate_move('INVOKE_DEFAULT')
-
 class ConvertForge(Operator):
     """Set if object is exported to MCC"""
     bl_idname = 'object.convert_forge'
@@ -1365,7 +1353,7 @@ class ScaleObjects(Operator):
 
 reg_classes = [
     ForgeObjectProps, ForgeCollectionProps, ForgeSceneProps,
-    ImportForgeObjects, ExportForgeObjects, AddForgeObject, PasteOverload, ConvertForge, SetupArray, ErrorMessage, ScaleObjects,
+    ImportForgeObjects, ExportForgeObjects, AddForgeObject, ConvertForge, SetupArray, ErrorMessage, ScaleObjects,
     ForgeObjectPanel, ForgeObjectPanel_Sidebar, AddForgeObjectMenu, ForgeCollectionPanel, ForgeScenePanel
 ]
 reg_objMenus = [convertForgeMenuItem, setupArrayMenuItem]
@@ -1426,8 +1414,8 @@ def register():
         forge.GetObjectPtr.restype = POINTER(ForgeObject)
     except Exception as ex:
         bpy.ops.forge.error('INVOKE_DEFAULT', 
-            message="Outdated ForgeBridge.dll in use!\nPlease download the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 
-            rl="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
+            message="DLL Error Occured. Possibly outdated ForgeBridge.dll in use!\nMake sure you're on the latest release from https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases", 
+            url="https://github.com/Waffle1434/Mjolnir-Forge-Editor/releases")
         print(ex)
 
 def unregister():
