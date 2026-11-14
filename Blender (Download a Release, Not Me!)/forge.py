@@ -1,4 +1,5 @@
-import bpy, enum, time, blf, textwrap, urllib.request, webbrowser
+import bpy, enum, time, blf, textwrap, urllib.request, webbrowser, sys, os, importlib, traceback
+import numpy as np
 from bpy.types import Operator
 from bpy.props import *
 from mathutils import *
@@ -9,6 +10,7 @@ from threading import Thread
 
 check_update = True
 vMjolnir = "0.9.9.2"
+vMapReaderPatch = "mapreader-1"
 print("Mjolnir v" + vMjolnir)
 
 maxObjectCount = 650
@@ -481,7 +483,84 @@ type_to_name = TwoWayDict({
     'blue'                            : "Blue (Condemned)",
 })
 
+# ---------------------------------------------------------------------------------------------
+# Palette read from the .map file MCC has loaded (mjolnir_mapreader). When available it replaces
+# the hardcoded tables above, so modded maps with changed or extra palette entries work.
+# ---------------------------------------------------------------------------------------------
+def importMapReader():
+    """Load mjolnir_mapreader: the text block inside forge.blend, else a .py file next to the .blend."""
+    import types
+    text = bpy.data.texts.get('mjolnir_mapreader.py')
+    if text is not None:
+        try:
+            mod = types.ModuleType('mjolnir_mapreader')
+            mod.__file__ = 'mjolnir_mapreader.py (text block)'
+            sys.modules['mjolnir_mapreader'] = mod
+            exec(compile(text.as_string(), 'mjolnir_mapreader.py', 'exec'), mod.__dict__)
+            return mod
+        except Exception as e:
+            sys.modules.pop('mjolnir_mapreader', None)
+            print("Mjolnir: mjolnir_mapreader text block failed to load (%s)" % e)
+    blend_dir = bpy.path.abspath("//")
+    if blend_dir and blend_dir not in sys.path: sys.path.append(blend_dir)
+    try:
+        import mjolnir_mapreader
+        try: return importlib.reload(mjolnir_mapreader)
+        except Exception: return mjolnir_mapreader
+    except Exception as e:
+        print("Mjolnir: mjolnir_mapreader not available, using built-in palette tables (%s)" % e)
+        return None
+mapreader = importMapReader()
+
+palette = {'key': None, 'path': None, 'cache': None, 'by_id': {}, 'by_name': {}, 'entries': {}, 'failed': set(), 'meshes': {}, 'failed_shaders': set(), 'error': None}
+
+def paletteItemName(entry):
+    return type_to_name.AtoB.get(entry['name'], entry['name'])
+
+def closePalette():
+    c = palette.get('cache')
+    if c is not None:
+        try: c.close_all()
+        except Exception: pass
+    palette.update(key=None, path=None, cache=None, by_id={}, by_name={}, entries={}, failed=set(), meshes={}, failed_shaders=set())
+
+def loadMapPalette(context, map_name, log=print):
+    """Read the forge palette from the .map MCC has loaded. Returns True if the palette is in use."""
+    props = context.scene.forge
+    palette['error'] = None
+    if not props.readMapPalette or mapreader is None:
+        closePalette()
+        return False
+    try:
+        override = bpy.path.abspath(props.mapFileOverride).strip() if props.mapFileOverride.strip() else None
+        extra = [bpy.path.abspath(d.strip()) for d in props.extraMapFolders.split(';') if d.strip()]
+        path, stock = mapreader.locate_loaded_map(map_name, override=override, extra_dirs=extra, log=log)
+        st = os.stat(path)
+        key = (path, st.st_size, st.st_mtime)
+        if key == palette['key']: return True
+
+        closePalette()
+        cache = mapreader.CacheFile(path, log=log)
+        cache.shared_search_dirs = [d for d in [stock] + extra if d]
+        by_id, by_name, entries = {}, {}, {}
+        for e in cache.read_palette():
+            name = paletteItemName(e)
+            if name in by_name: name = "%s (0x%X)" % (name, e['id'])  # keep names unique
+            by_id[e['id']] = name
+            by_name[name] = e['id']
+            entries[e['id']] = e
+        palette.update(key=key, path=path, cache=cache, by_id=by_id, by_name=by_name, entries=entries)
+        log("Palette: %d items from %s" % (len(by_id), path))
+        return True
+    except Exception as e:
+        closePalette()
+        palette['error'] = str(e)
+        log("Couldn't read the map palette, using built-in tables: %s" % e)
+        return False
+
 def GetObjectTypeName(map_name, i_type):
+    if palette['key'] is not None:
+        return palette['by_id'].get(i_type, f"Unknown (0x{i_type:X})")
     map_dict = map_object_types.get(map_name)
     if not map_dict: return f"Unknown (0x{i_type:X})"
 
@@ -493,6 +572,10 @@ def GetObjectTypeId(map_name, name):
     import re
     # Strip Blender's duplicate suffixes (e.g., "Assault Rifle.001" -> "Assault Rifle")
     clean_name = re.sub(r'\.\d+$', '', name)
+    if palette['key'] is not None:
+        if name in palette['by_name']: return palette['by_name'][name]
+        if clean_name in palette['by_name']: return palette['by_name'][clean_name]
+        raise KeyError(f"Object type '{clean_name}' is not in this map's palette.")
     obj_type = type_to_name.BtoA.get(clean_name)
     if not obj_type:
         raise KeyError(f"Object type '{clean_name}' (from '{name}') is not recognized by the addon.")
@@ -610,6 +693,473 @@ def lockObject(obj, scale=True, loc=False, rot=False):
         obj.lock_location[i_ax] = loc
         obj.lock_rotation[i_ax] = rot
 
+extractedCollName = 'Extracted Models'
+
+def extractedRoot():
+    root = bpy.data.collections.get(extractedCollName)
+    if root is None:
+        root = bpy.data.collections.new(extractedCollName)
+        scene = bpy.data.scenes.get(propSceneName) or bpy.data.scenes.new(propSceneName)
+        scene.collection.children.link(root)
+        pal = bpy.data.collections.get(mapPalette)
+        if pal is not None and pal.library is None:
+            try: pal.children.link(root)  # shows extracted items in Add > Forge Object
+            except Exception: pass
+    return root
+
+SHADER_COLORS = [  # matched against the shader's file name only (not its folder)
+    ('green', (0.0, 0.8, 0.05)), ('blue', (0.0, 0.15, 0.9)), ('red', (0.85, 0.05, 0.05)),
+    ('yellow', (0.9, 0.8, 0.05)), ('orange', (0.95, 0.4, 0.02)), ('purple', (0.45, 0.05, 0.8)),
+    ('magenta', (0.85, 0.05, 0.7)), ('pink', (0.95, 0.4, 0.65)), ('cyan', (0.0, 0.8, 0.85)),
+    ('white', (0.9, 0.9, 0.9)), ('black', (0.02, 0.02, 0.02)), ('grey', (0.4, 0.4, 0.4)), ('gray', (0.4, 0.4, 0.4)),
+]
+SHADER_COLOR_VERSION = 2
+
+def shaderColor(name):
+    low = name.lower()
+    for key, rgb in SHADER_COLORS:
+        if key in low: return rgb + (1.0,)
+    h = (sum(map(ord, name)) % 1000) / 1000.0  # stable neutral tint per shader
+    return (0.45 + 0.2 * h, 0.45 + 0.15 * (1 - h), 0.48, 1.0)
+
+def setMaterialColor(mat, col):
+    mat.diffuse_color = col
+    try:
+        if mat.node_tree is None: mat.use_nodes = True  # Blender < 5 needs this
+        bsdf = mat.node_tree.nodes.get('Principled BSDF')
+        if bsdf: bsdf.inputs['Base Color'].default_value = col
+    except Exception: pass
+    mat['mjolnir_color_version'] = SHADER_COLOR_VERSION
+
+def findShaderMaterial(shader_path):
+    for mat in bpy.data.materials:
+        if mat.get('mjolnir_shader') == (shader_path or ""): return mat
+    return None
+
+def shaderMaterial(shader_path, shader_index=None):
+    mat = findShaderMaterial(shader_path)
+    if mat is None:
+        name = (shader_path or "default").replace('\\', '/').split('/')[-1]
+        stock = bpy.data.materials.get(name)
+        if stock is not None and stock.get('mjolnir_shader') is None and stock.library is None and stock.node_tree is not None:
+            return stock  # forge.blend already has a hand-made material for this shader
+        mat = bpy.data.materials.new(name)
+        mat['mjolnir_shader'] = shader_path or ""
+        setMaterialColor(mat, shaderColor(name))
+    if shader_index is not None: texturedMaterial(mat, shader_index)
+    return mat
+
+# ---- textures --------------------------------------------------------------------------------
+def bitmapImage(bitmap_index, kind='color'):
+    """Decode a bitmap tag from the .map into a packed Blender image (reused if already made)."""
+    cache = palette['cache']
+    tag = cache.tags.get(bitmap_index)
+    if tag is None: raise ValueError("bitmap tag missing")
+    key = tag.path + ('|normal' if kind == 'normal' else '')
+    for img in bpy.data.images:
+        if img.get('mjolnir_bitmap') == key: return img
+    bm = cache.read_bitmap(bitmap_index)
+    px = bm['pixels']
+    if kind == 'normal':  # Halo normal maps are DirectX style: flip green for Blender
+        px = px.copy(); px[..., 1] = 255 - px[..., 1]
+    h, w = px.shape[:2]
+    img = bpy.data.images.new(tag.path.replace('\\', '/').split('/')[-1], w, h, alpha=True)
+    if kind != 'color':  # must be set before writing pixels: changing it regenerates the image
+        try: img.colorspace_settings.name = 'Non-Color'
+        except Exception: pass
+    img.pixels.foreach_set((px[::-1].astype(np.float32) * (1.0 / 255.0)).ravel())
+    try: img.pack()
+    except Exception as e: print("Mjolnir: couldn't pack image %s: %s" % (img.name, e))
+    img['mjolnir_bitmap'] = key
+    return img
+
+BASE_USAGES = ('base_map', 'change_color_map', 'foam_texture', 'alpha_mask_map', 'detail_map')
+
+def texturedMaterial(mat, shader_index, log=print):
+    """Rebuild a material's nodes from the shader tag: base map (with albedo tint), normal map, self illumination."""
+    if mat.get('mjolnir_textured') or not bpy.context.scene.forge.extractTextures: return False
+    key = (palette['key'], shader_index)
+    if key in palette['failed_shaders']: return False
+    cache = palette['cache']
+    try:
+        info = cache.read_shader(shader_index)
+        if info is None: raise ValueError("shader tag missing")
+    except Exception as e:
+        palette['failed_shaders'].add(key)
+        log("Shader %s unreadable: %s" % (mat.name, e)); return False
+    tex, tints, opts = info['textures'], info['tints'], info['options']
+
+    if mat.node_tree is None: mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial'); out.location = (500, 0)
+    bsdf = nodes.new('ShaderNodeBsdfPrincipled'); bsdf.location = (100, 0)
+    uv = None
+    y = [300]
+
+    def image_node(usage, kind):
+        nonlocal uv
+        bitmap_index, tile = tex[usage]
+        try: img = bitmapImage(bitmap_index, kind)
+        except Exception as e:
+            log("Texture %s for %s skipped: %s" % (usage, mat.name, e)); return None
+        n = nodes.new('ShaderNodeTexImage'); n.image = img; n.label = usage
+        n.location = (-400, y[0]); y[0] -= 300
+        su, sv = (tile[0] or 1.0), (tile[1] or 1.0)
+        if (su, sv) != (1.0, 1.0):
+            if uv is None:
+                uv = nodes.new('ShaderNodeTexCoord'); uv.location = (-1000, 0)
+            mp = nodes.new('ShaderNodeMapping'); mp.location = (-700, n.location.y)
+            mp.inputs['Scale'].default_value = (su, sv, 1.0)
+            mp.inputs['Location'].default_value = (0.0, 1.0 - sv, 0.0)  # tile from the top edge like Halo
+            links.new(uv.outputs['UV'], mp.inputs['Vector'])
+            links.new(mp.outputs['Vector'], n.inputs['Vector'])
+        return n
+
+    tint = tints.get('albedo_color')
+    tint_rgb = (tint[0], tint[1], tint[2], 1.0) if tint else None
+    base_usage = next((u for u in BASE_USAGES if u in tex), None)
+    base = image_node(base_usage, 'color') if base_usage else None
+    blend = opts.get('blend_mode', 'opaque')
+    alpha_test = opts.get('alpha_test', 'none') not in ('none', 'off', '')
+
+    if base is not None:
+        color = base.outputs['Color']
+        if tint_rgb and tint_rgb[:3] != (1.0, 1.0, 1.0):
+            mix = nodes.new('ShaderNodeMix'); mix.data_type = 'RGBA'; mix.blend_type = 'MULTIPLY'
+            mix.location = (-150, 250); mix.inputs[0].default_value = 1.0
+            links.new(color, mix.inputs[6]); mix.inputs[7].default_value = tint_rgb
+            color = mix.outputs[2]
+        links.new(color, bsdf.inputs['Base Color'])
+        if alpha_test or blend in ('alpha_blend', 'pre_multiplied_alpha'):
+            links.new(base.outputs['Alpha'], bsdf.inputs['Alpha'])
+    else:
+        rgb = tint_rgb or shaderColor(mat.name)
+        bsdf.inputs['Base Color'].default_value = rgb
+    if base is not None: mat.diffuse_color = tint_rgb or (0.8, 0.8, 0.8, 1.0)   # solid-view colour
+    else: mat.diffuse_color = tuple(bsdf.inputs['Base Color'].default_value)
+
+    if 'bump_map' in tex:
+        n = image_node('bump_map', 'normal')
+        if n is not None:
+            nm = nodes.new('ShaderNodeNormalMap'); nm.location = (-150, -250)
+            links.new(n.outputs['Color'], nm.inputs['Color'])
+            links.new(nm.outputs['Normal'], bsdf.inputs['Normal'])
+
+    if 'self_illum_map' in tex:
+        n = image_node('self_illum_map', 'color')
+        if n is not None:
+            links.new(n.outputs['Color'], bsdf.inputs['Emission Color'])
+            bsdf.inputs['Emission Strength'].default_value = 1.0
+
+    shader_out = bsdf.outputs['BSDF']
+    if blend in ('additive', 'multiply', 'double_multiply'):
+        # glows / light cards: show the colour as light, let everything else through
+        emit = nodes.new('ShaderNodeEmission'); emit.location = (100, 300)
+        if base is not None: links.new(bsdf.inputs['Base Color'].links[0].from_socket, emit.inputs['Color'])
+        else: emit.inputs['Color'].default_value = bsdf.inputs['Base Color'].default_value
+        tr = nodes.new('ShaderNodeBsdfTransparent'); tr.location = (100, 450)
+        add = nodes.new('ShaderNodeAddShader'); add.location = (300, 300)
+        links.new(emit.outputs[0], add.inputs[0]); links.new(tr.outputs[0], add.inputs[1])
+        shader_out = add.outputs[0]
+    links.new(shader_out, out.inputs['Surface'])
+    if blend != 'opaque':
+        try: mat.surface_render_method = 'BLENDED'
+        except Exception:
+            try: mat.blend_method = 'BLEND'
+            except Exception: pass
+
+    mat['mjolnir_textured'] = True
+    mat['mjolnir_shader_options'] = ", ".join("%s=%s" % kv for kv in opts.items())
+    return True
+
+def upgradeMaterials():
+    """Give flat-coloured materials from earlier imports their textures."""
+    cache = palette['cache']
+    if cache is None or not bpy.context.scene.forge.extractTextures: return 0
+    by_path = None
+    done = 0
+    for mat in bpy.data.materials:
+        path = mat.get('mjolnir_shader')
+        if not path or mat.get('mjolnir_textured'): continue
+        if by_path is None:
+            by_path = {t.path: t.index for g, ts in cache.tags_by_group.items() if g.startswith('rm') for t in ts}
+        idx = by_path.get(path)
+        if idx is not None and texturedMaterial(mat, idx): done += 1
+    return done
+
+def buildModelMesh(name, model):
+    verts, faces, normals, uvs, mat_idx, mats = [], [], [], [], [], []
+    have_normals = all(m['normals'] for m in model['meshes'])
+    have_uvs = all(m['uvs'] for m in model['meshes'])
+    for m in model['meshes']:
+        base = len(verts)
+        verts.extend(m['positions'])
+        faces.extend((a + base, b + base, c + base) for a, b, c in m['triangles'])
+        if have_normals: normals.extend(m['normals'])
+        if have_uvs: uvs.extend(m['uvs'])
+        local = []
+        for shader in m['materials']:
+            if shader not in mats: mats.append(shader)
+            local.append(mats.index(shader))
+        mat_idx.extend(local[i] for i in m['tri_materials'])
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], faces)
+    shader_tags = model.get('shader_tags', {})
+    for shader in mats: me.materials.append(shaderMaterial(shader, shader_tags.get(shader)))
+    if mat_idx and len(mat_idx) == len(me.polygons):
+        me.polygons.foreach_set('material_index', mat_idx)
+    if have_uvs and verts:
+        layer = me.uv_layers.new(name='UVMap')
+        loop_verts = np.empty(len(me.loops), np.int64)
+        me.loops.foreach_get('vertex_index', loop_verts)
+        uv = np.asarray(uvs, np.float32)[loop_verts]
+        uv[:, 1] = 1.0 - uv[:, 1]
+        layer.data.foreach_set('uv', uv.ravel())
+    me.validate()
+    if have_normals and len(normals) == len(me.vertices):
+        try: me.normals_split_custom_set_from_vertices(normals)
+        except Exception: pass
+    me.update()
+    return me
+
+def boxMesh(name, bounds):
+    (x0, x1), (y0, y1), (z0, z1) = bounds
+    v = [(x, y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)]
+    f = [(0,1,3,2),(4,6,7,5),(0,4,5,1),(2,3,7,6),(0,2,6,4),(1,5,7,3)]
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(v, [], f)
+    me.update()
+    return me
+
+def repairExtractedModels():
+    """Fix models extracted by the first version of this patch (missing rotation, all-green colours)."""
+    for coll in bpy.data.collections:
+        if coll.get('mjolnir_type_id') is None: continue
+        for ob in coll.objects:
+            if ob.type == 'MESH' and not ob.get('mjolnir_rotated'):
+                ob.rotation_euler = (0.0, 0.0, pi / 2)
+                ob['mjolnir_rotated'] = True
+    for mat in bpy.data.materials:
+        if 'mjolnir_shader' in mat and mat.get('mjolnir_color_version', 1) < SHADER_COLOR_VERSION:
+            setMaterialColor(mat, shaderColor(mat.name))
+
+# ---- level geometry: one scene per map, built from the .map the first time it's imported ----
+def mapKey():
+    return os.path.splitext(os.path.basename(palette['path'] or ""))[0].lower()
+
+def mapTitle(key):
+    for title, stem in getattr(mapreader, 'MAP_FILES', {}).items():
+        if stem == key: return title
+    return key.replace('_', ' ').title()
+
+def copySceneSettings(src, dst):
+    for prop in ('scaleConvention', 'readMapPalette', 'extractModels', 'extractTextures', 'importLevel', 'mapFileOverride', 'extraMapFolders'):
+        try:
+            if src.forge.is_property_set(prop):  # copy real choices only, so defaults stay defaults
+                setattr(dst.forge, prop, getattr(src.forge, prop))
+        except Exception: pass
+
+def buildLevel(scene, title, log=print):
+    """Create the level geometry (clusters + instanced geometry) of every BSP into scene. Returns object count."""
+    cache = palette['cache']
+    root = bpy.data.collections.new("%s Level" % title)
+    root['mjolnir_level'] = True
+    scene.collection.children.link(root)
+    root.hide_select = True  # level is scenery: keep clicks for forge objects
+    count = 0
+    for bsp, lightmap in cache.structure_bsps():
+        t0 = time.time()
+        try:
+            level = cache.read_bsp(bsp, lightmap, log=log)
+        except Exception as e:
+            log("Level %s skipped: %s" % (bsp.path, e)); continue
+        coll = bpy.data.collections.new(level['name'])
+        root.children.link(coll)
+        tags = level['shader_tags']
+        if level['clusters']:
+            me = buildModelMesh(level['name'] + " clusters", dict(meshes=[level['sections'][c] for c in level['clusters']], shader_tags=tags))
+            ob = bpy.data.objects.new(level['name'] + " clusters", me); coll.objects.link(ob); count += 1
+        shared = {}
+        for name, si, scale, m in level['instances']:
+            me = shared.get(si)
+            if me is None:
+                me = shared[si] = buildModelMesh("%s %s" % (level['name'], name or si), dict(meshes=[level['sections'][si]], shader_tags=tags))
+            ob = bpy.data.objects.new(name or "instance", me)
+            ob.matrix_world = Matrix(((m[0] * scale, m[3] * scale, m[6] * scale, m[9]),
+                                      (m[1] * scale, m[4] * scale, m[7] * scale, m[10]),
+                                      (m[2] * scale, m[5] * scale, m[8] * scale, m[11]),
+                                      (0, 0, 0, 1)))
+            coll.objects.link(ob); count += 1
+        log("Level %s: %d clusters, %d instances in %.1fs" % (level['name'], len(level['clusters']), len(level['instances']), time.time() - t0))
+    return count
+
+LEVEL_VERSION = 2  # 2: large BSPs (>4096 buffers) + checked index decoding. Older builds are rebuilt.
+
+def removeLevel(scene):
+    """Delete a scene's generated level collection (objects, then now-unused meshes)."""
+    title = mapTitle(scene.get('mjolnir_map', ''))
+    for coll in [c for c in scene.collection.children if c.get('mjolnir_level') or c.name in ("%s Level" % title, "%s Level" % scene.name)]:
+        meshes = set()
+        for ob in list(coll.all_objects):
+            if ob.type == 'MESH': meshes.add(ob.data)
+            bpy.data.objects.remove(ob, do_unlink=True)
+        for child in list(coll.children_recursive):
+            bpy.data.collections.remove(child)
+        bpy.data.collections.remove(coll)
+        for me in meshes:
+            if me.users == 0: bpy.data.meshes.remove(me)
+
+def levelCollection(sc):
+    """The collection holding a map scene's geometry (built level, or forge.blend's hand-made 'Forge World')."""
+    for c in sc.collection.children:
+        if c.get('mjolnir_level'): return c
+    for name in ("%s Level" % sc.name, sc.name):
+        c = sc.collection.children.get(name)
+        if c is not None: return c
+    return None
+
+def isMapScene(sc):
+    """A scene holding map geometry: tagged by this patch, or forge.blend's own 'Forge World' scene."""
+    return sc.get('mjolnir_map') is not None or levelCollection(sc) is not None
+
+def fixSceneTags():
+    """Undo a previous version's mistake of tagging a working scene (one without its own geometry) as a map scene."""
+    for sc in bpy.data.scenes:
+        if sc.get('mjolnir_map') is not None and levelCollection(sc) is None:
+            for k in ('mjolnir_map', 'mjolnir_level_handmade', 'mjolnir_level_version'):
+                if k in sc: del sc[k]
+
+def workScene(context):
+    """The scene forge objects go into: the current one, unless it's a map geometry scene or Props."""
+    cur = context.scene
+    if not isMapScene(cur) and cur.name != propSceneName: return cur
+    sc = bpy.data.scenes.get('Scene')
+    if sc is None or isMapScene(sc):
+        sc = bpy.data.scenes.new('Scene')
+        copySceneSettings(cur, sc)
+        if cur.world is not None: sc.world = cur.world
+    return sc
+
+def showMap(work, mapScene):
+    """Point the working scene's (unselectable) 'Map' backdrop at the map scene's geometry, like forge.blend does for Forge World."""
+    level = levelCollection(mapScene)
+    if level is None: return
+    holder = next((c for c in work.collection.children if c.get('mjolnir_map_holder') or c.name.split('.')[0] == 'Map'), None)
+    if holder is None:
+        holder = bpy.data.collections.new('Map')
+        work.collection.children.link(holder)
+    holder['mjolnir_map_holder'] = True
+    holder.hide_select = True
+    inst = next((o for o in holder.objects if o.instance_type == 'COLLECTION'), None)
+    if inst is None:
+        inst = bpy.data.objects.new(mapScene.name, None)
+        holder.objects.link(inst)
+        inst.instance_type = 'COLLECTION'
+    if inst.instance_collection != level:
+        inst.instance_collection = level
+        inst.name = mapScene.name
+
+def ensureMapScene(context, log=print):
+    """Scene for the loaded map, with its level geometry. Built the first time (or rebuilt when it was
+    built by an older version); returns (scene, built objects)."""
+    key = mapKey()
+    if not key: return None, 0
+    fixSceneTags()
+    for sc in bpy.data.scenes:
+        if sc.get('mjolnir_map') != key: continue
+        if sc.get('mjolnir_level_handmade') or sc.get('mjolnir_level_version', 1) >= LEVEL_VERSION:
+            return sc, 0
+        log("Rebuilding %s level (built by an older version)" % sc.name)
+        removeLevel(sc)
+        built = buildLevel(sc, mapTitle(key), log)
+        sc['mjolnir_level_version'] = LEVEL_VERSION
+        return sc, built
+    cur = context.scene
+    if key == 'forge_halo':  # forge.blend's own Forge World scene (hand-made level): adopt it
+        sc = bpy.data.scenes.get('Forge World')
+        if sc is not None and sc.get('mjolnir_map') is None and levelCollection(sc) is not None:
+            sc['mjolnir_map'] = key
+            sc['mjolnir_level_handmade'] = True
+            return sc, 0
+    title = mapTitle(key)
+    sc = bpy.data.scenes.new(title)
+    sc['mjolnir_map'] = key
+    copySceneSettings(cur, sc)
+    if cur.world is not None: sc.world = cur.world
+    sc.unit_settings.system = cur.unit_settings.system
+    sc.unit_settings.scale_length = cur.unit_settings.scale_length
+    built = buildLevel(sc, title, log)
+    sc['mjolnir_level_version'] = LEVEL_VERSION
+    return sc, built
+
+MODEL_VERSION = 2  # 2: whole objects with variant attachments and vehicle weapons
+
+def objectMesh(itemName, entry, log=print):
+    """Mesh for a palette entry (object + variant), shared between palette items using the same object.
+    Returns (mesh, is_placeholder) or (None, False)."""
+    cache = palette['cache']
+    key = (entry['tag_index'], entry.get('variant') or "")
+    me, placeholder = palette['meshes'].get(key, (None, False))
+    if me is not None and me.name in bpy.data.meshes: return me, placeholder
+    try:
+        model = cache.read_object_model(entry['tag_index'], entry.get('variant') or "", log=log)
+        if model is None: return None, False
+        if not model['meshes']: raise ValueError("no geometry")
+        me = buildModelMesh(itemName, model)
+        if len(model['parts']) > 1:
+            log("'%s': attached %s" % (itemName, ", ".join(p.split('\\')[-1] for p in model['parts'][1:])))
+        placeholder = False
+    except Exception as e:
+        log("Model for '%s' couldn't be decoded (%s); using its bounding box instead" % (itemName, e))
+        mode = cache.render_model_for_object(entry['tag_index'])
+        bounds = cache.render_model_bounds(mode) if mode is not None else None
+        if bounds is None: return None, False
+        me, placeholder = boxMesh(itemName, bounds[:3]), True
+    palette['meshes'][key] = (me, placeholder)
+    return me, placeholder
+
+def ensureModelCollection(context, itemName, type_id, log=print):
+    """Create (or update) a collection with the object's model read from the .map. Returns the collection or None."""
+    coll = bpy.data.collections.get(itemName)
+    if coll is not None and (coll.get('mjolnir_type_id') is None or coll.get('mjolnir_model_version', 1) >= MODEL_VERSION):
+        return coll
+    entry = palette['entries'].get(type_id)
+    cache = palette['cache']
+    if entry is None or cache is None or entry['tag_index'] < 0 or type_id in palette['failed']: return coll
+
+    try:
+        me, placeholder = objectMesh(itemName, entry, log)
+    except Exception as e:
+        me, placeholder = None, False
+        log("No model for '%s': %s" % (itemName, e))
+    if me is None:
+        palette['failed'].add(type_id)
+        return coll
+
+    if coll is not None:  # model from an older version of this patch: swap in the new mesh, keep any manual rotation
+        for ob in coll.objects:
+            if ob.type == 'MESH':
+                old = ob.data
+                ob.data = me
+                ob.display_type = 'WIRE' if placeholder else 'TEXTURED'
+                if old.users == 0: bpy.data.meshes.remove(old)
+                break
+    else:
+        coll = bpy.data.collections.new(itemName)
+        extractedRoot().children.link(coll)
+        ob = bpy.data.objects.new(itemName, me)
+        coll.objects.link(ob)
+        ob.rotation_euler = (0.0, 0.0, pi / 2)  # Halo models face +X; Mjolnir's forge objects face +Y (same as forge.blend's meshes)
+        ob['mjolnir_rotated'] = True
+        if placeholder: ob.display_type = 'WIRE'
+    coll['mjolnir_type_id'] = type_id
+    coll['mjolnir_tag'] = entry['tag_path'] or ""
+    coll['mjolnir_map'] = os.path.basename(palette['path'] or "")
+    coll['mjolnir_placeholder'] = placeholder
+    coll['mjolnir_model_version'] = MODEL_VERSION
+    return coll
+
 def createForgeObject(context, itemName, i=None, data=None):
     blobj = bpy.data.objects.new(itemName if i is None else "%d - %s"%(i,itemName), data)
     context.collection.objects.link(blobj)
@@ -628,16 +1178,53 @@ def createForgeObject(context, itemName, i=None, data=None):
         #blobj.show_name = True
     return blobj
 
+class ForgeBridgeError(Exception):
+    pass
+
+def dllCall(name, *args):
+    """Call ForgeBridge.dll, turning its .NET crashes (Windows error 0xE0434352) into a readable message."""
+    try:
+        return getattr(forge, name)(*args)
+    except OSError as e:
+        detail = ""
+        try: detail = (forge.GetLastError() or "").strip()
+        except Exception: pass
+        hint = {
+            'ReadMemory': "Reading forge objects failed. Make sure MCC is in Forge (or a custom game) on that map, "
+                          "not on a menu or loading screen.",
+            'WriteMemory': "Writing forge objects failed. Make sure MCC is still in Forge on the same map.",
+        }.get(name, "")
+        raise ForgeBridgeError("ForgeBridge.dll error in %s%s. %s" % (
+            name, (": " + detail.splitlines()[-1]) if detail else " (no details)", hint)) from e
+
 def importForgeObjects(context, self=None, createCollections=False):
     if context.scene.name == propSceneName: return False
     if not forge.TrySetConnect(True): return False
 
     t0 = time.time()
 
-    forge.ReadMemory()
+    dllCall('ReadMemory')
     map_name = forge.GetMapName()
     if map_name == "None":
         print(forge.GetLastError())
+    usingPalette = loadMapPalette(context, map_name)
+    levelMsg = ""
+    if usingPalette and context.scene.forge.importLevel:
+        try:
+            sc, built = ensureMapScene(context)
+            work = workScene(context)
+            if work != context.scene and context.window is not None:
+                context.window.scene = work  # forge objects go in the working scene, never the map geometry scene
+            if sc is not None:
+                showMap(work, sc)
+                if built: levelMsg = ", built %s level (%d objects)" % (sc.name, built)
+        except Exception as e:
+            traceback.print_exc()
+            levelMsg = " (level geometry failed: %s)" % e
+    repairExtractedModels()
+    upgraded = upgradeMaterials() if usingPalette else 0
+    extract = usingPalette and context.scene.forge.extractModels
+    extracted = 0
     c = forge.GetObjectCount()
     gt_c = forge.GetGtLabelCount()
     print("Map: %s, %d Objects, %d Gametype Labels"%(forge.GetMapName(), c, gt_c))
@@ -652,7 +1239,12 @@ def importForgeObjects(context, self=None, createCollections=False):
     for i in range(0,maxObjectCount):
         fobj = forge.GetObjectPtr(i).contents
         if fobj.show == 0: continue
-        itemName = GetObjectTypeName(map_name, fobj.itemCategory << 8 | fobj.itemVariant)
+        typeId = fobj.itemCategory << 8 | fobj.itemVariant
+        itemName = GetObjectTypeName(map_name, typeId)
+        if extract:
+            coll = bpy.data.collections.get(itemName)
+            outdated = coll is not None and coll.get('mjolnir_type_id') is not None and coll.get('mjolnir_model_version', 1) < MODEL_VERSION
+            if (coll is None or outdated) and ensureModelCollection(context, itemName, typeId) is not None: extracted += 1
 
         if createCollections and itemName not in bpy.data.collections:
             collection = bpy.data.collections.new(itemName)
@@ -674,6 +1266,11 @@ def importForgeObjects(context, self=None, createCollections=False):
             lockObject(cam, True, True, True)
     
     msg = "Imported %d objects in %.3fs"%(c,time.time() - t0)
+    if usingPalette: msg += ", palette from %s" % os.path.basename(palette['path'])
+    elif palette['error']: msg += " (built-in palette: %s)" % palette['error']
+    if extracted: msg += ", %d new models" % extracted
+    if upgraded: msg += ", textured %d existing materials" % upgraded
+    msg += levelMsg
     if self is None: print(msg)
     else: self.report({'INFO'}, msg)
     return True
@@ -682,9 +1279,10 @@ def exportForgeObjects(context, self=None):
 
     hitLimit = False
     t0 = time.time()
-    forge.CacheCurrentMap()
+    dllCall('CacheCurrentMap')
     forge.ClearObjectList()
     map_name = forge.GetMapName()
+    loadMapPalette(context, map_name)
     
     i = 0
     for inst in bpy.context.evaluated_depsgraph_get().object_instances:
@@ -698,7 +1296,7 @@ def exportForgeObjects(context, self=None):
             forge.AddObject(i)
             i += 1
     
-    forge.WriteMemory()
+    dllCall('WriteMemory')
     msg = "Exported %d objects in %.3fs"%(i,time.time() - t0)
     if self is None: print(msg)
     else: self.report({'WARNING' if hitLimit else 'INFO'}, msg)
@@ -714,6 +1312,12 @@ def executeAndReport(self, context, method):
             print("DLL Error: " + msg)
             self.report({'ERROR'}, msg)
             return {'CANCELLED'}
+    except ForgeBridgeError as e:
+        print(str(e))
+        try: print("Full DLL log:\n" + (forge.GetLastError() or ""))
+        except Exception: pass
+        self.report({'ERROR'}, str(e))
+        return {'CANCELLED'}
     except Exception as e:
         traceback.print_exc()
         msg = f"Python Error: {str(e)}"
@@ -818,18 +1422,26 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         
         shObj.location = (0,0,(self.top-self.bottom)/2)
     
-    def IsScaled(self, blobj): return anvilScaling and blobj.forge.gtLabel == "SCALE"
+    def IsScaled(self, blobj):
+        if not (anvilScaling and blobj.forge.gtLabel == "SCALE"): return False
+        if blobj.forge.team == 'YELLOW': return False  # Anvil: yellow team shows the object at normal scale
+        coll = blobj.instance_collection
+        if coll is not None and 'hill' in coll.name.lower() and 'marker' in coll.name.lower():
+            return False  # Anvil: a hill marker with the Scale label is a scale zone, not a scaled object
+        return True
     def UpdateScale(self, blobj):
         if self.IsScaled(blobj):
             scale = spawnSeqToScale(blobj.forge.spawnSequence, bpy.context.scene.forge.scaleConvention, blobj.forge.team)
             blobj.scale = (scale,scale,scale)
         else: blobj.scale = (1,1,1)
     def UpdateSpawnSeq(self, context):
-        if anvilScaling:
-            if context.selected_objects:
-                for blobj in context.selected_objects: self.UpdateScale(blobj)
-            else:
-                self.UpdateScale(bpy.data.objects[self.object])
+        if not anvilScaling: return
+        own = bpy.data.objects.get(self.object)
+        if own is None: return
+        self.UpdateScale(own)  # always the object whose property changed (import sets it while others may be selected)
+        if own.select_get():   # editing in the panel with several objects selected: update them all
+            for blobj in context.selected_objects:
+                if blobj != own and blobj.get('isForgeObject'): blobj.forge.UpdateScale(blobj)
 
     teamEnum = [
         ('RED', "Red", ""),
@@ -913,6 +1525,7 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         self.length = fobj.length
         self.top = fobj.top
         self.bottom = fobj.bottom
+        self.UpdateScale(blobj)  # once every property (label, sequence, team) is set
     
     def ToForgeObject(self, fobj, blobj, map_name, inst=None):
         m = blobj.matrix_world if inst is None else inst.matrix_world
@@ -921,7 +1534,12 @@ class ForgeObjectProps(bpy.types.PropertyGroup):
         fobj.position = float3.fromVector(m.col[3])
 
         coll = blobj.instance_collection
-        ty = GetObjectTypeId(map_name, coll.name_full) if coll != None else self.objectType # TODO: replace
+        if coll is None: ty = self.objectType
+        else:
+            try: ty = GetObjectTypeId(map_name, coll.name_full)
+            except (KeyError, ValueError):
+                if coll.get('mjolnir_type_id') is not None: ty = coll['mjolnir_type_id']
+                else: raise
         fobj.itemCategory = ty >> 8
         fobj.itemVariant = ty & 0x00FF
 
@@ -1276,9 +1894,22 @@ class ForgeCollectionPanel(bpy.types.Panel):
 
 class ForgeSceneProps(bpy.types.PropertyGroup):
     def UpdateScaleConvention(self, context):
-        for blobj in context.scene.objects: blobj.forge.UpdateScale(blobj)
+        for blobj in context.scene.objects:
+            if blobj.get('isForgeObject'): blobj.forge.UpdateScale(blobj)
     scaleConvention: EnumProperty(name="Scale Convention",description="Gametype object scaling convention, or how to interpret the spawn sequence number.",
-        items=( ('1X', "1X", "Disable scaling"), ('33X', "33X", "Trusty's Old"), ('71X', "71X", "Rabid MidgetMan's"), ('47X', "47X*", "Anvil Editor Default (Trusty's New)"), ('330X', "330X", "Tx Titan Scale. Max scale of 327.34") ), default=2, update=UpdateScaleConvention)
+        items=( ('1X', "1X", "Disable scaling"), ('33X', "33X", "Trusty's Old"), ('71X', "71X", "Rabid MidgetMan's"), ('47X', "47X*", "Anvil Editor Default (Trusty's New)"), ('330X', "330X", "Tx Titan Scale. Max scale of 327.34") ), default='47X', update=UpdateScaleConvention)
+    readMapPalette: BoolProperty(name="Read Palette from Map", default=True,
+        description="Read object types from the .map file MCC has loaded, so modded maps import correctly")
+    extractModels: BoolProperty(name="Extract Missing Models", default=True,
+        description="Build meshes from the .map for objects that have no model in this .blend")
+    importLevel: BoolProperty(name="Build Map Scene", default=True,
+        description="Give each map a scene with its level geometry read from the .map, and show it as the backdrop of the scene you import into")
+    extractTextures: BoolProperty(name="Extract Textures", default=True,
+        description="Read textures and shader colours from the .map for extracted models (stored inside the .blend)")
+    mapFileOverride: StringProperty(name="Map File", subtype='FILE_PATH', default="",
+        description="Leave empty to detect automatically. Set this if the wrong .map is picked")
+    extraMapFolders: StringProperty(name="Mod Folders", default="",
+        description="Extra folders to search for .map files, separated by ;")
 class ForgeScenePanel(bpy.types.Panel):
     bl_label = "Forge Scene"
     bl_idname = 'SCENE_PT_forge_scene'
@@ -1291,6 +1922,24 @@ class ForgeScenePanel(bpy.types.Panel):
         layout.use_property_split = True
         sceneProps = context.scene.forge
         layout.prop(sceneProps, 'scaleConvention')
+
+        box = layout.box()
+        box.label(text="Map Palette", icon='FILE_BLEND')
+        box.prop(sceneProps, 'readMapPalette')
+        col = box.column()
+        col.enabled = sceneProps.readMapPalette
+        col.prop(sceneProps, 'extractModels')
+        col.prop(sceneProps, 'extractTextures')
+        col.prop(sceneProps, 'importLevel')
+        col.prop(sceneProps, 'mapFileOverride')
+        col.prop(sceneProps, 'extraMapFolders')
+        col.operator(ExtractPaletteModels.bl_idname, icon='IMPORT')
+        if mapreader is None:
+            box.label(text="mjolnir_mapreader.py not found", icon='ERROR')
+        elif palette['path']:
+            box.label(text="%s: %d items" % (os.path.basename(palette['path']), len(palette['by_id'])), icon='CHECKMARK')
+        elif palette['error']:
+            for line in textwrap.wrap(palette['error'], 50)[:4]: box.label(text=line, icon='ERROR')
 
 class AddForgeObjectMenu(bpy.types.Menu):
     bl_label = "Forge Object"
@@ -1310,6 +1959,55 @@ class AddForgeObjectMenu(bpy.types.Menu):
             elif len(coll.children) > 0:
                 self.layout.context_pointer_set('forgeColl',coll)
                 layout.menu(self.__class__.bl_idname, text=name, icon=coll.forge.icon)
+
+class RotateForgeModel(Operator):
+    """Turn the model of the selected forge objects by 90 degrees. Changes the shared model, so every copy of that object type turns (use for models that come in facing the wrong way)"""
+    bl_idname = 'forge.rotate_model'
+    bl_label = "Rotate Model 90\u00b0"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    degrees: FloatProperty(name="Degrees", default=90.0)
+
+    @classmethod
+    def poll(cls, context):
+        return any(o.instance_collection is not None for o in context.selected_objects)
+    def execute(self, context):
+        done = set()
+        for o in context.selected_objects:
+            coll = o.instance_collection
+            if coll is None or coll.name in done: continue
+            done.add(coll.name)
+            for child in coll.objects:
+                child.rotation_euler.z += radians(self.degrees)
+            coll['mjolnir_extra_rotation'] = coll.get('mjolnir_extra_rotation', 0.0) + self.degrees
+        self.report({'INFO'}, "Rotated %s" % ", ".join(sorted(done)))
+        return {'FINISHED'}
+def rotateModelMenuItem(self, context): self.layout.operator(RotateForgeModel.bl_idname, icon='DRIVER_ROTATIONAL_DIFFERENCE')
+
+class ExtractPaletteModels(Operator):
+    """Read the loaded map's palette and build models for every palette object that has none in this .blend (they appear under Add > Forge Object)"""
+    bl_idname = 'forge.extract_palette_models'
+    bl_label = "Extract All Palette Models"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        map_name = None  # without MCC running this still works when Map File is set
+        try:
+            if forge.TrySetConnect(True):
+                forge.CacheCurrentMap()
+                map_name = forge.GetMapName()
+        except Exception: pass
+        if not loadMapPalette(context, map_name):
+            self.report({'ERROR'}, "Couldn't read palette: %s" % (palette['error'] or "disabled"))
+            return {'CANCELLED'}
+        t0, made = time.time(), 0
+        upgradeMaterials()
+        for type_id, name in palette['by_id'].items():
+            coll = bpy.data.collections.get(name)
+            if coll is not None and (coll.get('mjolnir_type_id') is None or coll.get('mjolnir_model_version', 1) >= MODEL_VERSION): continue
+            if ensureModelCollection(context, name, type_id) is not None: made += 1
+        self.report({'INFO'}, "Built %d models in %.1fs (see '%s' in the %s scene)" % (made, time.time() - t0, extractedCollName, propSceneName))
+        return {'FINISHED'}
 
 class ErrorMessage(Operator):
     """Error message"""
@@ -1353,10 +2051,10 @@ class ScaleObjects(Operator):
 
 reg_classes = [
     ForgeObjectProps, ForgeCollectionProps, ForgeSceneProps,
-    ImportForgeObjects, ExportForgeObjects, AddForgeObject, ConvertForge, SetupArray, ErrorMessage, ScaleObjects,
+    ImportForgeObjects, ExportForgeObjects, AddForgeObject, ConvertForge, SetupArray, ErrorMessage, ScaleObjects, ExtractPaletteModels, RotateForgeModel,
     ForgeObjectPanel, ForgeObjectPanel_Sidebar, AddForgeObjectMenu, ForgeCollectionPanel, ForgeScenePanel
 ]
-reg_objMenus = [convertForgeMenuItem, setupArrayMenuItem]
+reg_objMenus = [convertForgeMenuItem, setupArrayMenuItem, rotateModelMenuItem]
 reg_addMenus = [addForgeObjectMenuItem]
 
 def registerDrawEvent(event, item):
